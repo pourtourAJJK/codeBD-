@@ -1,0 +1,38 @@
+.login-container {
+  padding: 40rpx 20rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.avatar-wrapper {
+  border: none;
+  background: none;
+  padding: 0;
+  margin-bottom: 40rpx;
+}
+
+.avatar {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 50%;
+}
+
+.nickname-input {
+  width: 80%;
+  height: 80rpx;
+  line-height: 80rpx;
+  border: 1rpx solid #eee;
+  border-radius: 40rpx;
+  padding: 0 20rpx;
+  margin-bottom: 40rpx;
+}
+
+.save-btn {
+  width: 80%;
+  height: 80rpx;
+  line-height: 80rpx;
+  background: #07c160;
+  color: #fff;
+  border-radius: 40rpx;
+}

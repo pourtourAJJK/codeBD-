@@ -1,0 +1,4 @@
+<view class="loading-placeholder">
+  <view class="loading-spinner"></view>
+  <text>加载中...</text>
+</view>

@@ -1,0 +1,9 @@
+{
+  "name": "user-decode-phone-v2",
+  "version": "1.0.0",
+  "description": "手机号解密云函数 - 零依赖版本",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

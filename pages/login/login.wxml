@@ -1,0 +1,22 @@
+<view class="login-container">
+  <!-- 官方头像选择按钮（替代原有的头像点击逻辑） -->
+  <button
+    class="avatar-wrapper"
+    open-type="chooseAvatar"
+    bind:chooseavatar="onChooseAvatar"
+  >
+    <image class="avatar" src="{{avatarUrl}}"></image>
+  </button>
+
+  <!-- 官方昵称输入框（支持微信昵称快捷填充） -->
+  <input
+    type="nickname"
+    class="nickname-input"
+    placeholder="请输入昵称"
+    bindinput="onNicknameInput"
+    value="{{nickName}}"
+  />
+
+  <!-- 保存信息按钮（写入数据库） -->
+  <button class="save-btn" bindtap="saveUserInfo">保存信息</button>
+</view>

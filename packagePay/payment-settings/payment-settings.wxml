@@ -1,0 +1,36 @@
+<!-- 支付设置页面结构 -->
+<view class="payment-settings-page">
+  <!-- 页面头部 -->
+  <view class="page-header">
+    <view class="header-left" bindtap="navigateBack">
+      <text class="back-icon">←</text>
+    </view>
+    <view class="header-title">支付设置</view>
+    <view class="header-right"></view>
+  </view>
+
+  <!-- 支付方式设置 -->
+  <view class="settings-section">
+    <view class="section-title">支付方式</view>
+    
+    <block wx:for="{{paymentMethods}}" wx:key="id">
+      <view class="setting-item">
+        <view class="item-info">
+          <image class="payment-icon" src="{{item.icon}}" mode="aspectFit"></image>
+          <text class="payment-name">{{item.name}}</text>
+        </view>
+        <view class="item-actions">
+          <radio value="{{item.id}}" checked="{{defaultPayment === item.id}}" bindchange="selectPayment" data-id="{{item.id}}"></radio>
+          <switch 
+            checked="{{item.enabled}}" 
+            bindchange="togglePayment" 
+            data-id="{{item.id}}"
+          ></switch>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <!-- 保存按钮 -->
+  <button class="save-btn" bindtap="saveSettings">保存设置</button>
+</view>

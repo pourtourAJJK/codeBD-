@@ -1,0 +1,145 @@
+/* 管理员登录页面样式 */
+
+/* 页面容器 */
+.login-container {
+  width: 100%;
+  height: 100vh;
+  background-color: #f5f7fa;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40rpx;
+}
+
+/* 登录表单包裹容器 */
+.login-form-wrapper {
+  width: 100%;
+  max-width: 500rpx;
+  background-color: #fff;
+  border-radius: 20rpx;
+  padding: 60rpx;
+  box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.1);
+}
+
+/* 登录标题 */
+.login-title {
+  text-align: center;
+  margin-bottom: 60rpx;
+}
+
+.title-text {
+  display: block;
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10rpx;
+}
+
+.subtitle-text {
+  display: block;
+  font-size: 28rpx;
+  color: #999;
+}
+
+/* 登录表单 */
+.login-form {
+  width: 100%;
+}
+
+/* 表单项 */
+.form-item {
+  margin-bottom: 40rpx;
+}
+
+/* 输入框包裹容器 */
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  background-color: #f8f8f8;
+  border-radius: 10rpx;
+  padding: 0 20rpx;
+  border: 1rpx solid #eee;
+  transition: all 0.3s ease;
+}
+
+.input-wrapper:focus-within {
+  border-color: #1989fa;
+  box-shadow: 0 0 0 5rpx rgba(25, 137, 250, 0.1);
+}
+
+/* 输入框图标 */
+.input-icon {
+  width: 32rpx;
+  height: 32rpx;
+  margin-right: 20rpx;
+  opacity: 0.5;
+}
+
+/* 表单输入框 */
+.form-input {
+  flex: 1;
+  height: 88rpx;
+  font-size: 32rpx;
+  color: #333;
+  background: transparent;
+}
+
+.form-input::placeholder {
+  color: #999;
+}
+
+/* 登录按钮 */
+.login-btn {
+  width: 100%;
+  height: 92rpx;
+  background-color: #1989fa;
+  color: #fff;
+  font-size: 34rpx;
+  font-weight: bold;
+  border-radius: 10rpx;
+  margin: 0;
+  padding: 0;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.login-btn:hover {
+  background-color: #167dc0;
+}
+
+.login-btn:active {
+  transform: scale(0.98);
+}
+
+/* 错误提示 */
+.error-tip {
+  font-size: 28rpx;
+  color: #ee0a24;
+  text-align: center;
+  margin-top: 20rpx;
+  padding: 10rpx 0;
+}
+
+/* 忘记密码 */
+.forgot-password {
+  text-align: center;
+  margin-top: 30rpx;
+}
+
+.forgot-text {
+  font-size: 28rpx;
+  color: #1989fa;
+  text-decoration: underline;
+}
+
+/* 版权信息 */
+.copyright {
+  text-align: center;
+  margin-top: 60rpx;
+}
+
+.copyright-text {
+  font-size: 24rpx;
+  color: #999;
+}

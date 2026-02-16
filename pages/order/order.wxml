@@ -1,0 +1,176 @@
+<!-- 订单列表页面 - 修复样式与功能 -->
+<view class="container">
+  <!-- 标签切换栏 -->
+  <view class="tab-bar">
+    <view 
+      class="tab-item {{activeTab === 'all' ? 'active' : ''}}" 
+      data-tab="all" 
+      bindtap="switchTab"
+    >
+      全部
+    </view>
+    <view 
+      class="tab-item {{activeTab === 'pending' ? 'active' : ''}}" 
+      data-tab="pending" 
+      bindtap="switchTab"
+    >
+      待支付
+    </view>
+    <view 
+      class="tab-item {{activeTab === 'paid' ? 'active' : ''}}" 
+      data-tab="paid" 
+      bindtap="switchTab"
+    >
+      已支付
+    </view>
+    <view 
+      class="tab-item {{activeTab === 'shipped' ? 'active' : ''}}" 
+      data-tab="shipped" 
+      bindtap="switchTab"
+    >
+      已发货
+    </view>
+    <view 
+      class="tab-item {{activeTab === 'completed' ? 'active' : ''}}" 
+      data-tab="completed" 
+      bindtap="switchTab"
+    >
+      已完成
+    </view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading">
+    <view class="loading-spinner"></view>
+    <text>加载中...</text>
+  </view>
+
+  <!-- 错误提示 -->
+  <view wx:if="{{errorMsg && errorMsg !== ''}}" class="error-tip">
+    {{errorMsg}}
+  </view>
+
+  <!-- 空订单提示 -->
+  <view wx:if="{{!loading && orders.length === 0}}" class="empty">
+    <view class="empty-icon">📦</view>
+    <text class="empty-text">暂无相关订单</text>
+    <button class="empty-btn" bindtap="goShopping">去购物</button>
+  </view>
+
+  <!-- 订单列表 - 图二风格的订单卡片 -->
+  <view wx:else class="order-list">
+    <view wx:for="{{orders}}" wx:key="orderId" class="order-card">
+      <!-- 店铺信息 -->
+      <view class="shop-info">
+        <text class="shop-name">硒养山泉</text>
+        <view class="order-status" style="color: {{item.statusColor}}">
+          {{item.statusText}}
+        </view>
+      </view>
+
+      <!-- 订单信息 -->
+      <view class="order-info">
+        <view class="info-row">
+          <text class="info-label">取单号</text>
+          <text class="info-value">{{item.orderId}}</text>
+        </view>
+        <view class="info-row">
+          <text class="info-label">下单时间</text>
+          <text class="info-value">{{item.createTime}}</text>
+        </view>
+      </view>
+
+      <!-- 商品列表 -->
+      <view class="product-list">
+        <view wx:for="{{item.items}}" wx:for-item="product" wx:key="productId" class="product-item">
+          <image 
+            class="product-img" 
+            src="{{product.cover_image}}" 
+            mode="widthFix"
+            bindtap="viewProductDetail"
+            data-productId="{{product.productId}}"
+          ></image>
+          <view class="product-info">
+            <text class="product-name">{{product.productName}}</text>
+            <text class="product-spec">{{product.spec || '默认规格'}}</text>
+            <view class="product-price-count">
+              <text class="product-price">{{item.formatPrice(product.price)}}</text>
+              <text class="product-count">x{{product.quantity}}</text>
+            </view>
+          </view>
+        </view>
+        <view wx:if="{{item.items.length > 1}}" class="product-more">
+          共{{item.productCount}}件商品
+        </view>
+      </view>
+
+      <!-- 金额信息 -->
+      <view class="amount-info">
+        <view class="amount-row">
+          <text class="amount-label">商品金额</text>
+          <text class="amount-value">{{item.formatPrice(item.totalPrice)}}</text>
+        </view>
+        <view class="amount-row">
+          <text class="amount-label">配送费</text>
+          <text class="amount-value">{{item.formatPrice(item.deliveryFee || 0)}}</text>
+        </view>
+        <view class="amount-total">
+          <text class="total-label">合计</text>
+          <text class="total-value">{{item.formatPrice(item.totalPrice + (item.deliveryFee || 0))}}</text>
+        </view>
+      </view>
+
+      <!-- 操作按钮 -->
+      <view class="action-buttons">
+        <!-- 管理按钮（所有状态都显示） -->
+        <button 
+          class="btn-secondary" 
+          bindtap="manageOrder"
+          data-orderId="{{item.orderId}}"
+        >
+          管理
+        </button>
+        
+        <!-- 待支付状态 -->
+        <button 
+          wx:if="{{item.status === 'pending'}}" 
+          class="btn-primary" 
+          bindtap="payOrder"
+          data-orderId="{{item.orderId}}"
+        >
+          去支付
+        </button>
+
+        <!-- 已支付待发货 -->
+        <button 
+          wx:if="{{item.status === 'paid'}}" 
+          class="btn-primary" 
+          bindtap="viewOrderDetail"
+          data-orderId="{{item.orderId}}"
+        >
+          查看详情
+        </button>
+
+        <!-- 已发货待收货 -->
+        <button 
+          wx:if="{{item.status === 'shipped'}}" 
+          class="btn-primary" 
+          bindtap="confirmReceipt"
+          data-orderId="{{item.orderId}}"
+        >
+          确认收货
+        </button>
+
+        <!-- 已完成/已取消 -->
+        <button 
+          wx:if="{{item.status === 'completed' || item.status === 'cancelled'}}" 
+          class="btn-primary" 
+          bindtap="viewOrderDetail"
+          data-orderId="{{item.orderId}}"
+        >
+          查看详情
+        </button>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,665 @@
+/* 商品详情页样式 */
+.detail-container {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding-bottom: 100rpx;
+}
+
+/* 顶部导航栏 */
+.top-nav-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 88rpx;
+  background-color: rgba(255, 255, 255, 0.95);
+  padding: 0 24rpx;
+  z-index: 100;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+}
+
+.nav-left, .nav-right {
+  width: 80rpx;
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-icon {
+  width: 40rpx;
+  height: 40rpx;
+}
+
+.nav-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333333;
+  flex: 1;
+  text-align: center;
+}
+
+/* 商品主视觉区：占满宽度的商品封面图 */
+.product-visual-section {
+  position: relative;
+  width: 100%;
+  margin-top: 0;
+  overflow: hidden;
+  /* 添加轻微阴影，提升视觉效果 */
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+}
+
+.product-cover {
+  width: 100%;
+  height: auto;
+  /* 添加过渡效果，提升用户体验 */
+  transition: transform 0.3s ease;
+}
+
+/* 图片悬停效果，提升交互体验 */
+.product-visual-section:hover .product-cover {
+  transform: scale(1.02);
+}
+
+/* 价格说明文本框样式 */
+.price-description {
+  background-color: #ffffff;
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+  /* 添加轻微阴影，提升视觉效果 */
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+  /* 添加圆角，提升美观度 */
+  border-radius: 8rpx;
+}
+
+.price-description-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 16rpx;
+}
+
+.price-description-content {
+  font-size: 24rpx;
+  color: #666666;
+  line-height: 40rpx;
+}
+
+.price-description-item {
+  margin-bottom: 16rpx;
+}
+
+.price-description-subtitle {
+  font-weight: 500;
+  color: #333333;
+  margin-bottom: 8rpx;
+  /* 保留首行缩进 */
+  text-indent: 48rpx;
+}
+
+.price-description-text {
+  color: #666666;
+  text-indent: 48rpx;
+}
+
+.promotion-tag {
+  position: absolute;
+  top: 20rpx;
+  left: 20rpx;
+  background-color: #ff4757;
+  color: #ffffff;
+  padding: 8rpx 16rpx;
+  border-radius: 16rpx;
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+/* 商品核心信息区 */
+.product-core-info {
+  background-color: #ffffff;
+  padding: 30rpx 24rpx;
+  margin-bottom: 20rpx;
+}
+
+/* 1. 商品名称：放大字号+加粗，强化主次 */
+.product-name {
+  font-weight: bold;
+  font-size: 29px; /* 比之前增大，突出名称 */
+  color: #333333;
+  margin: 10px 0 4px 0; /* 上下留白，避免贴边 */
+  line-height: 52rpx;
+}
+
+/* 2. 商品详情：缩小字号+浅色调，弱化辅助信息 */
+.product-detail {
+  font-size: 16px; /* 比名称小2个层级 */
+  font-weight: normal;
+  color: #999; /* 浅灰色，降低视觉权重 */
+  margin-bottom: 27px; /* 与下方价格拉开明显间距 */
+  line-height: 80rpx;
+}
+
+/* 商品价格区域 */
+.product-price-section {
+  margin-bottom: 12px; /* 与下方规格拉开明显间距 */
+  display: flex;
+  align-items: baseline;
+}
+
+/* 3. 商品价格：放大字号+醒目色，突出核心信息 */
+.current-price {
+  font-size: 53rpx; /* 放大字号，突出价格 */
+  font-weight: bold;
+  color: #ff4444; /* 红色突出价格 */
+  margin-right: 20rpx;
+}
+
+/* 划横线的原价 */
+.original-price {
+  font-size: 28rpx;
+  color: #999999;
+  text-decoration: line-through;
+}
+
+/* 商品库存显示样式 */
+.product-stock {
+  font-size: 28rpx;
+  color: #666666;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.stock-label {
+  margin-right: 8rpx;
+}
+
+.stock-value {
+  color: #ff4444;
+  font-weight: 500;
+}
+
+/* 4. 规格区域：统一间距，与下方图文详情拉开间距 */
+.product-spec-section {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px; /* 与下方图文详情拉开间距 */
+  padding: 16rpx 0;
+  border-bottom: 2rpx solid #f0f0f0;
+}
+
+.spec-label {
+  font-size: 28rpx;
+  color: #666666;
+  margin-right: 16rpx;
+  min-width: 80rpx;
+}
+
+.spec-value {
+  font-size: 28rpx;
+  color: #333333;
+  flex: 1;
+}
+
+/* 商品分类区域 */
+.product-category-section {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 0;
+}
+
+.category-label {
+  font-size: 28rpx;
+  color: #666666;
+  margin-right: 16rpx;
+  min-width: 80rpx;
+}
+
+.category-value {
+  font-size: 28rpx;
+  color: #333333;
+  flex: 1;
+}
+
+/* 图文详情区域 */
+.product-detail-section {
+  background-color: #ffffff;
+  margin-bottom: 20rpx;
+  padding: 0 24rpx 30rpx;
+}
+
+.section-title {
+  font-size: 28rpx;
+  font-weight: 400;
+  color: #333333;
+  padding: 24rpx 0;
+  border-bottom: 2rpx solid #f0f0f0;
+  margin-bottom: 24rpx;
+  text-align: center;
+}
+
+.tuwen-detail {
+  width: 100%;
+}
+
+.tuwen-detail rich-text {
+  width: 100%;
+}
+
+.tuwen-detail img {
+  max-width: 100% !important;
+  height: auto !important;
+  margin: 16rpx 0;
+}
+
+/* 图文详情图片样式 */
+/* 样式说明：
+  1. 宽度100%，自适应高度
+  2. 圆角8px（8rpx）
+  3. 间距10px（20rpx）
+  4. 背景色为浅灰色，提升加载时的视觉体验
+  5. 溢出隐藏，确保圆角效果
+*/
+.detail-image {
+  width: 100%;
+  height: auto;
+  border-radius: 8rpx;
+  margin-bottom: 20rpx;
+  overflow: hidden;
+  background-color: #f9f9f9;
+  /* 添加过渡效果，提升用户体验 */
+  transition: opacity 0.3s ease;
+}
+
+/* 无图片提示样式 */
+.no-image {
+  width: 100%;
+  height: 200rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f9f9f9;
+  border-radius: 8rpx;
+  margin-top: 10rpx;
+  /* 添加轻微阴影，提升视觉效果 */
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+}
+
+.no-image-text {
+  font-size: 24rpx;
+  color: #999;
+  /* 添加文字阴影，提升可读性 */
+  text-shadow: 0 1rpx 2rpx rgba(255, 255, 255, 0.8);
+}
+
+/* 富文本样式 */
+.detail-rich-text {
+  width: 100%;
+  min-height: 200rpx;
+  /* 添加内边距，提升阅读体验 */
+  padding: 10rpx 0;
+}
+
+/* 富文本内图片样式 */
+.detail-rich-text img {
+  /* 宽度100%，适配移动端 */
+  width: 100% !important;
+  /* 自适应高度 */
+  height: auto !important;
+  /* 圆角8px */
+  border-radius: 8rpx !important;
+  /* 间距10px */
+  margin: 10rpx 0 !important;
+  /* 确保图片不超出容器 */
+  max-width: 100% !important;
+  /* 避免图片被拉伸 */
+  object-fit: contain !important;
+}
+
+/* 富文本内段落样式 */
+.detail-rich-text p {
+  /* 行高1.5，提升阅读体验 */
+  line-height: 1.5 !important;
+  /* 段落间距 */
+  margin: 10rpx 0 !important;
+  /* 字体大小 */
+  font-size: 28rpx !important;
+  /* 字体颜色 */
+  color: #333 !important;
+}
+
+/* 库存显示样式优化 */
+.product-stock {
+  font-size: 28rpx;
+  color: #666666;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  /* 添加轻微间距，提升视觉效果 */
+  padding: 8rpx 0;
+}
+
+.stock-label {
+  margin-right: 8rpx;
+  /* 字体加粗，提升辨识度 */
+  font-weight: 500;
+}
+
+.stock-value {
+  color: #ff4444;
+  font-weight: 600;
+  /* 添加轻微文字阴影，提升视觉效果 */
+  text-shadow: 0 1rpx 2rpx rgba(255, 200, 200, 0.5);
+}
+
+.no-detail {
+  text-align: center;
+  color: #999999;
+  font-size: 28rpx;
+  padding: 40rpx 0;
+}
+
+/* 服务信息区 */
+.service-info-section {
+  background-color: #ffffff;
+  margin-bottom: 20rpx;
+}
+
+.service-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx;
+  border-bottom: 2rpx solid #f0f0f0;
+}
+
+.service-item:last-child {
+  border-bottom: none;
+}
+
+.service-label {
+  font-size: 28rpx;
+  color: #333333;
+  margin-right: 20rpx;
+  width: 80rpx;
+}
+
+.service-content {
+  flex: 1;
+  font-size: 28rpx;
+  color: #666666;
+}
+
+.service-icon {
+  width: 24rpx;
+  height: 24rpx;
+  margin-left: 16rpx;
+}
+
+/* 底部固定操作栏 */
+.bottom-action-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  background-color: #ffffff;
+  padding: 20rpx 24rpx;
+  box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.05);
+  z-index: 100;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+}
+
+/* 左侧导航按钮 */
+.nav-buttons {
+  display: flex;
+  margin-right: 10rpx;
+}
+
+.nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 70rpx;
+  height: 80rpx;
+  background-color: #F9F9F9;
+  border-radius: 8rpx;
+  margin-right: 8rpx;
+}
+
+.nav-btn:last-child {
+  margin-right: 0;
+}
+
+.nav-btn-icon {
+  width: 40rpx;
+  height: 40rpx;
+  margin-bottom: 4rpx;
+}
+
+.nav-btn-text {
+  font-size: 20rpx;
+  color: #666666;
+}
+
+/* 右侧操作按钮 */
+.action-buttons {
+  flex: 1;
+  display: flex;
+}
+
+.action-btn {
+  flex: 1;
+  height: 80rpx;
+  line-height: 80rpx;
+  text-align: center;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  margin-left: 10rpx;
+}
+
+.action-btn:first-child {
+  margin-left: 0;
+}
+
+.add-cart-btn {
+  background-color: #ff6b81;
+  color: #ffffff;
+}
+
+.buy-now-btn {
+  background-color: #ff4757;
+  color: #ffffff;
+}
+
+/* 规格选择弹窗 */
+.spec-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+  background-color: #ffffff;
+  border-radius: 30rpx 30rpx 0 0;
+  max-height: 80vh;
+  z-index: 1000;
+}
+
+/* 弹窗头部 */
+.modal-header {
+  display: flex;
+  align-items: center;
+  padding: 30rpx;
+  border-bottom: 2rpx solid #f0f0f0;
+  position: relative;
+}
+
+.modal-product-image {
+  width: 200rpx;
+  height: 200rpx;
+  border-radius: 12rpx;
+  margin-right: 24rpx;
+}
+
+.modal-price-section {
+  flex: 1;
+}
+
+.modal-current-price {
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #ff4757;
+  margin-bottom: 16rpx;
+  display: block;
+}
+
+.modal-stock {
+  font-size: 26rpx;
+  color: #666666;
+}
+
+.close-btn {
+  position: absolute;
+  top: 30rpx;
+  right: 30rpx;
+  font-size: 50rpx;
+  color: #999999;
+}
+
+/* 数量选择 */
+.quantity-selector {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30rpx;
+  border-bottom: 12rpx solid #f5f5f5;
+}
+
+.quantity-title {
+  font-size: 28rpx;
+  color: #333333;
+}
+
+.quantity-control {
+  display: flex;
+  align-items: center;
+}
+
+.quantity-btn {
+  width: 60rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+  font-size: 36rpx;
+  color: #333333;
+}
+
+.quantity-btn.minus {
+  border-radius: 30rpx 0 0 30rpx;
+}
+
+.quantity-btn.plus {
+  border-radius: 0 30rpx 30rpx 0;
+}
+
+.quantity-btn.disabled {
+  color: #cccccc;
+}
+
+.quantity-value, .quantity-input {
+  width: 80rpx;
+  height: 60rpx;
+  text-align: center;
+  font-size: 28rpx;
+  color: #333333;
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+}
+
+.quantity-input {
+  border-radius: 0;
+  line-height: 60rpx;
+}
+
+/* 操作按钮 */
+.modal-actions {
+  padding: 30rpx;
+  display: flex;
+  gap: 20rpx;
+}
+
+.modal-add-cart-btn,
+.modal-buy-now-btn {
+  flex: 1;
+  height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  margin: 0;
+  line-height: normal;
+}
+
+.modal-add-cart-btn {
+  background-color: #ff6b81;
+  color: #ffffff;
+}
+
+.modal-buy-now-btn {
+  background-color: #ff4757;
+  color: #ffffff;
+}
+
+
+
+/* 动画效果 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(50rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-content {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+/* 确保容器有高度，能显示内容 */
+.tuwen-detail-container {
+  width: 100%;
+  padding: 0 15px;
+  box-sizing: border-box;
+  /* 确保容器有高度，能显示内容 */
+  overflow: hidden;
+}

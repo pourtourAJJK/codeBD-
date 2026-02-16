@@ -1,0 +1,19 @@
+{
+  "name": "getSystemConfig",
+  "version": "1.0.0",
+  "description": "获取系统配置的云函数",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  },
+  "keywords": [
+    "cloudfunction",
+    "wechat",
+    "system-config"
+  ],
+  "author": "",
+  "license": "ISC"
+}

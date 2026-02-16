@@ -1,0 +1,16 @@
+<view class="nav-bar" style="height: {{navBarHeight}}px; background-color: {{bgColor}};">
+  <!-- 状态栏占位 -->
+  <view class="status-bar" style="height: {{statusBarHeight}}px;"></view>
+  
+  <!-- 导航栏内容 -->
+  <view class="nav-content" style="height: {{navContentHeight}}px;">
+    <view class="location-container" bindtap="onLocationClick">
+      <image class="location-icon" src="/assets/images/location.svg" mode="aspectFit"></image>
+      <text class="location-text" style="color: {{titleColor}};">{{locationText}}</text>
+      <image class="arrow-icon" src="/assets/images/arrow.svg" mode="aspectFit"></image>
+    </view>
+    <view class="nav-title" style="font-size: {{titleSize}}px; color: {{titleColor}};">
+      {{navTitle}}
+    </view>
+  </view>
+</view>

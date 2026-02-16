@@ -1,0 +1,47 @@
+<!-- 地址列表页 -->
+<view class="address-list">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <view class="back-btn" bindtap="navigateBack">
+      <image src="/images/back-arrow.png" mode="aspectFit"></image>
+    </view>
+    <view class="page-title">我的地址</view>
+    <view class="right-btn" bindtap="navigateToAddAddress">
+      <image src="/images/add.png" mode="aspectFit"></image>
+    </view>
+  </view>
+
+  <!-- 地址列表 -->
+  <view class="address-items">
+    <view class="address-item" wx:for="{{addresses}}" wx:key="_id" bindtap="selectAddress" data-id="{{item._id}}">
+      <view class="address-header">
+        <view class="user-info">
+          <text class="user-name">{{item.name}}</text>
+          <text class="user-phone">{{item.phone}}</text>
+        </view>
+        <view class="default-tag" wx:if="{{item.isDefault}}">默认</view>
+      </view>
+      <view class="address-content">
+        {{item.province}}{{item.city}}{{item.district}}{{item.detail}}
+      </view>
+      <view class="address-actions">
+        <view class="action-btn edit-btn" bindtap="navigateToEditAddress" data-id="{{item._id}}">编辑</view>
+        <view class="action-btn delete-btn" bindtap="deleteAddress" data-id="{{item._id}}">删除</view>
+        <view class="action-btn default-btn" wx:if="!{{item.isDefault}}" bindtap="setDefaultAddress" data-id="{{item._id}}">设为默认</view>
+      </view>
+    </view>
+
+    <!-- 空地址提示 -->
+    <view class="empty-address" wx:if="{{addresses.length === 0}}">
+      <image src="/images/empty-address.png" mode="aspectFit"></image>
+      <view class="empty-text">您还没有添加收货地址</view>
+      <button class="add-btn" bindtap="navigateToAddAddress">添加收货地址</button>
+    </view>
+  </view>
+
+  <!-- 添加地址按钮 -->
+  <button class="add-address-btn" wx:if="{{addresses.length > 0}}" bindtap="navigateToAddAddress">
+    <image src="/images/add-white.png" mode="aspectFit"></image>
+    添加新地址
+  </button>
+</view>

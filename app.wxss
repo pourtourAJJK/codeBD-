@@ -1,0 +1,447 @@
+/* app.wxss - 微信小程序全局样式文件 */
+
+/* === 全局CSS变量定义 === */
+:root {
+  /* 主色调 */
+  --color-primary: #1296db;      /* 主色 - 蓝色 */
+  --color-primary-dark: #0e77b3; /* 主色-深 */
+  --color-primary-light: #4dabf5; /* 主色-浅 */
+  
+  /* 辅助色 */
+  --color-success: #52c41a;      /* 成功 - 绿色 */
+  --color-warning: #faad14;      /* 警告 - 橙色 */
+  --color-error: #ff4d4f;        /* 错误 - 红色 */
+  --color-info: #1890ff;         /* 信息 - 蓝色 */
+  
+  /* 中性色 */
+  --color-text-primary: #333333; /* 主要文字 */
+  --color-text-secondary: #666666; /* 次要文字 */
+  --color-text-disabled: #999999; /* 禁用文字 */
+  --color-text-placeholder: #cccccc; /* 占位文字 */
+  
+  /* 背景色 */
+  --color-bg-primary: #ffffff;   /* 主背景色 */
+  --color-bg-secondary: #f5f5f5; /* 次要背景色 */
+  --color-bg-disabled: #f5f5f5;  /* 禁用背景色 */
+  --color-bg-hover: #f0f0f0;     /* 悬停背景色 */
+  
+  /* 边框色 */
+  --color-border: #e0e0e0;       /* 边框色 */
+  --color-border-light: #f0f0f0; /* 轻边框色 */
+  --color-border-dark: #d0d0d0;  /* 深边框色 */
+  
+  /* 阴影 */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.15);
+  
+  /* 圆角 */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-full: 9999px;
+  
+  /* 间距 */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+}
+
+/* === 全局重置和基础样式 === */
+page, view, text, image, button, input, select, textarea {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+page {
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* === 通用容器 === */
+.container {
+  width: 100%;
+  padding: var(--spacing-md);
+}
+
+.container-fluid {
+  width: 100%;
+  padding: 0;
+}
+
+/* === 文本样式 === */
+.text-primary {
+  color: var(--color-primary);
+}
+
+.text-secondary {
+  color: var(--color-text-secondary);
+}
+
+.text-success {
+  color: var(--color-success);
+}
+
+.text-warning {
+  color: var(--color-warning);
+}
+
+.text-error {
+  color: var(--color-error);
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.font-bold {
+  font-weight: bold;
+}
+
+.font-normal {
+  font-weight: normal;
+}
+
+.font-sm {
+  font-size: 12px;
+}
+
+.font-md {
+  font-size: 14px;
+}
+
+.font-lg {
+  font-size: 16px;
+}
+
+.font-xl {
+  font-size: 18px;
+}
+
+/* === 边距和填充 === */
+.mt-xs, .my-xs {
+  margin-top: var(--spacing-xs);
+}
+
+.mb-xs, .my-xs {
+  margin-bottom: var(--spacing-xs);
+}
+
+.ml-xs, .mx-xs {
+  margin-left: var(--spacing-xs);
+}
+
+.mr-xs, .mx-xs {
+  margin-right: var(--spacing-xs);
+}
+
+.pt-xs, .py-xs {
+  padding-top: var(--spacing-xs);
+}
+
+.pb-xs, .py-xs {
+  padding-bottom: var(--spacing-xs);
+}
+
+.pl-xs, .px-xs {
+  padding-left: var(--spacing-xs);
+}
+
+.pr-xs, .px-xs {
+  padding-right: var(--spacing-xs);
+}
+
+.mt-sm, .my-sm {
+  margin-top: var(--spacing-sm);
+}
+
+.mb-sm, .my-sm {
+  margin-bottom: var(--spacing-sm);
+}
+
+.ml-sm, .mx-sm {
+  margin-left: var(--spacing-sm);
+}
+
+.mr-sm, .mx-sm {
+  margin-right: var(--spacing-sm);
+}
+
+.pt-sm, .py-sm {
+  padding-top: var(--spacing-sm);
+}
+
+.pb-sm, .py-sm {
+  padding-bottom: var(--spacing-sm);
+}
+
+.pl-sm, .px-sm {
+  padding-left: var(--spacing-sm);
+}
+
+.pr-sm, .px-sm {
+  padding-right: var(--spacing-sm);
+}
+
+.mt-md, .my-md {
+  margin-top: var(--spacing-md);
+}
+
+.mb-md, .my-md {
+  margin-bottom: var(--spacing-md);
+}
+
+.ml-md, .mx-md {
+  margin-left: var(--spacing-md);
+}
+
+.mr-md, .mx-md {
+  margin-right: var(--spacing-md);
+}
+
+.pt-md, .py-md {
+  padding-top: var(--spacing-md);
+}
+
+.pb-md, .py-md {
+  padding-bottom: var(--spacing-md);
+}
+
+.pl-md, .px-md {
+  padding-left: var(--spacing-md);
+}
+
+.pr-md, .px-md {
+  padding-right: var(--spacing-md);
+}
+
+/* === 边框和圆角 === */
+.border {
+  border: 1px solid var(--color-border);
+}
+
+.border-top {
+  border-top: 1px solid var(--color-border);
+}
+
+.border-bottom {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.border-left {
+  border-left: 1px solid var(--color-border);
+}
+
+.border-right {
+  border-right: 1px solid var(--color-border);
+}
+
+.rounded-sm {
+  border-radius: var(--border-radius-sm);
+}
+
+.rounded-md {
+  border-radius: var(--border-radius-md);
+}
+
+.rounded-lg {
+  border-radius: var(--border-radius-lg);
+}
+
+.rounded-full {
+  border-radius: var(--border-radius-full);
+}
+
+/* === 阴影 === */
+.shadow-sm {
+  box-shadow: var(--shadow-sm);
+}
+
+.shadow-md {
+  box-shadow: var(--shadow-md);
+}
+
+.shadow-lg {
+  box-shadow: var(--shadow-lg);
+}
+
+/* === 布局工具类 === */
+.flex {
+  display: flex;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.justify-start {
+  justify-content: flex-start;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-end {
+  justify-content: flex-end;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.justify-around {
+  justify-content: space-around;
+}
+
+.align-start {
+  align-items: flex-start;
+}
+
+.align-center {
+  align-items: center;
+}
+
+.align-end {
+  align-items: flex-end;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+/* === 显示和隐藏 === */
+.hidden {
+  display: none;
+}
+
+.invisible {
+  visibility: hidden;
+}
+
+/* === 常用组件样式 === */
+
+/* 卡片 */
+.card {
+  background-color: var(--color-bg-primary);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+/* 按钮基础样式 */
+.btn {
+  display: inline-block;
+  padding: 8px 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  border-radius: var(--border-radius-sm);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+}
+
+.btn-primary:active {
+  background-color: var(--color-primary-dark);
+}
+
+.btn-default {
+  background-color: white;
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+}
+
+.btn-default:active {
+  background-color: var(--color-bg-hover);
+}
+
+/* 输入框基础样式 */
+.input {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+  background-color: white;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  transition: all 0.3s;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+/* 分隔线 */
+.divider {
+  height: 1px;
+  background-color: var(--color-border);
+  margin: var(--spacing-md) 0;
+}
+
+/* 列表项 */
+.list-item {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-md);
+  background-color: var(--color-bg-primary);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.list-item:last-child {
+  border-bottom: none;
+}
+
+/* 加载动画占位符 */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--spacing-lg) 0;
+}
+
+/* 错误提示 */
+.error-message {
+  color: var(--color-error);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl) 0;
+  color: var(--color-text-disabled);
+}
+
+.empty-state__text {
+  margin-top: var(--spacing-md);
+  font-size: 14px;
+}

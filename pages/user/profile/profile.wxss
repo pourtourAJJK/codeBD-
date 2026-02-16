@@ -1,0 +1,287 @@
+/* pages/user/profile/profile.wxss */
+.profile-container {
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+.profile-header {
+  background-color: #fff;
+  padding: 30rpx;
+  border-bottom: 1rpx solid #e8e8e8;
+}
+
+.profile-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.profile-content {
+  margin-top: 20rpx;
+  background-color: #fff;
+  padding: 30rpx;
+}
+
+.profile-item {
+  display: flex;
+  align-items: center;
+  padding: 30rpx 0;
+  border-bottom: 1rpx solid #e8e8e8;
+}
+
+.profile-item:last-child {
+  border-bottom: none;
+}
+
+.item-label {
+  font-size: 32rpx;
+  color: #333;
+  width: 150rpx;
+}
+
+.avatar-container {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.avatar-button {
+  padding: 0;
+  margin: 0;
+  background: none;
+  border: none;
+}
+
+.avatar-button::after {
+  border: none;
+}
+
+.avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+}
+
+.nickname-container {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.nickname-input {
+  font-size: 32rpx;
+  color: #666;
+  text-align: right;
+  width: 100%;
+}
+
+.save-button {
+  margin-top: 60rpx;
+  background-color: #1989fa;
+  color: #fff;
+  font-size: 32rpx;
+  border-radius: 10rpx;
+}
+
+.save-button::after {
+  border: none;
+}
+/* 编辑资料页 WXSS */
+.page-container {
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+/* 导航栏 */
+.nav-bar {
+  display: flex;
+  align-items: center;
+  padding: 15rpx 20rpx;
+  background-color: #fff;
+  border-bottom: 1rpx solid #eee;
+}
+.nav-back {
+  font-size: 36rpx;
+  margin-right: 20rpx;
+}
+.nav-title {
+  font-size: 32rpx;
+  font-weight: 500;
+  flex: 1;
+  text-align: center;
+}
+
+/* 模块样式 */
+.section {
+  background-color: #fff;
+  margin-top: 20rpx;
+}
+.section-title {
+  font-size: 28rpx;
+  color: #999;
+  padding: 20rpx;
+  border-bottom: 1rpx solid #eee;
+}
+
+/* 信息条目（和图二一致） */
+.info-item {
+  display: flex;
+  align-items: center;
+  padding: 20rpx;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+.info-label {
+  font-size: 30rpx;
+  width: 120rpx;
+}
+.info-content {
+  flex: 1;
+  text-align: right;
+}
+.avatar-img {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+}
+.info-input {
+  flex: 1;
+  text-align: right;
+  font-size: 30rpx;
+  color: #333;
+}
+.info-select {
+  flex: 1;
+  text-align: right;
+  font-size: 30rpx;
+  color: #333;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+.arrow {
+  font-size: 24rpx;
+  color: #999;
+  margin-left: 10rpx;
+}
+.info-content-static {
+  flex: 1;
+  text-align: right;
+  font-size: 30rpx;
+  color: #333;
+}
+
+/* 保存按钮 */
+.save-btn {
+  margin: 40rpx 20rpx;
+  padding: 15rpx 0;
+  background-color: #4cd964;
+  color: #fff;
+  font-size: 32rpx;
+  border-radius: 10rpx;
+}
+/* 编辑资料页 WXSS - 新增验证码相关样式 */
+/* 验证码条目样式 */
+.verify-code-item {
+  display: flex;
+  align-items: center;
+  padding: 20rpx;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+.verify-input {
+  flex: 1;
+  text-align: right;
+  padding-right: 20rpx;
+}
+/* 获取验证码按钮样式 */
+.get-code-btn {
+  width: 200rpx;
+  padding: 10rpx 0;
+  font-size: 24rpx;
+  background-color: #4cd964;
+  color: #fff;
+  border-radius: 8rpx;
+}
+/* 按钮不可点击状态 */
+.btn-disabled {
+  background-color: #999 !important;
+  color: #eee !important;
+}
+
+/* 自定义生日选择器样式 */
+.picker-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  z-index: 1000;
+}
+
+/* 遮罩层 */
+.picker-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* 选择器内容 */
+.picker-content {
+  background-color: #fff;
+  border-top-left-radius: 20rpx;
+  border-top-right-radius: 20rpx;
+  position: relative;
+  z-index: 1;
+}
+
+/* 选择器标题栏 */
+.picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx;
+  border-bottom: 1rpx solid #eee;
+}
+
+.picker-cancel, .picker-confirm {
+  font-size: 32rpx;
+  color: #999;
+  padding: 10rpx 20rpx;
+}
+
+.picker-confirm {
+  color: #4cd964;
+}
+
+.picker-title {
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #333;
+}
+
+/* 选择器滚轮容器 */
+.picker-wheel-container {
+  height: 400rpx;
+  overflow: hidden;
+}
+
+/* 选择器滚轮 */
+.picker-wheel {
+  width: 100%;
+  height: 400rpx;
+}
+
+/* 滚轮选项 */
+.picker-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 80rpx;
+  font-size: 32rpx;
+  color: #333;
+}

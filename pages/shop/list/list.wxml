@@ -1,0 +1,68 @@
+<!-- 商品列表页结构 -->
+<!-- 加载动画组件 -->
+<loading visible="{{isLoading}}"></loading>
+<view class="list-container">
+  <!-- 搜索栏（保留） -->
+  <view class="search-container">
+    <view class="search-bar" bindtap="navigateToSearch">
+      <image class="search-icon" src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/搜索.png"></image>
+      <text class="search-placeholder">搜索商品</text>
+    </view>
+  </view>
+
+  <!-- 主要内容区域（保留） -->
+  <view class="content-wrapper">
+    <!-- 左侧分类筛选（搜索时隐藏） -->
+    <view class="category-sidebar" wx:if="{{!isSearching}}">
+      <scroll-view scroll-y class="category-scroll">
+        <view 
+          wx:for="{{categories}}" 
+          wx:key="id"
+          class="category-item {{activeCategory === item.id ? 'active' : ''}}"
+          data-category="{{item.id}}"
+          bindtap="onCategoryChange"
+        >
+          {{item.name}}
+        </view>
+      </scroll-view>
+    </view>
+
+    <!-- 右侧商品展示（单列列表） -->
+    <view class="product-container {{isSearching ? 'full-width' : ''}}">
+      <!-- 分类名称显示区域（搜索时隐藏） -->
+      <view class="category-title" wx:if="{{!isSearching}}">{{currentCategoryName}}</view>
+
+      <!-- 商品列表（核心修改：单列布局） -->
+      <scroll-view 
+        scroll-y 
+        class="product-scroll" 
+        bindscrolltolower="onReachBottom" 
+        enable-back-to-top="true"
+      >
+        <!-- 单列商品列表：直接遍历products，无需分组 -->
+        <view class="product-list">
+          <view 
+            wx:for="{{products}}" 
+            wx:key="productId"  
+            class="product-item"
+            bindtap="onProductClick"
+            data-productid="{{item.productId}}"
+          >
+            <image class="product-image" src="{{item.cover_image || ''}}" mode="aspectFill"></image>
+            <view class="product-info">
+              <text class="product-name">{{item.name || ''}}</text>
+              <text class="product-price">¥{{item.price || 0}}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 加载更多/空状态（保留） -->
+        <view class="no-more" wx:if="{{!isLoading && !hasMore && products.length > 0}}">没有更多商品了</view>
+        <view class="empty-state" wx:if="{{!isLoading && products.length === 0}}">
+          <image class="empty-icon" src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/关于.png"></image>
+          <text class="empty-text">{{emptyText || '暂无商品'}}</text>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+</view>

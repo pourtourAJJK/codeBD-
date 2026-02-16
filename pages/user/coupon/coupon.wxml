@@ -1,0 +1,129 @@
+<!-- 优惠券页面 -->
+<view class="coupon-container">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <view class="header-left" bindtap="navigateBack">
+      <image class="back-icon" src="/assets/images/back.png" mode="aspectFit"></image>
+    </view>
+    <view class="header-title">我的优惠券</view>
+    <view class="header-right"></view>
+  </view>
+
+  <!-- Tab分类 -->
+  <view class="coupon-tabs">
+    <view 
+      class="tab-item {{activeTab === 'available' ? 'active' : ''}}"
+      bindtap="switchTab" 
+      data-tab="available"
+    >
+      <view class="tab-text">可用</view>
+      <view class="tab-badge" wx:if="availableCount > 0">{{availableCount}}</view>
+    </view>
+    <view 
+      class="tab-item {{activeTab === 'used' ? 'active' : ''}}"
+      bindtap="switchTab" 
+      data-tab="used"
+    >
+      <view class="tab-text">已使用</view>
+    </view>
+    <view 
+      class="tab-item {{activeTab === 'expired' ? 'active' : ''}}"
+      bindtap="switchTab" 
+      data-tab="expired"
+    >
+      <view class="tab-text">已过期</view>
+    </view>
+  </view>
+
+  <!-- 优惠券列表 -->
+  <view class="coupon-list">
+    <block wx:for="{{coupons}}" wx:key="couponId">
+      <!-- 可用优惠券 -->
+      <view class="coupon-item available" wx:if="item.status === 'available'" bindtap="showCouponDetail" data-coupon="{{item}}">
+        <view class="coupon-left">
+          <view class="coupon-price">
+            <text class="price-symbol">¥</text>
+            <text class="price-value">{{item.value}}</text>
+            <text class="price-unit" wx:if="item.type === 'full_reduction'">满{{item.minOrderAmount}}可用</text>
+          </view>
+          <view class="coupon-name">{{item.name}}</view>
+        </view>
+        <view class="coupon-right">
+          <view class="coupon-validity">有效期至 {{item.expireDate}}</view>
+          <view class="coupon-type" wx:if="item.type === 'discount'">
+            <text class="type-tag">折扣券</text>
+          </view>
+          <view class="coupon-type" wx:elif="item.type === 'full_reduction'">
+            <text class="type-tag">满减券</text>
+          </view>
+          <view class="coupon-type" wx:else>
+            <text class="type-tag">现金券</text>
+          </view>
+        </view>
+        <view class="coupon-line"></view>
+        <view class="coupon-corner"></view>
+      </view>
+
+      <!-- 已使用优惠券 -->
+      <view class="coupon-item used" wx:elif="item.status === 'used'" bindtap="showCouponDetail" data-coupon="{{item}}">
+        <view class="coupon-left">
+          <view class="coupon-price">
+            <text class="price-symbol">¥</text>
+            <text class="price-value">{{item.value}}</text>
+          </view>
+          <view class="coupon-name">{{item.name}}</view>
+        </view>
+        <view class="coupon-right">
+          <view class="coupon-validity">使用于 {{item.useDate}}</view>
+          <view class="coupon-used-tag">已使用</view>
+        </view>
+        <view class="coupon-line"></view>
+        <view class="coupon-corner"></view>
+      </view>
+
+      <!-- 已过期优惠券 -->
+      <view class="coupon-item expired" wx:elif="item.status === 'expired'" bindtap="showCouponDetail" data-coupon="{{item}}">
+        <view class="coupon-left">
+          <view class="coupon-price">
+            <text class="price-symbol">¥</text>
+            <text class="price-value">{{item.value}}</text>
+          </view>
+          <view class="coupon-name">{{item.name}}</view>
+        </view>
+        <view class="coupon-right">
+          <view class="coupon-validity">有效期至 {{item.expireDate}}</view>
+          <view class="coupon-expired-tag">已过期</view>
+        </view>
+        <view class="coupon-line"></view>
+        <view class="coupon-corner"></view>
+      </view>
+    </block>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="coupons.length === 0">
+      <image class="empty-icon" src="/assets/images/empty-coupon.png" mode="aspectFit"></image>
+      <view class="empty-text">
+        {{activeTab === 'available' ? '暂无可用优惠券' : activeTab === 'used' ? '暂无已使用优惠券' : '暂无已过期优惠券'}}
+      </view>
+    </view>
+  </view>
+
+  <!-- 领券中心入口 -->
+  <view class="receive-coupons" wx:if="activeTab === 'available'">
+    <view class="receive-btn" bindtap="navigateToReceiveCoupons">
+      <text class="receive-text">去领券中心</text>
+      <image class="arrow-icon" src="/assets/images/arrow-right.png" mode="aspectFit"></image>
+    </view>
+  </view>
+
+  <!-- 优惠券使用说明 -->
+  <view class="coupon-instructions">
+    <view class="instructions-title">使用说明</view>
+    <view class="instructions-list">
+      <view class="instruction-item">1. 优惠券可在提交订单时选择使用</view>
+      <view class="instruction-item">2. 每张优惠券仅限使用一次</view>
+      <view class="instruction-item">3. 优惠券不可叠加使用</view>
+      <view class="instruction-item">4. 优惠券过期后将无法使用</view>
+    </view>
+  </view>
+</view>

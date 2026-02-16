@@ -1,0 +1,13 @@
+<!--pages/login/auth/auth.wxml-->
+<view class="container">
+  <view class="header">
+    <image class="logo" src="/assets/logo.png" mode="aspectFit"></image>
+    <view class="brand-title">富硒地带</view>
+    <view class="slogan">富硒地带 好物到家</view>
+  </view>
+
+  <view class="bottom-section">
+    <button class="auth-btn" bindtap="handleAuthorize">授权登录</button>
+    <view class="tips">授权登录后我们将为您提供更好的服务</view>
+  </view>
+</view>

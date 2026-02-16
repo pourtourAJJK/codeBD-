@@ -1,0 +1,67 @@
+<!-- 预约送水页面结构 -->
+<view class="reserve-page">
+  <!-- 页面头部 -->
+  <view class="page-header">
+    <view class="header-left" bindtap="onBackHome">
+      <text class="back-icon">←</text>
+    </view>
+    <view class="header-title">预约送水</view>
+    <view class="header-right"></view>
+  </view>
+
+  <!-- 预约信息表单 -->
+  <view class="form-container">
+    <!-- 日期选择 -->
+    <view class="form-item">
+      <text class="form-label">预约日期</text>
+      <picker mode="date" value="{{selectedDate}}" bindchange="onDateChange" start="{{selectedDate}}">
+        <view class="picker-content">
+          {{selectedDate || '请选择日期'}}
+        </view>
+      </picker>
+    </view>
+
+    <!-- 时间段选择 -->
+    <view class="form-item">
+      <text class="form-label">预约时间</text>
+      <view class="time-slots">
+        <block wx:for="{{timeSlots}}" wx:key="id">
+          <view class="time-slot" 
+                data-id="{{item.id}}" 
+                bindtap="onTimeSlotSelect"
+                class="{{selectedTimeSlot === item.id ? 'selected' : ''}}"
+                wx:if="{{item.available}}">
+            {{item.label}}
+          </view>
+          <view class="time-slot disabled" wx:else>
+            {{item.label}}
+          </view>
+        </block>
+      </view>
+    </view>
+
+    <!-- 配送地址 -->
+    <view class="form-item" wx:if="{{address}}">
+      <text class="form-label">配送地址</text>
+      <view class="address-info">
+        <text class="address-receiver">{{address.receiver}} {{address.phone}}</text>
+        <text class="address-detail">{{address.address}}</text>
+      </view>
+    </view>
+
+    <!-- 备注信息 -->
+    <view class="form-item">
+      <text class="form-label">备注</text>
+      <textarea class="notes-input" 
+                placeholder="请输入备注信息（选填）" 
+                value="{{notes}}" 
+                bindinput="onNotesInput"
+                maxlength="200"></textarea>
+    </view>
+
+    <!-- 提交按钮 -->
+    <view class="submit-btn" bindtap="submitReserve">
+      <text class="btn-text">确认预约</text>
+    </view>
+  </view>
+</view>

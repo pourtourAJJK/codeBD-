@@ -1,0 +1,73 @@
+<!-- 管理员登录页面结构 -->
+
+<view class="login-container">
+  <!-- 登录表单区域 -->
+  <view class="login-form-wrapper">
+    <!-- 登录标题 -->
+    <view class="login-title">
+      <text class="title-text">管理员登录</text>
+      <text class="subtitle-text">Water Delivery Admin</text>
+    </view>
+    
+    <!-- 登录表单 -->
+    <form class="login-form" bindsubmit="onLogin">
+      <!-- 账号输入框 -->
+      <view class="form-item">
+        <view class="input-wrapper">
+          <image class="input-icon" src="/assets/icons/user.png"></image>
+          <input 
+            type="text" 
+            class="form-input" 
+            name="username" 
+            placeholder="请输入管理员账号" 
+            value="{{username}}"
+            bindinput="onInputChange"
+            placeholder-class="placeholder"
+          />
+        </view>
+      </view>
+      
+      <!-- 密码输入框 -->
+      <view class="form-item">
+        <view class="input-wrapper">
+          <image class="input-icon" src="/assets/icons/lock.png"></image>
+          <input 
+            type="password" 
+            class="form-input" 
+            name="password" 
+            placeholder="请输入密码" 
+            value="{{password}}"
+            bindinput="onInputChange"
+            placeholder-class="placeholder"
+          />
+        </view>
+      </view>
+      
+      <!-- 登录按钮 -->
+      <view class="form-item">
+        <button 
+          form-type="submit" 
+          class="login-btn" 
+          loading="{{loading}}"
+          disabled="{{loading}}">
+          {{loading ? '登录中...' : '登录'}}
+        </button>
+      </view>
+      
+      <!-- 错误提示 -->
+      <view class="error-tip" wx:if="{{errorMsg}}">
+        {{errorMsg}}
+      </view>
+    </form>
+    
+    <!-- 忘记密码 -->
+    <view class="forgot-password">
+      <text class="forgot-text" bindtap="onForgotPassword">忘记密码？</text>
+    </view>
+    
+    <!-- 版权信息 -->
+    <view class="copyright">
+      <text class="copyright-text">© {{currentYear}} Water Delivery System</text>
+    </view>
+  </view>
+</view>

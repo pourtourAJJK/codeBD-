@@ -1,0 +1,82 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/user/index",
+    "pages/user/center/center",
+    "pages/user/profile/profile",
+    "pages/user/info/info",
+    "pages/address/address",
+    "pages/address/new/new",
+    "pages/order/order",
+    "pages/order/confirm/confirm",
+    "pages/pay/pay",
+    "pages/search/search",
+    "pages/test-login/test-login",
+    "pages/shop/list/list",
+    "pages/shop/detail/detail",
+    "pages/test-cloud/test-cloud",
+    "pages/test",
+    "pages/setting/setting",
+    "pages/exchange/exchange",
+    "pages/service/service",
+    "pages/cart/cart",
+    "pages/login/auth/auth",
+    "pages/login/phone/phone"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#2F8FC7",
+    "navigationBarTitleText": "硒养山泉好水直送",
+    "navigationBarTextStyle": "white",
+    "enablePullDownRefresh": true,
+    "backgroundColor": "#f5f5f5",
+    "onReachBottomDistance": 50,
+    "pageOrientation": "portrait"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#1296db",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/shop/list/list",
+        "text": "分类"
+      },
+      {
+        "pagePath": "pages/cart/cart",
+        "text": "购物车"
+      },
+      {
+        "pagePath": "pages/user/center/center",
+        "text": "我的"
+      }
+    ],
+    "position": "bottom"
+  },
+  "permission": {
+    "scope.userLocation": {
+      "desc": "您的位置信息将用于小程序位置服务"
+    }
+  },
+  "requiredBackgroundModes": [
+    "audio",
+    "location"
+  ],
+  "sitemapLocation": "sitemap.json",
+  "style": "v2",
+  "useExtendedLib": {
+    "weui": true
+  },
+  "usingComponents": {
+    "loading": "/components/loading/loading"
+  },
+  
+  "requiredPrivateInfos": [
+    "chooseAddress"
+  ]
+}

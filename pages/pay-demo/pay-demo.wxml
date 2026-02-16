@@ -1,0 +1,94 @@
+<!-- 微信支付JSAPI统一下单功能 - 前端调起支付示例页面 -->
+<view class="container">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="page-title">微信支付测试</text>
+    <text class="page-subtitle">JSAPI统一下单功能</text>
+  </view>
+
+  <!-- 商品信息 -->
+  <view class="product-card">
+    <view class="product-header">
+      <text class="product-name">{{product.name}}</text>
+      <text class="product-price">¥{{product.price}}</text>
+    </view>
+    <view class="product-description">
+      <text>{{product.description}}</text>
+    </view>
+  </view>
+
+  <!-- 支付状态 -->
+  <view class="pay-status" wx:if="{{payStatus !== 'INIT'}}">
+    <view class="status-content">
+      <text class="status-label">支付状态：</text>
+      <text class="status-value {{payStatus === 'SUCCESS' ? 'success' : payStatus === 'FAILED' ? 'failed' : 'paying'}}">
+        {{payStatus === 'PAYING' ? '支付中' : payStatus === 'SUCCESS' ? '支付成功' : '支付失败'}}
+      </text>
+    </view>
+    <view class="status-message" wx:if="{{payMessage}}">
+      <text>{{payMessage}}</text>
+    </view>
+  </view>
+
+  <!-- 支付结果 -->
+  <view class="pay-result" wx:if="{{payResult}}">
+    <view class="result-header">
+      <text class="result-title">支付结果</text>
+    </view>
+    <view class="result-item">
+      <text class="result-label">订单号：</text>
+      <text class="result-value">{{payResult.orderId}}</text>
+      <button class="copy-btn" bindtap="copyOrderId">复制</button>
+    </view>
+    <view class="result-item">
+      <text class="result-label">支付金额：</text>
+      <text class="result-value">¥{{payResult.amount}}</text>
+    </view>
+    <view class="result-item">
+      <text class="result-label">支付时间：</text>
+      <text class="result-value">{{payResult.time}}</text>
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="action-buttons">
+    <!-- 初始状态 -->
+    <view wx:if="{{payStatus === 'INIT'}}">
+      <button 
+        class="pay-button" 
+        bindtap="handlePay" 
+        disabled="{{loading}}"
+        loading="{{loading}}"
+      >
+        发起支付
+      </button>
+      <button class="back-button" bindtap="goBack">返回</button>
+    </view>
+
+    <!-- 支付成功 -->
+    <view wx:if="{{payStatus === 'SUCCESS'}}">
+      <button class="pay-button" bindtap="rePay">再次支付</button>
+      <button class="back-button" bindtap="goBack">返回</button>
+    </view>
+
+    <!-- 支付失败 -->
+    <view wx:if="{{payStatus === 'FAILED'}}">
+      <button class="pay-button" bindtap="rePay">重新支付</button>
+      <button class="back-button" bindtap="goBack">返回</button>
+    </view>
+
+    <!-- 支付中 -->
+    <view wx:if="{{payStatus === 'PAYING'}}">
+      <button class="pay-button" disabled="true" loading="true">支付中...</button>
+    </view>
+  </view>
+
+  <!-- 提示信息 -->
+  <view class="tips">
+    <text class="tips-title">测试提示：</text>
+    <text class="tips-content">1. 本页面仅用于微信支付功能测试</text>
+    <text class="tips-content">2. 支付金额为0.01元，仅用于测试</text>
+    <text class="tips-content">3. 请确保您已登录微信小程序</text>
+    <text class="tips-content">4. 支付过程中请勿关闭页面</text>
+  </view>
+</view>

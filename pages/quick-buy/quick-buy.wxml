@@ -1,0 +1,34 @@
+<!-- 快速购水页面结构 -->
+<view class="quick-buy-page">
+  <!-- 页面头部 -->
+  <view class="page-header">
+    <view class="header-left" bindtap="onBackHome">
+      <text class="back-icon">←</text>
+    </view>
+    <view class="header-title">快速购水</view>
+    <view class="header-right"></view>
+  </view>
+
+  <!-- 商品列表 -->
+  <view class="product-list">
+    <block wx:for="{{products}}" wx:key="_id">
+      <view class="product-item" bindtap="onProductClick" data-id="{{item._id}}">
+        <image class="product-image" src="{{item.images[0] || '/assets/images/product-default.png'}}" mode="aspectFit"></image>
+        <view class="product-info">
+          <text class="product-title">{{item.title}}</text>
+          <text class="product-spec">{{item.spec}}</text>
+          <view class="product-price">
+            <text class="current-price">¥{{item.currentPrice}}</text>
+            <text class="original-price" wx:if="{{item.originalPrice}}">¥{{item.originalPrice}}</text>
+          </view>
+          <view class="product-sales">销量: {{item.salesVolume}}</view>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <!-- 空结果提示 -->
+  <view class="empty-results" wx:if="{{products.length === 0}}">
+    <text class="empty-text">暂无商品</text>
+  </view>
+</view>

@@ -1,0 +1,22 @@
+<!-- 云函数测试页面 -->
+<view class="test-container">
+  <text class="test-title">云函数测试</text>
+  
+  <!-- 测试getOrderStats -->
+  <view class="test-section">
+    <button class="test-btn" bindtap="testGetOrderStats">测试getOrderStats</button>
+    <text class="test-result">{{orderStatsResult}}</text>
+  </view>
+  
+  <!-- 测试user-getProfile -->
+  <view class="test-section">
+    <button class="test-btn" bindtap="testUserGetProfile">测试user-getProfile</button>
+    <text class="test-result">{{userProfileResult}}</text>
+  </view>
+  
+  <!-- 获取本地用户信息 -->
+  <view class="test-section">
+    <button class="test-btn" bindtap="getLocalUserInfo">获取本地用户信息</button>
+    <text class="test-result">{{localUserInfoResult}}</text>
+  </view>
+</view>

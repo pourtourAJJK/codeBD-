@@ -1,0 +1,106 @@
+/* 配送跟踪组件样式 */
+.delivery-track-container {
+  width: 100%;
+  padding: 20rpx;
+  background-color: #fff;
+}
+
+/* 时间轴样式 */
+.timeline {
+  width: 100%;
+}
+
+.timeline-item {
+  display: flex;
+  margin-bottom: 40rpx;
+  position: relative;
+}
+
+/* 时间线节点 */
+.timeline-node {
+  width: 80rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.node-icon {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  background-color: #e5e5e5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
+}
+
+.node-text {
+  font-size: 24rpx;
+  color: #999;
+  font-weight: 500;
+}
+
+.timeline-line {
+  width: 4rpx;
+  flex: 1;
+  background-color: #e5e5e5;
+  margin-top: 8rpx;
+  position: absolute;
+  top: 56rpx;
+  left: 38rpx;
+  z-index: 1;
+}
+
+/* 时间线内容 */
+.timeline-content {
+  flex: 1;
+  padding-left: 32rpx;
+}
+
+.timeline-status {
+  font-size: 32rpx;
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 8rpx;
+}
+
+.timeline-time {
+  font-size: 24rpx;
+  color: #999;
+  margin-bottom: 12rpx;
+}
+
+.timeline-description {
+  font-size: 28rpx;
+  color: #666;
+  line-height: 44rpx;
+}
+
+/* 配送统计信息 */
+.delivery-stats {
+  display: flex;
+  justify-content: space-around;
+  padding: 30rpx 0;
+  margin-top: 20rpx;
+  border-top: 2rpx solid #f2f2f2;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-label {
+  font-size: 24rpx;
+  color: #999;
+  margin-bottom: 8rpx;
+}
+
+.stat-value {
+  font-size: 32rpx;
+  color: #1989fa;
+  font-weight: 500;
+}

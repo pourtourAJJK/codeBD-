@@ -1,0 +1,87 @@
+<!-- 搜索页面结构 -->
+<!-- 加载动画组件 -->
+<loading visible="{{isSearching}}"></loading>
+<view class="search-page">
+  <!-- 搜索栏 -->
+  <view class="search-bar">
+    <view class="search-input-wrapper">
+      <image class="search-icon" src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/搜索.png" mode="aspectFit"></image>
+      <input 
+        class="search-input" 
+        placeholder="搜索商品名称" 
+        placeholder-class="placeholder" 
+        value="{{keyword}}" 
+        bindinput="onInputChange" 
+        bindconfirm="onSearch"
+        focus
+      />
+      <view class="clear-btn" wx:if="{{keyword}}" bindtap="onClearKeyword">
+        <image src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/取消.png" mode="aspectFit"></image>
+      </view>
+    </view>
+    <text class="cancel-btn" bindtap="onCancel">取消</text>
+  </view>
+  
+  <!-- 搜索历史：仅在未执行搜索时显示 -->
+  <view class="search-history" wx:if="{{!isSearched}}">
+    <view class="history-header">
+      <text class="history-title">搜索历史</text>
+      <text class="clear-history" bindtap="onClearHistory" wx:if="{{searchHistory.length > 0}}">清空</text>
+    </view>
+    <view class="history-tags" wx:if="{{searchHistory.length > 0}}">
+      <block wx:for="{{searchHistory}}" wx:key="index">
+        <view class="history-tag-wrapper">
+          <view class="history-tag" bindtap="onHistoryItemClick" data-keyword="{{item}}">{{item}}</view>
+          <view class="delete-btn" bindtap="onDeleteHistory" data-index="{{index}}">×</view>
+        </view>
+      </block>
+    </view>
+    <view class="no-history" wx:if="{{searchHistory.length === 0}}">
+      <text>暂无搜索历史</text>
+    </view>
+  </view>
+  
+
+  
+  <!-- 搜索结果 -->
+  <view class="search-results" wx:if="{{searchResults.length > 0}}">
+    <view class="results-header">
+      <text class="results-count">找到 {{searchResults.length}} 个相关商品</text>
+    </view>
+    <view class="product-list">
+      <block wx:for="{{searchResults}}" wx:key="_id">
+        <view class="product-item" bindtap="onProductClick" data-id="{{item.productId}}">
+          <!-- 商品图片：使用cover_image字段（云函数返回的字段名），并添加默认值 -->
+          <image class="product-image" src="{{item.cover_image || '/assets/images/search.svg'}}"></image>
+          <view class="product-info">
+            <!-- 商品名称：使用name字段 -->
+            <text class="product-title">{{item.name}}</text>
+            <!-- 商品规格：使用spec字段 -->
+            <text class="product-spec">{{item.spec}}</text>
+            <!-- 商品价格：使用price字段 -->
+            <view class="product-price">
+              <text class="current-price">¥{{item.price}}</text>
+              <text class="original-price" wx:if="{{item['original-price'] > 0}}">¥{{item['original-price']}}</text>
+            </view>
+            <!-- 商品销量：如果有salesVolume字段则显示 -->
+            <view class="product-sales" wx:if="{{item.salesVolume}}">销量: {{item.salesVolume}}</view>
+            <!-- 商品操作按钮 -->
+            <view class="product-actions">
+              <view class="action-btn add-cart-btn" bindtap="onAddToCart" data-id="{{item.productId}}">加入购物车</view>
+              <view class="action-btn buy-now-btn" bindtap="onBuyNow" data-id="{{item.productId}}">立即购买</view>
+            </view>
+          </view>
+        </view>
+      </block>
+    </view>
+  </view>
+  
+  <!-- 空结果提示：仅在“已搜索且无结果”时显示 -->
+  <view class="empty-results" wx:if="{{isSearched && keyword.length > 0 && searchResults.length === 0 && !isSearching}}">
+    <image class="empty-icon" src="/assets/images/empty.png" mode="aspectFit"></image>
+    <text class="empty-text">暂无相关商品</text>
+    <text class="empty-tip">试试其他关键词吧</text>
+  </view>
+  
+
+</view>

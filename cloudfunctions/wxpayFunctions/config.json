@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "openapi": [
+      "wxpay.unifiedorder",
+      "wxpay.refund",
+      "wxpay.orderquery",
+      "wxpay.refundquery"
+    ]
+  }
+}

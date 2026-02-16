@@ -1,0 +1,111 @@
+<!-- 仪表盘页面结构 -->
+
+<view class="dashboard-container">
+  <!-- 顶部导航栏 -->
+  <view class="dashboard-header">
+    <view class="header-left">
+      <text class="header-title">仪表盘</text>
+    </view>
+    <view class="header-right">
+      <image class="admin-avatar" src="{{adminInfo.avatar || '/assets/icons/admin.png'}}"></image>
+      <text class="admin-name">{{adminInfo.username || '管理员'}}</text>
+      <button class="logout-btn" bindtap="onLogout">退出登录</button>
+    </view>
+  </view>
+  
+  <!-- 数据统计卡片区域 -->
+  <view class="statistics-section">
+    <view class="stat-card" bindtap="navigateToOrders">
+      <view class="stat-content">
+        <text class="stat-value">{{todayOrders}}</text>
+        <text class="stat-label">今日订单</text>
+      </view>
+      <image class="stat-icon" src="/assets/icons/order.png"></image>
+    </view>
+    
+    <view class="stat-card" bindtap="navigateToSales">
+      <view class="stat-content">
+        <text class="stat-value">¥{{todaySales}}</text>
+        <text class="stat-label">今日销售额</text>
+      </view>
+      <image class="stat-icon" src="/assets/icons/sales.png"></image>
+    </view>
+    
+    <view class="stat-card" bindtap="navigateToUsers">
+      <view class="stat-content">
+        <text class="stat-value">{{onlineUsers}}</text>
+        <text class="stat-label">在线用户</text>
+      </view>
+      <image class="stat-icon" src="/assets/icons/user.png"></image>
+    </view>
+    
+    <view class="stat-card" bindtap="navigateToPendingOrders">
+      <view class="stat-content">
+        <text class="stat-value">{{pendingOrders}}</text>
+        <text class="stat-label">待处理订单</text>
+      </view>
+      <image class="stat-icon" src="/assets/icons/pending.png"></image>
+    </view>
+  </view>
+  
+  <!-- 销售趋势图表区域 -->
+  <view class="chart-section">
+    <view class="section-header">
+      <text class="section-title">销售趋势</text>
+      <text class="section-subtitle">最近7天</text>
+    </view>
+    
+    <view class="chart-container">
+      <!-- 这里使用简易的柱状图模拟，实际应用中可以使用第三方图表库 -->
+      <view class="chart-bar-wrapper">
+        <view class="chart-bar" wx:for="{{salesTrend}}" wx:key="date">
+          <view class="bar" style="height: {{item.value/totalMax*100}}%;"></view>
+          <text class="bar-label">{{item.date}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 热销商品排行 -->
+  <view class="popular-section">
+    <view class="section-header">
+      <text class="section-title">热销商品</text>
+      <text class="section-more" bindtap="navigateToProducts">查看更多</text>
+      <button class="add-btn" size="mini" bindtap="navigateToAddProduct">添加商品</button>
+    </view>
+    
+    <view class="popular-list">
+      <view class="popular-item" wx:for="{{popularProducts}}" wx:key="productId">
+        <view class="product-info">
+          <text class="product-name">{{item.productName}}</text>
+          <text class="product-sales">销量: {{item.sales}}件</text>
+        </view>
+        <text class="product-price">¥{{item.price}}</text>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 最新订单列表 -->
+  <view class="order-section">
+    <view class="section-header">
+      <text class="section-title">最新订单</text>
+      <text class="section-more" bindtap="navigateToOrders">查看更多</text>
+    </view>
+    
+    <view class="order-list">
+      <view class="order-item" wx:for="{{latestOrders}}" wx:key="orderId">
+        <view class="order-info">
+          <text class="order-id">订单号: {{item.orderId}}</text>
+          <view class="order-status" style="background-color: {{item.statusColor}};">
+            {{item.statusText}}
+          </view>
+        </view>
+        <view class="order-details">
+          <text class="order-user">用户: {{item.userName}}</text>
+          <text class="order-amount">¥{{item.amount}}</text>
+        </view>
+        <text class="order-time">{{item.createTime}}</text>
+      </view>
+    </view>
+  </view>
+</view>

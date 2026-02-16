@@ -1,0 +1,78 @@
+{
+  "description": "微信小程序云开发个人项目配置",
+  "setting": {
+    "coverView": true,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "preloadBackgroundData": false,
+    "minified": true,
+    "newFeature": true,
+    "nodeModules": false,
+    "autoAudits": true,
+    "showShadowRootInWxmlPanel": true,
+    "uglifyFileName": false,
+    "showES6CompileOption": false,
+    "enhanceNative": false,
+    "useIsolateContext": false,
+    "userConfirmedUseCompilerModuleSwitch": true,
+    "packNpmManually": false,
+    "packNpmRelationList": [],
+    "minifyWXSS": true,
+    "minifyWXML": true,
+    "babelSetting": {
+      "ignore": [],
+      "outputPath": ""
+    },
+    "urlCheck": false,
+    "lazyloadPlaceholderEnable": false,
+    "skylineRenderEnable": false,
+    "useApiHook": true,
+    "useStaticServer": false,
+    "useLanDebug": false,
+    "compileHotReLoad": true,
+    "checkInvalidKey": true,
+    "ignoreDevUnusedFiles": true,
+    "bigPackageSizeSupport": false
+  },
+  "libVersion": "3.14.1",
+  "appid": "wxf6ebbdde5f6b75bc",
+  "projectname": "硒养山泉送水到家",
+  "simulatorType": "wechat",
+  "simulatorPluginLibVersion": {},
+  "condition": {
+    "search": {
+      "list": []
+    },
+    "conversation": {
+      "list": []
+    }
+  },
+  "editorSetting": {
+    "tabIndent": "insertSpaces",
+    "tabSize": 2
+  },
+  "cloudfunctionTemplateRoot": "cloudfunctionTemplate/",
+  "cloudfunctionRoot": "cloudfunctions/",
+  "cloudfunctionEnv": "{{envId}}",
+  "cloudfunctionAppid": "{{appid}}",
+  "isGameTourist": false,
+  "isAutoAudits": false,
+  "isNewFeatureForceUserCheck": false,
+  "isUseHotReload": false,
+  "isPreviewBackgroundTransparent": false,
+  "preloadBackgroundData": false,
+  "useIsolateContext": false,
+  "useCompilerModule": true,
+  "userConfirmedUseCompilerModuleSwitch": true,
+  "userConfirmedBundleSwitch": false,
+  "bundleOptions": {
+    "packNpmManually": false,
+    "packNpmRelationList": [],
+    "ignoreUploadUnusedFiles": false
+  },
+  "autoAudits": false,
+  "showShadowRootInWxmlPanel": true,
+  "showES6CompileOption": false,
+  "enhanceNative": false
+}

@@ -1,0 +1,84 @@
+<!-- 订单跟踪页面 -->
+<view class="tracking-container">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <view class="back-btn" bindtap="navigateBack">
+      <image src="/images/back-arrow.png" mode="aspectFit"></image>
+    </view>
+    <view class="page-title">订单跟踪</view>
+    <view class="right-space"></view>
+  </view>
+
+  <!-- 订单基本信息 -->
+  <view class="order-info">
+    <view class="order-number">订单号：{{orderInfo.orderId}}</view>
+    <view class="order-status">
+      <view class="status-text">{{orderInfo.statusText}}</view>
+      <view class="status-time">{{orderInfo.statusTime}}</view>
+    </view>
+  </view>
+
+  <!-- 地图组件 -->
+  <view class="map-container">
+    <view class="map-header">
+      <view class="map-title">配送位置</view>
+      <view class="eta">预计到达：{{deliveryInfo.eta}}</view>
+    </view>
+    <map 
+      class="map" 
+      longitude="{{deliveryInfo.currentPosition.longitude}}" 
+      latitude="{{deliveryInfo.currentPosition.latitude}}" 
+      markers="{{markers}}" 
+      polyline="{{polyline}}" 
+      scale="15" 
+      show-location
+    ></map>
+    <view class="map-legend">
+      <view class="legend-item">
+        <view class="legend-dot store-dot"></view>
+        <view class="legend-text">取货点</view>
+      </view>
+      <view class="legend-item">
+        <view class="legend-dot delivery-dot"></view>
+        <view class="legend-text">配送员</view>
+      </view>
+      <view class="legend-item">
+        <view class="legend-dot destination-dot"></view>
+        <view class="legend-text">收货点</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 配送进度时间轴 -->
+  <view class="tracking-timeline">
+    <view class="timeline-title">配送进度</view>
+    <view class="timeline-list">
+      <delivery-track 
+        delivery-steps="{{deliveryInfo.steps}}" 
+      ></delivery-track>
+    </view>
+  </view>
+
+  <!-- 配送员信息 -->
+  <view class="delivery-info">
+    <view class="delivery-header">配送员信息</view>
+    <view class="delivery-content">
+      <view class="delivery-avatar">
+        <image src="{{deliveryInfo.courier.avatar}}" mode="aspectFit"></image>
+      </view>
+      <view class="delivery-details">
+        <view class="courier-name">{{deliveryInfo.courier.name}}</view>
+        <view class="courier-phone">{{deliveryInfo.courier.phone}}</view>
+      </view>
+      <button class="call-btn" bindtap="callCourier">
+        <image src="/images/phone.png" mode="aspectFit"></image>
+        联系配送员
+      </button>
+    </view>
+  </view>
+
+  <!-- 底部操作按钮 -->
+  <view class="bottom-buttons" wx:if="{{orderInfo.status === 'shipping'}}">
+    <button class="confirm-btn" bindtap="confirmReceipt">确认收货</button>
+  </view>
+</view>

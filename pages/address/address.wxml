@@ -1,0 +1,46 @@
+<!-- 收货地址列表页面 -->
+<view class="address-container">
+  <!-- 可滚动的地址列表容器 -->
+  <view class="address-list-container">
+    <!-- 编辑按钮 - 放在地址列表上方 -->
+    <view class="top-edit-btn-container">
+      <view class="edit-btn" bindtap="toggleEditMode">{{editMode ? '完成' : '编辑'}}</view>
+    </view>
+    
+    <!-- 地址列表 -->
+    <view class="address-list">
+      <block wx:if="{{addresses.length > 0}}">
+        <view class="address-item" wx:for="{{addresses}}" wx:key="_id">
+          <view class="address-content" bindtap="navigateToEdit" data-id="{{item._id}}">
+            <view class="address-header">
+              <text class="name">{{item.name}}</text>
+              <text class="phone">{{item.phone}}</text>
+              <text class="default-tag" wx:if="{{item.isDefault}}">默认</text>
+            </view>
+            <view class="address-detail">
+              <text>{{item.province}} {{item.city}} {{item.district}} {{item.detail}}</text>
+            </view>
+          </view>
+          
+          <view class="address-actions" wx:if="{{editMode}}">
+            <view class="action-item" bindtap="setDefault" data-id="{{item._id}}" wx:if="{{!item.isDefault}}">
+              <text class="action-text">设为默认</text>
+            </view>
+            <view class="action-item delete" bindtap="deleteAddress" data-id="{{item._id}}">
+              <text class="action-text">删除</text>
+            </view>
+          </view>
+        </view>
+      </block>
+      
+      <view class="empty-address" wx:else>
+        <text class="empty-text">暂无收货地址</text>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 添加新地址按钮 - 固定在底部 -->
+  <view class="add-address-btn" bindtap="navigateToEdit">
+    <text class="add-text">添加新地址</text>
+  </view>
+</view>

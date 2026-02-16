@@ -1,0 +1,9 @@
+{
+  "name": "user-login-v2",
+  "version": "1.0.0",
+  "description": "用户登录/注册云函数 - 零依赖版本改进,支持自动注册",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

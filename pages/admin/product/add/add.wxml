@@ -1,0 +1,154 @@
+<!-- 添加推荐商品页面 -->
+
+<view class="add-product-container">
+  <!-- 顶部导航栏 -->
+  <view class="page-header">
+    <text class="header-title">添加推荐商品</text>
+    <text class="back-btn" bindtap="onBack">返回</text>
+  </view>
+  
+  <!-- 表单区域 -->
+  <form class="product-form" bindsubmit="onSubmit">
+    <!-- 商品名称 -->
+    <view class="form-item">
+      <text class="item-label">商品名称</text>
+      <input 
+        class="item-input" 
+        name="title" 
+        placeholder="请输入商品名称" 
+        value="{{productData.title}}"
+        bindinput="onInputChange"
+      />
+    </view>
+    
+    <!-- 商品描述 -->
+    <view class="form-item">
+      <text class="item-label">商品描述</text>
+      <textarea 
+        class="item-textarea" 
+        name="description" 
+        placeholder="请输入商品描述" 
+        value="{{productData.description}}"
+        bindinput="onInputChange"
+      />
+    </view>
+    
+    <!-- 商品分类 -->
+    <view class="form-item">
+      <text class="item-label">商品分类</text>
+      <picker 
+        class="item-picker" 
+        name="category" 
+        value="{{categoryIndex}}" 
+        range="{{categories}}"
+        bindchange="onCategoryChange"
+      >
+        <text class="picker-text">{{categories[categoryIndex]}}</text>
+      </picker>
+    </view>
+    
+    <!-- 商品价格 -->
+    <view class="form-item">
+      <text class="item-label">当前价格</text>
+      <input 
+        class="item-input" 
+        name="currentPrice" 
+        placeholder="请输入当前价格" 
+        type="digit"
+        value="{{productData.currentPrice}}"
+        bindinput="onInputChange"
+      />
+    </view>
+    
+    <!-- 商品原价 -->
+    <view class="form-item">
+      <text class="item-label">原价</text>
+      <input 
+        class="item-input" 
+        name="originalPrice" 
+        placeholder="请输入原价" 
+        type="digit"
+        value="{{productData.originalPrice}}"
+        bindinput="onInputChange"
+      />
+    </view>
+    
+    <!-- 库存 -->
+    <view class="form-item">
+      <text class="item-label">库存</text>
+      <input 
+        class="item-input" 
+        name="stock" 
+        placeholder="请输入库存数量" 
+        type="number"
+        value="{{productData.stock}}"
+        bindinput="onInputChange"
+      />
+    </view>
+    
+    <!-- 销量 -->
+    <view class="form-item">
+      <text class="item-label">销量</text>
+      <input 
+        class="item-input" 
+        name="salesVolume" 
+        placeholder="请输入销量" 
+        type="number"
+        value="{{productData.salesVolume}}"
+        bindinput="onInputChange"
+      />
+    </view>
+    
+    <!-- 商品规格 -->
+    <view class="form-item">
+      <text class="item-label">商品规格</text>
+      <input 
+        class="item-input" 
+        name="spec" 
+        placeholder="请输入商品规格" 
+        value="{{productData.spec}}"
+        bindinput="onInputChange"
+      />
+    </view>
+    
+    <!-- 促销标签 -->
+    <view class="form-item">
+      <text class="item-label">促销标签</text>
+      <input 
+        class="item-input" 
+        name="promotionTag" 
+        placeholder="请输入促销标签（如：热销、新品）" 
+        value="{{productData.promotionTag}}"
+        bindinput="onInputChange"
+      />
+    </view>
+    
+    <!-- 是否新品 -->
+    <view class="form-item">
+      <text class="item-label">是否新品</text>
+      <switch 
+        class="item-switch" 
+        name="isNew" 
+        checked="{{productData.isNew}}"
+        bindchange="onSwitchChange"
+      />
+    </view>
+    
+    <!-- 商品详情 -->
+    <view class="form-item">
+      <text class="item-label">商品详情</text>
+      <textarea 
+        class="item-textarea" 
+        name="detailHtml" 
+        placeholder="请输入商品详情" 
+        value="{{productData.detailHtml}}"
+        bindinput="onInputChange"
+      />
+    </view>
+    
+    <!-- 提交按钮 -->
+    <button class="submit-btn" type="primary" formType="submit" loading="{{loading}}">
+      添加推荐商品
+    </button>
+  </form>
+</view>

@@ -1,0 +1,302 @@
+/* 仪表盘页面样式 */
+
+/* 页面容器 */
+.dashboard-container {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding-bottom: 30rpx;
+}
+
+/* 顶部导航栏 */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 88rpx;
+  background-color: #fff;
+  padding: 0 30rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+}
+
+.header-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+.admin-avatar {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  margin-right: 15rpx;
+  border: 2rpx solid #eee;
+}
+
+.admin-name {
+  font-size: 28rpx;
+  color: #333;
+  margin-right: 20rpx;
+}
+
+.logout-btn {
+  font-size: 26rpx;
+  color: #ff6b35;
+  background-color: transparent;
+  border: none;
+  padding: 10rpx 20rpx;
+}
+
+/* 数据统计卡片区域 */
+.statistics-section {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 20rpx;
+  margin-bottom: 30rpx;
+}
+
+/* 统计卡片 */
+.stat-card {
+  width: 48%;
+  background-color: #fff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin: 1%;
+  box-shadow: 0 4rpx 15rpx rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-5rpx);
+  box-shadow: 0 8rpx 25rpx rgba(0, 0, 0, 0.15);
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-value {
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10rpx;
+}
+
+.stat-label {
+  font-size: 28rpx;
+  color: #666;
+}
+
+.stat-icon {
+  width: 60rpx;
+  height: 60rpx;
+  opacity: 0.7;
+}
+
+/* 图表区域 */
+.chart-section {
+  background-color: #fff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin: 0 20rpx 30rpx 20rpx;
+  box-shadow: 0 4rpx 15rpx rgba(0, 0, 0, 0.1);
+}
+
+/* 区域标题 */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20rpx;
+  }
+
+  .add-btn {
+    background-color: #07c160;
+    color: white;
+    font-size: 24rpx;
+    margin-left: 20rpx;
+    padding: 0 20rpx;
+  }
+
+.section-title {
+  font-size: 34rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.section-subtitle {
+  font-size: 26rpx;
+  color: #999;
+}
+
+.section-more {
+  font-size: 26rpx;
+  color: #1989fa;
+}
+
+/* 图表容器 */
+.chart-container {
+  height: 300rpx;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.chart-bar-wrapper {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  width: 100%;
+  height: 100%;
+  padding: 20rpx 0;
+}
+
+.chart-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  width: 15%;
+  height: 100%;
+}
+
+.bar {
+  width: 60%;
+  background-color: #1989fa;
+  border-radius: 10rpx 10rpx 0 0;
+  transition: all 0.3s ease;
+}
+
+.bar:hover {
+  background-color: #167dc0;
+}
+
+.bar-label {
+  margin-top: 10rpx;
+  font-size: 22rpx;
+  color: #999;
+}
+
+/* 热销商品区域 */
+.popular-section {
+  background-color: #fff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin: 0 20rpx 30rpx 20rpx;
+  box-shadow: 0 4rpx 15rpx rgba(0, 0, 0, 0.1);
+}
+
+/* 热销商品列表 */
+.popular-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.popular-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #eee;
+}
+
+.popular-item:last-child {
+  border-bottom: none;
+}
+
+.product-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.product-name {
+  font-size: 30rpx;
+  color: #333;
+  margin-bottom: 10rpx;
+}
+
+.product-sales {
+  font-size: 26rpx;
+  color: #999;
+}
+
+.product-price {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #ff6b35;
+}
+
+/* 订单列表区域 */
+.order-section {
+  background-color: #fff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin: 0 20rpx 30rpx 20rpx;
+  box-shadow: 0 4rpx 15rpx rgba(0, 0, 0, 0.1);
+}
+
+/* 订单列表 */
+.order-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.order-item {
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #eee;
+}
+
+.order-item:last-child {
+  border-bottom: none;
+}
+
+.order-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10rpx;
+}
+
+.order-id {
+  font-size: 28rpx;
+  color: #333;
+}
+
+.order-status {
+  font-size: 24rpx;
+  color: #fff;
+  padding: 5rpx 15rpx;
+  border-radius: 15rpx;
+}
+
+.order-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10rpx;
+}
+
+.order-user {
+  font-size: 26rpx;
+  color: #666;
+}
+
+.order-amount {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.order-time {
+  font-size: 24rpx;
+  color: #999;
+}

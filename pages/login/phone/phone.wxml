@@ -1,0 +1,14 @@
+<!--pages/login/phone/phone.wxml-->
+<view class="container">
+  <view class="content">
+    <image class="phone-icon" src="/assets/phone-icon.png" mode="aspectFit"></image>
+    <view class="title">绑定手机号</view>
+    <view class="description">为了方便我们与您联系，请授权绑定手机号</view>
+
+    <button class="phone-btn" open-type="getPhoneNumber" bindgetphonenumber="handleGetPhoneNumber">
+      手机号快捷登录
+    </button>
+
+    <view class="skip-btn" bindtap="handleSkip">暂不绑定</view>
+  </view>
+</view>

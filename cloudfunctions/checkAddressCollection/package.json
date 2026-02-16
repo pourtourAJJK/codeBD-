@@ -1,0 +1,19 @@
+{
+  "name": "checkAddressCollection",
+  "version": "1.0.0",
+  "description": "检查并创建addresses集合的云函数",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "cloud",
+    "database",
+    "collection"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.0"
+  }
+}

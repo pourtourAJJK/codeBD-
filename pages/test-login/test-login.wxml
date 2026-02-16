@@ -1,0 +1,32 @@
+<!-- pages/test-login/test-login.wxml -->
+<view class="container">
+  <view class="header">
+    <text class="title">微信登录测试</text>
+    <text class="subtitle">当前状态：{{loginStatus}}</text>
+  </view>
+  
+  <view class="test-buttons">
+    <button type="primary" bindtap="checkLoginStatus" size="mini">检查登录状态</button>
+    <button type="primary" bindtap="wechatLogin" size="mini">微信登录</button>
+    <button type="primary" bindtap="testCloudFunction" size="mini">测试云函数调用</button>
+    <button type="primary" bindtap="testUserLoginFunction" size="mini">测试登录云函数</button>
+    <button type="primary" bindtap="clearLoginStatus" size="mini">清除登录状态</button>
+    <button type="primary" bindtap="checkCloudEnv" size="mini">检查云环境</button>
+    <button type="primary" bindtap="checkLoginIssue" size="mini">检查登录问题</button>
+  </view>
+  
+  <view class="log-container">
+    <view class="log-header">
+      <text>调试日志</text>
+      <view class="log-actions">
+        <button bindtap="copyLog" size="mini">复制</button>
+        <button bindtap="clearLog" size="mini">清空</button>
+      </view>
+    </view>
+    <scroll-view scroll-y class="log-content">
+      <view wx:for="{{log}}" wx:key="*this" class="log-item">
+        {{item}}
+      </view>
+    </scroll-view>
+  </view>
+</view>

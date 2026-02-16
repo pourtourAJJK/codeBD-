@@ -1,0 +1,61 @@
+<!-- 配送跟踪组件 -->
+<view class="delivery-track-container">
+  <!-- 配送进度时间轴 -->
+  <view class="timeline">
+    <view 
+      wx:for="{{steps}}" 
+      wx:key="id" 
+      class="timeline-item"
+      data-step-id="{{item.id}}"
+    >
+      <!-- 时间线节点 -->
+      <view class="timeline-node">
+        <view 
+          class="node-icon"
+          style="background-color: {{item.id <= currentStepId ? '#1989fa' : '#e5e5e5'}};"
+        >
+          <text 
+            class="node-text"
+            style="color: {{item.id <= currentStepId ? '#fff' : '#999'}};"
+          >
+            {{item.id}}
+          </text>
+        </view>
+        <!-- 时间线连接线 -->
+        <view 
+          class="timeline-line"
+          style="background-color: {{item.id < currentStepId ? '#1989fa' : '#e5e5e5'}};"
+        ></view>
+      </view>
+      
+      <!-- 时间线内容 -->
+      <view class="timeline-content">
+        <view class="timeline-status" style="color: {{item.id <= currentStepId ? '#333' : '#999'}};">
+          {{item.status}}
+        </view>
+        <view class="timeline-time" style="color: {{item.id <= currentStepId ? '#999' : '#ccc'}};">
+          {{item.time}}
+        </view>
+        <view class="timeline-description" style="color: {{item.id <= currentStepId ? '#666' : '#ccc'}};">
+          {{item.description}}
+        </view>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 配送统计信息 -->
+  <view class="delivery-stats">
+    <view class="stat-item">
+      <view class="stat-label">预计到达</view>
+      <view class="stat-value">{{eta}}</view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-label">当前状态</view>
+      <view class="stat-value">{{currentStatus}}</view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-label">配送时长</view>
+      <view class="stat-value">{{deliveryDuration}}</view>
+    </view>
+  </view>
+</view>

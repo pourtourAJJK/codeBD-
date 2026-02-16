@@ -1,0 +1,81 @@
+<!-- 首页结构 -->
+<custom-nav-bar 
+  nav-title=""  
+  title-size="20"
+  title-color="white"
+  bg-color="#2F8FC7"
+  location-text="{{currentLocation}}"
+  bind:navBarHeightReady="onNavBarHeightReady"
+  bind:locationClick="navigateToAddress"
+></custom-nav-bar>
+<!-- 头部搜索栏 -->
+<view class="search-bar" style="top: {{navBarHeight}}px;">
+    <view class="search-container" bindtap="navigateToSearch">
+      <image class="search-icon" src="/assets/images/search.svg" mode="aspectFit"></image>
+      <input class="search-input" placeholder="请输入商品名称" placeholder-class="search-placeholder" bindinput="onSearchInput" value="{{searchValue}}" />
+    </view>
+    <view class="search-button" bindtap="onSearch">
+      <text class="search-button-text">搜索</text>
+    </view>
+</view>
+<view class="index-container" style="padding-top: {{contentPaddingTop}}px;">
+
+  <!-- 轮播图 -->
+  <view class="banner-section">
+    <swiper class="banner-swiper" autoplay indicator-dots circular interval="10000">
+      <block wx:for="{{bannerList}}" wx:key="index">
+        <swiper-item>
+          <image class="banner-image" src="{{item.imageUrl}}" mode="aspectFill" bindtap="onBannerClick" data-banner-id="{{item.id}}"></image>
+        </swiper-item>
+      </block>
+    </swiper>
+  </view>
+
+  <!-- 快捷入口 -->
+  <view class="quick-entry">
+    <block wx:for="{{quickEntryList}}" wx:key="index">
+      <view class="entry-item" bindtap="onQuickEntryClick" data-entry-id="{{item.id}}">
+        <image class="entry-icon" src="{{item.iconUrl}}" mode="aspectFit"></image>
+        <text class="entry-text">{{item.name}}</text>
+      </view>
+    </block>
+  </view>
+
+  <!-- 特色功能数据（兑换卡和限时特价） -->
+  <view class="feature-section">
+    <view class="feature-item" bindtap="onFeatureClick" data-type="exchange">
+      <view class="feature-info">
+        <text class="feature-title">兑换卡</text>
+        <text class="feature-subtitle">购卡随水分批提货</text>
+        <view class="feature-button">立即兑换</view>
+      </view>
+      <image class="feature-image" src="{{featureList[0].imageUrl}}" mode="aspectFit"></image>
+    </view>
+    <view class="feature-item" bindtap="onFeatureClick" data-type="limited">
+      <view class="feature-info">
+        <text class="feature-title">限时特价</text>
+        <text class="feature-subtitle">好水低价秒杀</text>
+        <view class="feature-button">立即抢购</view>
+      </view>
+      <image class="feature-image" src="{{featureList[1].imageUrl}}" mode="aspectFit"></image>
+    </view>
+  </view>
+
+  <!-- 热门商品列表 -->
+  <view class="hot-products">
+    <block wx:for="{{hotProducts}}" wx:key="productId">
+      <view class="product-item" bindtap="onProductClick" data-product-id="{{item.productId}}">
+        <image class="product-image" src="{{item.cover_image}}" mode="widthFix"></image>
+        <view class="product-info">
+          <text class="product-name">{{item.name}}</text>
+          <text class="product-spec">{{item.spec}}</text>
+          <text class="product-price">¥{{item.price}}</text>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <!-- 图片下方文字区域 -->
+  <text class="image-text">汲天然之山泉，蕴生命之微元</text>
+  <text class="image-text">粤ICP备2026014843号-1X</text>
+</view>

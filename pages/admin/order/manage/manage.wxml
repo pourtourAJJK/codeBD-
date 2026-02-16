@@ -1,0 +1,194 @@
+<!-- 订单管理页面结构 -->
+
+<view class="order-manage-container">
+  <!-- 搜索和筛选区域 -->
+  <view class="filter-section">
+    <view class="search-box">
+      <image class="search-icon" src="/assets/icons/search.png"></image>
+      <input 
+        class="search-input" 
+        placeholder="搜索订单号/用户" 
+        value="{{searchKeyword}}"
+        bindinput="onSearchInput"
+        placeholder-class="placeholder"
+      />
+      <text class="clear-search" wx:if="searchKeyword" bindtap="clearSearch">×</text>
+    </view>
+    
+    <button class="filter-btn" bindtap="showFilterPanel">
+      <image class="filter-icon" src="/assets/icons/filter.png"></image>
+      <text class="filter-text">筛选</text>
+      <image class="arrow-icon" src="/assets/icons/arrow-down.png"></image>
+    </button>
+  </view>
+  
+  <!-- 批量操作栏 -->
+  <view class="batch-operation" wx:if="selectedOrders.length > 0">
+    <view class="operation-info">
+      <text>已选择 {{selectedOrders.length}} 个订单</text>
+    </view>
+    <view class="operation-btns">
+      <button class="batch-btn" bindtap="batchAccept">批量接单</button>
+      <button class="batch-btn" bindtap="batchShip">批量配送</button>
+      <button class="batch-btn cancel" bindtap="clearSelection">取消选择</button>
+    </view>
+  </view>
+  
+  <!-- 订单列表 -->
+  <view class="order-list">
+    <view class="order-item" wx:for="{{orders}}" wx:key="orderId">
+      <!-- 订单头 -->
+      <view class="order-header">
+        <view class="order-info">
+          <text class="order-id">订单号: {{item.orderId}}</text>
+          <text class="order-time">{{item.createTime}}</text>
+        </view>
+        <view class="order-status" style="background-color: {{item.statusColor}};">
+          {{item.statusText}}
+        </view>
+      </view>
+      
+      <!-- 订单详情 -->
+      <view class="order-details">
+        <view class="product-info">
+          <image class="product-image" src="{{item.productImage}}"></image>
+          <view class="product-details">
+            <text class="product-name">{{item.productName}}</text>
+            <text class="product-spec">{{item.productSpec}}</text>
+            <view class="product-quantity">数量: {{item.quantity}}</view>
+          </view>
+        </view>
+        
+        <text class="order-amount">¥{{item.totalAmount}}</text>
+      </view>
+      
+      <!-- 配送信息 -->
+      <view class="delivery-info">
+        <view class="delivery-item">
+          <text class="delivery-label">收货人:</text>
+          <text class="delivery-value">{{item.receiverName}} {{item.receiverPhone}}</text>
+        </view>
+        <view class="delivery-item">
+          <text class="delivery-label">配送地址:</text>
+          <text class="delivery-value">{{item.deliveryAddress}}</text>
+        </view>
+        <view class="delivery-item" wx:if="item.deliveryTime">
+          <text class="delivery-label">配送时间:</text>
+          <text class="delivery-value">{{item.deliveryTime}}</text>
+        </view>
+      </view>
+      
+      <!-- 操作按钮 -->
+      <view class="order-actions">
+        <button class="action-btn detail" bindtap="viewOrderDetail" data-order="{{item}}">
+          详情
+        </button>
+        <button class="action-btn" bindtap="updateOrderStatus" data-order="{{item}}" data-status="accepted" wx:if="item.status === 'pending'">
+          接单
+        </button>
+        <button class="action-btn" bindtap="updateOrderStatus" data-order="{{item}}" data-status="shipping" wx:if="item.status === 'accepted'">
+          开始配送
+        </button>
+        <button class="action-btn" bindtap="updateOrderStatus" data-order="{{item}}" data-status="delivered" wx:if="item.status === 'shipping'">
+          确认送达
+        </button>
+        <button class="action-btn cancel" bindtap="cancelOrder" data-order="{{item}}" wx:if="item.status !== 'delivered' && item.status !== 'cancelled'">
+          取消订单
+        </button>
+      </view>
+      
+      <!-- 选择框 -->
+      <view class="order-checkbox" wx:if="selectedOrders.length > 0">
+        <checkbox 
+          value="{{item.orderId}}" 
+          checked="{{selectedOrders.includes(item.orderId)}}" 
+          bindchange="onOrderSelect" 
+          data-order-id="{{item.orderId}}"
+        />
+      </view>
+    </view>
+  </view>
+  
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="orders.length === 0">
+    <image class="empty-icon" src="/assets/icons/empty-order.png"></image>
+    <text class="empty-text">暂无订单数据</text>
+  </view>
+  
+  <!-- 筛选面板 -->
+  <view class="filter-panel" wx:if="showFilter">
+    <view class="filter-header">
+      <text class="filter-title">筛选条件</text>
+      <text class="close-filter" bindtap="closeFilterPanel">×</text>
+    </view>
+    
+    <view class="filter-content">
+      <view class="filter-item">
+        <text class="filter-item-title">订单状态</text>
+        <view class="filter-options">
+          <view 
+            class="filter-option {{selectedStatus === 'all' ? 'active' : ''}}" 
+            bindtap="selectStatus" 
+            data-status="all">
+            全部
+          </view>
+          <view 
+            class="filter-option {{selectedStatus === 'pending' ? 'active' : ''}}" 
+            bindtap="selectStatus" 
+            data-status="pending">
+            待处理
+          </view>
+          <view 
+            class="filter-option {{selectedStatus === 'accepted' ? 'active' : ''}}" 
+            bindtap="selectStatus" 
+            data-status="accepted">
+            已接单
+          </view>
+          <view 
+            class="filter-option {{selectedStatus === 'shipping' ? 'active' : ''}}" 
+            bindtap="selectStatus" 
+            data-status="shipping">
+            配送中
+          </view>
+          <view 
+            class="filter-option {{selectedStatus === 'delivered' ? 'active' : ''}}" 
+            bindtap="selectStatus" 
+            data-status="delivered">
+            已完成
+          </view>
+        </view>
+      </view>
+      
+      <view class="filter-item">
+        <text class="filter-item-title">时间范围</text>
+        <view class="date-range">
+          <picker 
+            mode="date" 
+            value="{{startDate}}" 
+            bindchange="onStartDateChange">
+            <view class="date-picker">
+              {{startDate}}
+            </view>
+          </picker>
+          <text class="date-separator">至</text>
+          <picker 
+            mode="date" 
+            value="{{endDate}}" 
+            bindchange="onEndDateChange">
+            <view class="date-picker">
+              {{endDate}}
+            </view>
+          </picker>
+        </view>
+      </view>
+    </view>
+    
+    <view class="filter-footer">
+      <button class="reset-btn" bindtap="resetFilter">重置</button>
+      <button class="confirm-btn" bindtap="applyFilter">确定</button>
+    </view>
+  </view>
+  
+  <!-- 遮罩层 -->
+  <view class="mask" wx:if="showFilter" bindtap="closeFilterPanel"></view>
+</view>

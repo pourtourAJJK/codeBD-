@@ -1,0 +1,49 @@
+<!-- 支付历史页面结构 -->
+<view class="payment-history-page">
+  <!-- 页面头部 -->
+  <view class="page-header">
+    <view class="header-left" bindtap="navigateBack">
+      <text class="back-icon">←</text>
+    </view>
+    <view class="header-title">支付历史</view>
+    <view class="header-right"></view>
+  </view>
+
+  <!-- 支付历史列表 -->
+  <view class="history-list" wx:if="{{paymentHistory.length > 0}}">
+    <block wx:for="{{paymentHistory}}" wx:key="orderId">
+      <view class="history-item">
+        <view class="item-header">
+          <text class="order-number">订单号：{{item.orderId}}</text>
+          <text class="status" style="color: {{item.status === 'SUCCESS' ? '#52c41a' : '#ff4d4f'}}">
+            {{item.status === 'SUCCESS' ? '支付成功' : '支付失败'}}
+          </text>
+        </view>
+        <view class="item-footer">
+          <text class="amount">¥{{item.amount.toFixed(2)}}</text>
+          <text class="time">{{item.time}}</text>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <!-- 加载中 -->
+  <view class="loading" wx:if="{{loading && paymentHistory.length === 0}}">
+    <text>加载中...</text>
+  </view>
+
+  <!-- 无数据 -->
+  <view class="empty" wx:if="{{!loading && paymentHistory.length === 0}}">
+    <text>暂无支付历史</text>
+  </view>
+
+  <!-- 加载更多 -->
+  <view class="load-more" wx:if="{{loading && paymentHistory.length > 0}}">
+    <text>加载中...</text>
+  </view>
+
+  <!-- 无更多数据 -->
+  <view class="no-more" wx:if="{{!loading && !hasMore && paymentHistory.length > 0}}">
+    <text>已加载全部</text>
+  </view>
+</view>

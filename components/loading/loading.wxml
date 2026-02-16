@@ -1,0 +1,20 @@
+<!-- 加载动画组件 -->
+<view class="loading-mask" wx:if="{{visible}}">
+  <view class="loading-box">
+    <view class="logo-wrap">
+      <!-- 仰峰文字 -->
+      <view class="yangfeng-text">
+        <text class="top-word">仰</text>
+        <text class="bottom-word">峰</text>
+      </view>
+      <!-- 三角形 -->
+      <view class="triangle"></view>
+      <!-- 硒养山泉 -->
+      <view class="seyang-text">
+        <view class="seyang-item">硒养</view>
+        <view class="seyang-item">山泉</view>
+      </view>
+    </view>
+    <view class="loading-text">加载中...</view>
+  </view>
+</view>

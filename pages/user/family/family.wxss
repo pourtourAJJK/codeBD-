@@ -1,0 +1,9 @@
+/* 家庭页面样式 */
+.page-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 32rpx;
+  color: #999;
+}

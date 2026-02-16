@@ -1,0 +1,17 @@
+{
+  "name": "cloudfunctions",
+  "version": "1.0.0",
+  "description": "微信小程序云函数",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "cloud",
+    "functions"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

@@ -1,0 +1,122 @@
+<!-- 新增地址页面 -->
+<view class="container">
+  <!-- 内容区域 -->
+  <scroll-view class="content" scroll-y>
+    <!-- 表单容器 -->
+    <view class="form-container">
+      <!-- 获取微信地址 -->
+      <view class="wechat-address-btn" bindtap="getWechatAddress">
+        <image class="wechat-icon" src="../../images/wechat.png"></image>
+        <text class="wechat-text">获取微信地址</text>
+        <image class="arrow-icon" src="../../images/arrow-right.png"></image>
+      </view>
+      
+      <!-- 分隔线 -->
+      <view class="divider"></view>
+      
+      <!-- 收货人 -->
+      <view class="form-item">
+        <view class="form-label">收货人</view>
+        <input 
+          class="form-input" 
+          placeholder="请输入收货人姓名"
+          value="{{formData.name}}"
+          bindinput="onInputChange"
+          data-field="name"
+        />
+      </view>
+      
+      <!-- 联系电话 -->
+      <view class="form-item">
+        <view class="form-label">联系电话</view>
+        <input 
+          class="form-input" 
+          type="number"
+          placeholder="请输入联系电话"
+          value="{{formData.phone}}"
+          bindinput="onInputChange"
+          data-field="phone"
+        />
+      </view>
+      
+      <!-- 所在地区 -->
+      <view class="form-item">
+        <view class="form-label">所在地区</view>
+        <picker 
+          class="form-picker" 
+          mode="region" 
+          value="[formData.province, formData.city, formData.district]"
+          bindchange="onRegionChange"
+        >
+          <view class="picker-text">{{formData.province}}{{formData.city}}{{formData.district || '请选择'}}</view>
+          <image class="picker-arrow" src="../../images/arrow-right.png"></image>
+        </picker>
+      </view>
+      
+      <!-- 收货地址 -->
+      <view class="form-item">
+        <view class="form-label">收货地址</view>
+        <input 
+          class="form-input" 
+          placeholder="请输入详细地址"
+          value="{{formData.detail}}"
+          bindinput="onInputChange"
+          data-field="detail"
+        />
+      </view>
+      
+      <!-- 门牌号（非必填） -->
+      <view class="form-item">
+        <view class="form-label">门牌号<text class="optional-label">（选填）</text></view>
+        <input 
+          class="form-input" 
+          placeholder="例：5幢一单元201室"
+          value="{{formData.houseNumber}}"
+          bindinput="onInputChange"
+          data-field="houseNumber"
+        />
+      </view>
+      
+      <!-- 设为默认地址 -->
+      <view class="form-item switch-item">
+        <view class="form-label">设为默认地址</view>
+        <switch 
+          checked="{{formData.isDefault}}"
+          bindchange="onDefaultToggle"
+        />
+      </view>
+      
+      <!-- ✅ 备注字段已完全移除 -->
+      
+      <!-- 地址标签 -->
+      <view class="form-item tag-item">
+        <view class="form-label">地址标签</view>
+        <view class="tag-container">
+          <view 
+            class="tag-option {{formData.tag === item ? 'active' : ''}}"
+            wx:for="{{tagOptions}}"
+            wx:key="item"
+            bindtap="onTagSelect"
+            data-tag="{{item}}"
+          >
+            {{item}}
+          </view>
+        </view>
+      </view>
+    </view>
+    <!-- 底部留白，确保最后一项能完全显示 -->
+    <view class="bottom-space"></view>
+  </scroll-view>
+  
+  <!-- 固定底部的保存按钮 -->
+  <view class="bottom-bar">
+    <button 
+      class="save-btn" 
+      bindtap="saveAddress" 
+      loading="{{loading}}"
+      hover-class="none"
+    >
+      保存收货地址
+    </button>
+  </view>
+</view>

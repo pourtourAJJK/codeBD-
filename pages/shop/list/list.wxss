@@ -1,0 +1,179 @@
+/* 商品列表页样式 */
+.list-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #f5f5f5;
+}
+
+/* 搜索栏（保留原有样式） */
+.search-container {
+  background-color: #ffffff;
+  padding: 20rpx 30rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding-top: calc(20rpx + env(safe-area-inset-top));
+}
+.search-bar {
+  display: flex;
+  align-items: center;
+  background-color: #f5f5f5;
+  border-radius: 40rpx;
+  padding: 16rpx 20rpx;
+}
+.search-icon {
+  width: 32rpx;
+  height: 32rpx;
+  margin-right: 12rpx;
+}
+.search-placeholder {
+  font-size: 28rpx;
+  color: #999999;
+}
+
+/* 主要内容区域（保留原有） */
+.content-wrapper {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* 左侧分类筛选（保留原有） */
+.category-sidebar {
+  width: 180rpx;
+  background-color: #f5f5f5;
+  overflow: hidden;
+}
+.category-scroll {
+  height: 100%;
+}
+.category-item {
+  padding: 30rpx 0;
+  text-align: center;
+  font-size: 28rpx;
+  color: #666666;
+  border-bottom: 2rpx solid #e5e5e5;
+  background-color: #f5f5f5;
+}
+.category-item.active {
+  background-color: #ffffff;
+  color: #ff4757;
+  font-weight: 600;
+  position: relative;
+}
+.category-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8rpx;
+  height: 40rpx;
+  background-color: #ff4757;
+  border-radius: 0 4rpx 4rpx 0;
+}
+
+/* 右侧商品展示（保留原有） */
+.product-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+}
+
+/* 搜索时商品容器占满宽度 */
+.product-container.full-width {
+  width: 100%;
+  flex: 1;
+}
+
+/* 分类名称显示样式 */
+.category-title {
+  font-size: 28rpx;
+  color: #333333;
+  padding: 20rpx 30rpx;
+  border-bottom: 2rpx solid #f0f0f0;
+  background-color: #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  box-sizing: border-box;
+}
+
+/* 排序栏（优化样式适配） */
+.sort-bar {
+  display: flex;
+  justify-content: space-around;
+  padding: 0 10rpx;
+  border-bottom: 2rpx solid #f0f0f0;
+  background-color: #ffffff;
+  position: sticky;
+  top: calc(88rpx + env(safe-area-inset-top)); /* 适配搜索栏高度 */
+  z-index: 50;
+  height: 96rpx;
+  box-sizing: border-box;
+  align-items: center; /* 新增：垂直居中 */
+}
+.sort-item {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* 新增：水平居中 */
+  font-size: 28rpx;
+  color: #666666;
+  padding: 0 10rpx;
+  height: 100%; /* 新增：占满排序栏高度 */
+  box-sizing: border-box;
+}
+.sort-item.active {
+  color: #ff4757;
+}
+.sort-icon {
+  width: 20rpx;
+  height: 20rpx;
+  margin-left: 6rpx;
+  flex-shrink: 0; /* 新增：防止图标压缩 */
+}
+
+/* 商品滚动区域（保留原有） */
+.product-scroll {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* 核心修改：单列商品列表样式（强化适配） */
+.product-list {
+  padding: 10rpx;
+  box-sizing: border-box; /* 新增：防止padding溢出 */
+}
+
+
+/* 空状态（保留原有，移除旧加载样式） */
+.no-more {
+  text-align: center;
+  padding: 20rpx 0;
+  font-size: 26rpx;
+  color: #999999;
+}
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx 0;
+}
+.empty-icon {
+  width: 160rpx;
+  height: 160rpx;
+  margin-bottom: 20rpx;
+}
+.empty-text {
+  font-size: 28rpx;
+  color: #999999;
+}
+
+/* 滚动条隐藏 */
+::-webkit-scrollbar {
+  display: none;
+}

@@ -1,0 +1,105 @@
+<!-- 支付页面 -->
+<view class="pay-container">
+  <!-- 页面头部 -->
+  <view class="page-header">
+    <view class="header-left" bindtap="navigateBack">
+    </view>
+    <view class="header-title">订单支付</view>
+    <view class="header-right"></view>
+  </view>
+
+  <!-- 订单信息 -->
+  <view class="order-info">
+    <view class="order-number">订单号：{{order.orderId}}</view>
+    <view class="order-time">创建时间：{{order.createTime}}</view>
+  </view>
+
+  <!-- 支付金额 -->
+  <view class="amount-section">
+    <view class="amount-label">支付金额</view>
+    <view class="amount-value">
+      <text class="price-symbol">¥</text>
+      <text class="price-number">{{order.totalPrice}}</text>
+    </view>
+  </view>
+
+  <!-- 支付方式 -->
+  <view class="payment-section">
+    <view class="section-title">支付方式</view>
+    <view class="payment-options">
+      <view 
+        class="payment-option {{selectedPayment === 'wechat' ? 'active' : ''}}"
+        bindtap="selectPayment"
+        data-payment="wechat"
+      >
+        <view class="payment-icon">
+          <image src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/微信支付.png"></image>
+        </view>
+        <view class="payment-info">
+          <view class="payment-name">微信支付</view>
+          <view class="payment-desc">推荐使用</view>
+        </view>
+        <view class="payment-check">
+        </view>
+      </view>
+      <view 
+        class="payment-option {{selectedPayment === 'balance' ? 'active' : ''}}"
+        bindtap="selectPayment"
+        data-payment="balance"
+      >
+        <view class="payment-icon">
+          <image src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/余额支付-copy.png"></image>
+        </view>
+        <view class="payment-info">
+          <view class="payment-name">余额支付</view>
+          <view class="payment-desc">当前余额：¥{{balance}}</view>
+        </view>
+        <view class="payment-check">
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 支付说明 -->
+  <view class="payment-notes">
+    <view class="note-item">
+      <text class="note-text">支付成功后，订单将自动更新为已支付状态</text>
+    </view>
+    <view class="note-item">
+      <text class="note-text">若支付遇到问题，请联系客服</text>
+    </view>
+  </view>
+
+  <!-- 底部支付按钮 -->
+  <view class="pay-bottom">
+    <button class="pay-btn" bindtap="confirmPayment" disabled="{{loading}}">
+      <text wx:if="{{!loading}}">立即支付 ¥{{order.totalPrice}}</text>
+      <text wx:if="{{loading}}">
+        支付中...
+      </text>
+    </button>
+  </view>
+
+  <!-- 支付结果提示 -->
+  <view class="result-modal" wx:if="{{showResultModal}}">
+    <view class="result-content">
+      <view class="result-title">{{paymentResult ? '支付成功' : '支付失败'}}</view>
+      <view class="result-message">{{resultMessage}}</view>
+      <view class="result-actions">
+        <button 
+          class="action-btn primary"
+          bindtap="handleResultAction"
+        >
+          {{paymentResult ? '查看订单' : '重新支付'}}
+        </button>
+        <button 
+          wx:if="{{paymentResult}}"
+          class="action-btn secondary"
+          bindtap="goHome"
+        >
+          返回首页
+        </button>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,94 @@
+<!-- 编辑地址页面 -->
+<view class="edit-address-container">
+  <!-- 页面头部 -->
+  <view class="page-header">
+    <view class="header-left" bindtap="navigateBack">
+      <image class="back-icon" src="../../../images/back.png"></image>
+    </view>
+    <view class="header-title">{{isAdd ? '添加地址' : '编辑地址'}}</view>
+    <view class="header-right" bindtap="saveAddress">
+      <text class="save-btn">保存</text>
+    </view>
+  </view>
+  
+  <!-- 表单内容 -->
+  <view class="form-container">
+    <!-- 收货人姓名 -->
+    <view class="form-item">
+      <text class="form-label">👤 联系人：</text>
+      <input class="form-input" type="text" placeholder="请输入姓名" value="{{address.name}}" bindinput="onInput" data-field="name"></input>
+    </view>
+    
+    <!-- 手机号码 -->
+    <view class="form-item">
+      <text class="form-label">📞 手机号：</text>
+      <input class="form-input" type="number" placeholder="请输入手机号码" value="{{address.phone}}" bindinput="onInput" data-field="phone"></input>
+    </view>
+    
+    <!-- 称谓选择 -->
+    <view class="form-item">
+      <text class="form-label">称谓：</text>
+      <view class="salutation-group">
+        <view class="salutation-item {{address.salutation === '先生' ? 'active' : ''}}" bindtap="selectSalutation" data-salutation="先生">先生</view>
+        <view class="salutation-item {{address.salutation === '女士' ? 'active' : ''}}" bindtap="selectSalutation" data-salutation="女士">女士</view>
+      </view>
+    </view>
+    
+    <!-- 省份选择 -->
+    <view class="form-item">
+      <text class="form-label">省份：</text>
+      <view class="region-grid">
+        <view wx:for="{{provinces}}" wx:key="id" class="region-item {{selectedRegion.province === item.name ? 'active' : ''}}" bindtap="selectProvince" data-province="{{item.name}}" data-index="{{index}}">
+          {{item.name}}
+        </view>
+      </view>
+    </view>
+    
+    <!-- 城市选择 -->
+    <view class="form-item" wx:if="{{selectedRegion.province}}">
+      <text class="form-label">城市：</text>
+      <view class="region-grid">
+        <view wx:for="{{cities}}" wx:key="id" class="region-item {{selectedRegion.city === item.name ? 'active' : ''}}" bindtap="selectCity" data-city="{{item.name}}" data-index="{{index}}">
+          {{item.name}}
+        </view>
+      </view>
+    </view>
+    
+    <!-- 区县选择 -->
+    <view class="form-item" wx:if="{{selectedRegion.city}}">
+      <text class="form-label">区县：</text>
+      <view class="region-grid">
+        <view wx:for="{{districts}}" wx:key="id" class="region-item {{selectedRegion.district === item.name ? 'active' : ''}}" bindtap="selectDistrict" data-district="{{item.name}}" data-index="{{index}}">
+          {{item.name}}
+        </view>
+      </view>
+    </view>
+    
+    <!-- 详细地址 -->
+    <view class="form-item">
+      <text class="form-label">详细地址：</text>
+      <textarea class="form-textarea" placeholder="请输入详细地址" value="{{address.detail}}" bindinput="onTextareaInput" data-field="detail" maxlength="100"></textarea>
+    </view>
+    
+    <!-- 腾讯地图定位 -->
+    <view class="form-item">
+      <text class="form-label">地图定位：</text>
+      <view class="map-section">
+        <button class="map-location-btn" bindtap="getTencentLocation">
+          📍 使用腾讯地图精准定位
+        </button>
+        <view wx:if="{{mapLocationInfo}}" class="location-info">
+          <text class="location-text">{{mapLocationInfo.address}}</text>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 设置默认地址 -->
+    <view class="form-item">
+      <view class="checkbox-item" bindtap="toggleDefault">
+        <image class="checkbox" src="{{address.isDefault ? '../../../images/checkbox-checked.png' : '../../../images/checkbox-unchecked.png'}}"></image>
+        <text class="checkbox-label">设为默认地址</text>
+      </view>
+    </view>
+  </view>
+</view>
