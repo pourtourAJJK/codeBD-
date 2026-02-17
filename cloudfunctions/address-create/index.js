@@ -6,7 +6,8 @@ const db = cloud.database();
 
 const COLLECTION = "shop_address";
 const USER_COLLECTION = "shop_user";
-const PHONE_REGEX = /^1[3-9]\\d{9}$/;
+// ✅ 修复正则表达式：\d 不是 \\d
+const PHONE_REGEX = /^1[3-9]\d{9}$/;
 
 async function ensureUserExists(openid) {
   const userRes = await db.collection(USER_COLLECTION).where({ openid }).get();

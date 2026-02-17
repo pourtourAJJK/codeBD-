@@ -79,8 +79,7 @@ Page({
       this.setData({
         userInfo: {
           avatar: res.avatarUrl || "",
-          nickName: res.nickName || "微信用户",
-          phone: res.phone || "150****8216",
+          nickName: res.nickname || res.nickName || "微信用户",
           bannerBg: "",
         },
         cardInfo,

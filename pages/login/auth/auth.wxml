@@ -1,9 +1,9 @@
 <!--pages/login/auth/auth.wxml-->
 <view class="container">
   <view class="header">
-    <image class="logo" src="/assets/logo.png" mode="aspectFit"></image>
+    <image class="logo" src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/logo圆形.png" mode="aspectFit"></image>
     <view class="brand-title">富硒地带</view>
-    <view class="slogan">富硒地带 好物到家</view>
+    <view class="slogan">富硒臻选 好物直达家门</view>
   </view>
 
   <view class="bottom-section">

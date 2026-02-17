@@ -22,10 +22,16 @@
       </button>
     </view>
 
-    <!-- 昵称（可输入） -->
+    <!-- 昵称（官方规范填写方式，自动安全监测） -->
     <view class="info-item">
       <text class="info-label">昵称</text>
-      <input class="info-input" placeholder="请输入昵称" value="{{editInfo.nickname}}" bindinput="onNickNameChange" />
+      <input 
+        type="nickname" 
+        class="info-input" 
+        placeholder="请输入昵称" 
+        value="{{editInfo.nickname}}" 
+        bindinput="onNickNameChange" 
+      />
     </view>
 
     <!-- 性别（选择器） -->
@@ -37,54 +43,36 @@
       </view>
     </view>
 
-    <!-- 生日（日期选择器） -->
-    <view class="info-item" bindtap="openBirthdayPicker">
-      <text class="info-label">生日</text>
-      <view class="info-select">
-        <text>{{editInfo.birthday || '请选择'}}</text>
-        <text class="arrow">→</text>
-      </view>
-    </view>
-
-    <!-- 所在地区（三级联动选择器） -->
-    <view class="info-item" bindtap="openCityPicker">
-      <text class="info-label">所在地区</text>
-      <view class="info-select">
-        <text>{{editInfo.region || '请选择'}}</text>
-        <text class="arrow">→</text>
-      </view>
-    </view>
+    <!-- ✅ 删除生日字段 -->
+    <!-- ✅ 删除所在地区字段 -->
   </view>
 
   <!-- 绑定信息模块 -->
   <view class="section">
     <text class="section-title">绑定信息</text>
-    <!-- 手机号（可输入，新增type="number"优化输入体验） -->
+    <!-- ✅ 手机号（授权后自动填充，设为不可编辑） -->
     <view class="info-item">
       <text class="info-label">手机号</text>
       <input 
         class="info-input" 
-        placeholder="请输入手机号" 
+        placeholder="{{editInfo.phoneNumber ? editInfo.phoneNumber : '请先获取手机号'}}" 
         value="{{editInfo.phoneNumber}}" 
-        bindinput="onPhoneChange"
-        type="number"
-        disabled="{{hasPhoneMask}}"
+        disabled="true"
+        style="color: {{editInfo.phoneNumber ? '#333' : '#999'}};"
       />
     </view>
 
-    <!-- 新增：手机号掩码和一键登录 -->
+    <!-- ✅ 微信手机号授权按钮（授权后隐藏） -->
     <view class="info-item" wx:if="{{!editInfo.phoneNumber}}">
       <text class="info-label">获取手机号</text>
-      <view class="phone-mask-container">
-        <text class="phone-mask" wx:if="{{phoneMask}}">{{phoneMask}}</text>
-        <button 
-          class="wechat-phone-btn"
-          bindtap="getPhoneMask"
-          style="width: 200rpx; padding: 10rpx 0; font-size: 24rpx; border-radius: 8rpx; background: #4cd964; color: #fff;"
-        >
-          {{phoneMask ? '本机号码一键登录' : '获取手机号掩码'}}
-        </button>
-      </view>
+      <button 
+        class="wechat-phone-btn"
+        open-type="getPhoneNumber"
+        bindgetphonenumber="onGetPhoneNumber"
+        style="width: 200rpx; padding: 10rpx 0; font-size: 24rpx; border-radius: 8rpx; background: #07c160; color: #fff;"
+      >
+        微信手机号授权
+      </button>
     </view>
 
     <!-- 微信（不可修改，仅展示） -->
@@ -97,64 +85,7 @@
   <!-- 保存并登录按钮 -->
   <button class="save-btn" bindtap="saveAndLogin">保存并登录</button>
   
-  <!-- 自定义生日选择器 -->
-  <view class="picker-modal" wx:if="{{showBirthdayPicker}}">
-    <!-- 遮罩层 -->
-    <view class="picker-overlay" bindtap="closeBirthdayPicker"></view>
-    <!-- 选择器主体 -->
-    <view class="picker-content">
-      <!-- 标题栏 -->
-      <view class="picker-header">
-        <text class="picker-cancel" bindtap="closeBirthdayPicker">取消</text>
-        <text class="picker-title">选择生日</text>
-        <text class="picker-confirm" bindtap="confirmBirthday">确认</text>
-      </view>
-      <!-- 选择器滚轮 -->
-      <view class="picker-wheel-container">
-        <picker-view class="picker-wheel" bindchange="onPickerChange" value="{{[birthdayPicker.yearIndex, birthdayPicker.monthIndex, birthdayPicker.dayIndex]}}">
-          <picker-view-column>
-            <view class="picker-item" wx:for="{{birthdayPicker.years}}" wx:key="*this">{{item}}年</view>
-          </picker-view-column>
-          <picker-view-column>
-            <view class="picker-item" wx:for="{{birthdayPicker.months}}" wx:key="*this">{{item}}月</view>
-          </picker-view-column>
-          <picker-view-column>
-            <view class="picker-item" wx:for="{{birthdayPicker.days}}" wx:key="*this">{{item}}日</view>
-          </picker-view-column>
-        </picker-view>
-      </view>
-    </view>
-  </view>
+  <!-- ✅ 删除生日选择器 -->
   
-  <!-- 自定义地区选择器 -->
-  <view class="picker-modal" wx:if="{{showRegionPicker}}">
-    <!-- 遮罩层 -->
-    <view class="picker-overlay" bindtap="closeRegionPicker"></view>
-    <!-- 选择器主体 -->
-    <view class="picker-content">
-      <!-- 标题栏 -->
-      <view class="picker-header">
-        <text class="picker-cancel" bindtap="closeRegionPicker">取消</text>
-        <text class="picker-title">选择所在地区</text>
-        <text class="picker-confirm" bindtap="confirmRegion">确认</text>
-      </view>
-      <!-- 选择器滚轮 -->
-      <view class="picker-wheel-container">
-        <picker-view class="picker-wheel" bindchange="onRegionPickerChange" value="{{[regionData.provinceIndex, regionData.cityIndex, regionData.districtIndex]}}">
-          <!-- 省份列 -->
-          <picker-view-column>
-            <view class="picker-item" wx:for="{{regionData.provinces}}" wx:key="*this">{{item.name}}</view>
-          </picker-view-column>
-          <!-- 城市列 -->
-          <picker-view-column>
-            <view class="picker-item" wx:for="{{regionData.provinces[regionData.provinceIndex].cities}}" wx:key="*this">{{item.name}}</view>
-          </picker-view-column>
-          <!-- 区县列 -->
-          <picker-view-column>
-            <view class="picker-item" wx:for="{{regionData.provinces[regionData.provinceIndex].cities[regionData.cityIndex].districts}}" wx:key="*this">{{item}}</view>
-          </picker-view-column>
-        </picker-view>
-      </view>
-    </view>
-  </view>
+  <!-- ✅ 删除地区选择器 -->
 </view>

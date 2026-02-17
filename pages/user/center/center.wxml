@@ -13,8 +13,8 @@
       <image class="avatar" src="{{userInfo.avatar || ''}}" mode="widthFix"></image>
       <!-- 事件绑定：点击该区域跳转 -->
       <view class="user-detail" bindtap="toPersonalInfo">
-        <text class="user-name">{{userInfo.nickName || '微信用户'}}</text>
-        <text class="user-phone">{{userInfo.phone || '150****8216'}}</text>
+        <text class="user-name">{{userInfo.nickName || '暂未登录'}}</text>
+        <text class="user-phone">{{userInfo.nickName ? '' : '请点击头像进行登录'}}</text>
       </view>
       <!-- 设置按钮 -->
       <image class="setting-icon" src="/assets/images/settings.svg" mode="widthFix" bindtap="toSetting"></image>
