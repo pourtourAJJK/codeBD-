@@ -1,5 +1,6 @@
 const cloud = require('wx-server-sdk');
-const { withResponse } = require('../utils/response');
+// 为避免部署遗漏公共utils，这里使用本地副本
+const { withResponse } = require('./response');
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const wx = { cloud };

@@ -299,7 +299,7 @@ Page({
         success: (res) => {
           if (res.confirm) {
             wx.navigateTo({
-              url: '/pages/user/profile/profile'
+              url: '/pages/login/auth/auth'
             });
           }
         }
@@ -492,7 +492,7 @@ Page({
         success: (res) => {
           if (res.confirm) {
             wx.navigateTo({
-              url: '/pages/user/profile/profile'
+              url: '/pages/login/auth/auth'
             });
           }
         }

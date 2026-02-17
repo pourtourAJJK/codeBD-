@@ -1,5 +1,5 @@
 ﻿const cloud = require('wx-server-sdk');
-const { withResponse } = require('../utils/response');
+const { withResponse } = require('./response');
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
@@ -91,20 +91,24 @@ const handler = async (event = {}) => {
       outTradeNo = generateOutTradeNo(orderId);
     }
 
-    const wxpayResult = await cloud.callFunction({
-      name: 'wxpayFunctions',
-      data: {
-        type: 'create_payment_order',
-        description,
-        out_trade_no: outTradeNo,
-        amount: totalAmount,
-        openid,
-        trade_type: 'JSAPI'
-      }
-    });
+    // 加入 2 秒超时保护，避免支付云函数超时 3 秒直接炸掉
+    const wxpayResult = await Promise.race([
+      cloud.callFunction({
+        name: 'wxpayFunctions',
+        data: {
+          type: 'create_payment_order',
+          description,
+          out_trade_no: outTradeNo,
+          amount: totalAmount,
+          openid,
+          trade_type: 'JSAPI'
+        }
+      }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('支付服务超时，请稍后重试')), 2000))
+    ]);
 
-    if (!wxpayResult.result || wxpayResult.result.code !== 200) {
-      throw new Error(wxpayResult.result?.message || '微信统一下单失败');
+    if (!wxpayResult?.result || wxpayResult.result.code !== 200) {
+      throw new Error(wxpayResult?.result?.message || '微信统一下单失败');
     }
 
     const payData = wxpayResult.result.data;

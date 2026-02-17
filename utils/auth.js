@@ -8,13 +8,9 @@ const auth = {
    * @return {boolean} 是否登录
    */
   isLoggedIn() {
-    const app = getApp();
-    // 检查全局变量中的openid（优先）或本地存储的token
-    if (app.globalData && app.globalData.openid) {
-      return true;
-    }
+    // 必须有有效 token 才视为登录，避免仅凭 openid 误判
     const token = wx.getStorageSync('token');
-    return !!token; // 存在token则认为已登录
+    return !!token;
   },
 
   /**

@@ -1,5 +1,6 @@
 const cloud = require('wx-server-sdk');
-const { withResponse } = require('../utils/response');
+// 为避免部署打包遗漏公共utils，这里放一份本地副本
+const { withResponse } = require('./response');
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
@@ -66,7 +67,9 @@ const handler = async (event = {}) => {
           quantity: Math.min(quantity, 999),
           checked: true,
           isDeleted: false,
+          // 兼容大小写字段，避免前端缺字段
           productTitle: product.name || productInfo.name || '商品名称',
+          producttitle: product.name || productInfo.name || '商品名称',
           productImage: product.cover_image || productInfo.cover_image || '/assets/images/default-product.png',
           currentPrice: Number(product.price) || Number(productInfo.price) || 0,
           originalPrice: Number(product.original_price) || Number(productInfo.originalPrice) || 0,

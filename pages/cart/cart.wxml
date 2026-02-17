@@ -54,6 +54,7 @@
 
         <!-- 2. 商品图文信息区（添加点击跳转） -->
         <view class="cart-item-info" bindtap="goToDetail" data-productid="{{item.productId}}">
+          <image class="cart-item-img" src="{{item.productImage}}" mode="aspectFill"></image>
           <view class="cart-item-desc">
             <view class="cart-item-name">{{item.productTitle || item.producttitle}}</view>
             <view class="cart-item-spec">{{item.spec}}</view>

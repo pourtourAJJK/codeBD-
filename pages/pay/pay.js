@@ -222,9 +222,10 @@ Page({
                           order.items?.[0]?.quantity || 
                           this.data.order?.quantity || 1;
           
+          const orderIdFromRes = order.orderId || order.order_id || order.orderNo || this.data.order?.orderId;
           this.setData({
             order: {
-              orderId: order.orderId,
+              orderId: orderIdFromRes,
               createTime: formattedTime,
               totalPrice: order.totalPrice,
               productId: productId, // 确保productId存在

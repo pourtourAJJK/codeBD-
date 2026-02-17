@@ -175,10 +175,14 @@ Page({
             });
           });
       } else {
-        // 检查第一个商品的必填字段
+        // 检查第一个商品的必填字段（兼容 productTitle / producttitle 任一存在即可）
         const firstItem = cartItems[0];
-        const requiredFields = ["producttitle", "productTitle", "spec", "currentPrice", "quantity"];
-        const missingFields = requiredFields.filter(field => !firstItem[field]);
+        const hasTitle = firstItem.productTitle || firstItem.producttitle;
+        const missingFields = [];
+        if (!hasTitle) missingFields.push('productTitle/producttitle');
+        if (!firstItem.spec) missingFields.push('spec');
+        if (!firstItem.currentPrice) missingFields.push('currentPrice');
+        if (!firstItem.quantity) missingFields.push('quantity');
         
         if (missingFields.length > 0) {
           console.error("[购物车报错] 渲染字段缺失", {
@@ -196,6 +200,7 @@ Page({
         ...item,
         checked: item.checked || false,
         productTitle: item.productTitle || item.producttitle || '商品名称',
+        producttitle: item.producttitle || item.productTitle || '商品名称',
         productImage: item.productImage || '/assets/images/default-product.png',
         currentPrice: item.currentPrice || 0
       }));

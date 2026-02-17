@@ -1,5 +1,5 @@
 const cloud = require('wx-server-sdk');
-const { withResponse } = require('../utils/response');
+const { withResponse } = require('./response');
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
@@ -84,6 +84,8 @@ const handler = async (event = {}) => {
       };
     });
 
+    const transactionId = orderNo || `TX${Date.now()}${Math.floor(Math.random() * 100000).toString().padStart(5, '0')}`;
+
     const orderData = {
       order_id: orderNo,
       orderNo,
@@ -96,8 +98,9 @@ const handler = async (event = {}) => {
       couponId: couponId || '',
       status: 'pending',
       pay_status: 0,
-      out_trade_no: '',
-      transaction_id: '',
+      // 避免 transaction_id 唯一索引重复，统一使用订单号占位
+      out_trade_no: transactionId,
+      transaction_id: transactionId,
       success_time: '',
       remark: remark || '',
       goods: orderItems.map(item => ({
@@ -115,19 +118,18 @@ const handler = async (event = {}) => {
 
     const transaction = await db.startTransaction();
     try {
-      await Promise.all(normalizedItems.map(item =>
-        transaction.collection(PRODUCT_COLLECTION)
+      // 顺序更新库存，避免事务长时间占用导致 TransactionNotExist
+      for (const item of normalizedItems) {
+        await transaction.collection(PRODUCT_COLLECTION)
           .doc(item.product_id)
-          .update({ data: { lockedStock: _.inc(Number(item.quantity) || 0), updatedAt: db.serverDate() } })
-      ));
+          .update({ data: { lockedStock: _.inc(Number(item.quantity) || 0), updatedAt: db.serverDate() } });
+      }
 
       const orderResult = await transaction.collection(ORDER_COLLECTION).add({ data: orderData });
       if (!orderResult._id) throw new Error('订单写入失败');
 
-      if (orderItems.length > 0) {
-        await Promise.all(orderItems.map(item =>
-          transaction.collection(ORDER_ITEMS_COLLECTION).add({ data: item })
-        ));
+      for (const item of orderItems) {
+        await transaction.collection(ORDER_ITEMS_COLLECTION).add({ data: item });
       }
 
       await transaction.commit();
@@ -141,12 +143,20 @@ const handler = async (event = {}) => {
         }
       };
     } catch (error) {
-      await transaction.rollback();
+      try {
+        await transaction.rollback();
+      } catch (rollbackErr) {
+        console.error('订单创建回滚失败', rollbackErr);
+      }
       throw error;
     }
   } catch (error) {
     console.error('订单创建失败', error);
-    return { code: 500, message: '订单创建失败', data: {} };
+    return {
+      code: 500,
+      message: error?.message ? `订单创建失败: ${error.message}` : '订单创建失败',
+      data: { error: error?.message || '' }
+    };
   }
 };
 

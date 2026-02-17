@@ -32,8 +32,12 @@ const handler = async () => {
     .orderBy("updatedAt", "desc")
     .get();
 
-  // withResponse 会自动包装
-  return result.data || [];
+  // 标准返回结构，前端按 data.addresses 读取
+  return {
+    code: 200,
+    data: { addresses: result.data || [] },
+    message: '获取地址成功'
+  };
 };
 
 exports.main = withResponse(handler);
