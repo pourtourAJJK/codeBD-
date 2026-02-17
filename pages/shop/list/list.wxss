@@ -148,6 +148,65 @@
   box-sizing: border-box; /* 新增：防止padding溢出 */
 }
 
+/* 商品项样式（核心修改：实现图片左、文字右、购物车图标的布局） */
+.product-item {
+  display: flex;
+  align-items: center;
+  padding: 20rpx;
+  border-bottom: 2rpx solid #f5f5f5;
+  position: relative;
+}
+
+.product-image {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 12rpx;
+  margin-right: 20rpx;
+}
+
+.product-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.product-name {
+  font-size: 30rpx;
+  color: #333333;
+  line-height: 44rpx;
+  margin-bottom: 10rpx;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-price {
+  font-size: 32rpx;
+  color: #ff4757;
+  font-weight: 600;
+}
+
+/* 购物车图标样式 */
+.add-to-cart {
+  position: absolute;
+  right: 20rpx;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 60rpx;
+  height: 60rpx;
+  background-color: #ff4757;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2rpx 8rpx rgba(255, 71, 87, 0.3);
+}
+
+.add-to-cart-icon {
+  width: 36rpx;
+  height: 36rpx;
+}
 
 /* 空状态（保留原有，移除旧加载样式） */
 .no-more {

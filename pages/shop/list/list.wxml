@@ -53,6 +53,9 @@
               <text class="product-name">{{item.name || ''}}</text>
               <text class="product-price">¥{{item.price || 0}}</text>
             </view>
+            <view class="add-to-cart" bindtap="onAddToCart" data-productid="{{item.productId}}">
+              <image class="add-to-cart-icon" src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/购物车.png" mode="aspectFit"></image>
+            </view>
           </view>
         </view>
 
