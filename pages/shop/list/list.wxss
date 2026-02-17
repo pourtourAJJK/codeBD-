@@ -187,26 +187,7 @@
   font-weight: 600;
 }
 
-/* 购物车图标样式 */
-.add-to-cart {
-  position: absolute;
-  right: 20rpx;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 60rpx;
-  height: 60rpx;
-  background-color: #ff4757;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2rpx 8rpx rgba(255, 71, 87, 0.3);
-}
 
-.add-to-cart-icon {
-  width: 36rpx;
-  height: 36rpx;
-}
 
 /* 空状态（保留原有，移除旧加载样式） */
 .no-more {

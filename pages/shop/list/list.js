@@ -140,18 +140,6 @@ Page({
     wx.navigateTo({ url: `/pages/shop/detail/detail?id=${productId}` });
   },
 
-  // 加入购物车
-  onAddToCart(e) {
-    const productId = e.currentTarget.dataset.productid;
-    console.log('加入购物车:', productId);
-    // 这里可以添加加入购物车的逻辑
-    wx.showToast({
-      title: '已加入购物车',
-      icon: 'success',
-      duration: 1500
-    });
-  },
-
   onReachBottom() {
     if (!this.data.isLoading && this.data.hasMore) {
       this.loadProducts(true);
