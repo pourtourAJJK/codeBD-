@@ -8,9 +8,12 @@
     "pages/address/address",
     "pages/address/new/new",
     "pages/order/order",
+    "pages/order/detail/detail",
+    "pages/order/refund/refund",
     "pages/order/confirm/confirm",
     "pages/pay/pay",
     "pages/search/search",
+
     "pages/test-login/test-login",
     "pages/shop/list/list",
     "pages/shop/detail/detail",

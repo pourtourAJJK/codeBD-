@@ -3,7 +3,11 @@ const app = getApp();
 const auth = require('../../utils/auth');
 const orderUtil = require('../../utils/orderUtil');
 
+// 新增：自动取消计时器句柄
+let autoCancelTimer = null;
+
 Page({
+
   data: {
     // 订单列表（确保初始化为空数组）
     orders: [],
@@ -52,7 +56,38 @@ Page({
     return true;
   },
 
+  // 新增：启动15分钟自动取消计时
+  startAutoCancelTimer: function(orderId) {
+    this.clearAutoCancelTimer();
+    const TTL = 15 * 60 * 1000;
+    autoCancelTimer = setTimeout(() => {
+      this.callAutoCancel(orderId);
+    }, TTL);
+  },
+
+  // 新增：清理计时器
+  clearAutoCancelTimer: function() {
+    if (autoCancelTimer) {
+      clearTimeout(autoCancelTimer);
+      autoCancelTimer = null;
+    }
+  },
+
+  // 新增：调用自动取消云函数
+  callAutoCancel: function(orderId) {
+    if (!orderId) return;
+    wx.cloud.callFunction({
+      name: 'autoCancelOrder',
+      data: { orderId },
+      success: () => {
+        wx.showToast({ title: '订单已超时取消', icon: 'none' });
+        this.loadOrders();
+      }
+    });
+  },
+
   // 返回上一页
+
   navigateBack: function() {
     wx.navigateBack();
   },
@@ -178,8 +213,30 @@ Page({
     
     return orders.map(order => {
       try {
-        // 确保products是数组，避免reduce报错
-        const items = Array.isArray(order.items) ? order.items : [];
+        // 统一订单ID，避免前端找不到 orderId
+        const orderId = order.orderId || order.order_id || order.orderNo || order.out_trade_no || order._id || '';
+
+        // 统一商品列表字段：优先 items，没有则兜底 goods
+        const itemsRaw = Array.isArray(order.items)
+          ? order.items
+          : (Array.isArray(order.goods) ? order.goods : []);
+
+        // 规范化商品字段，避免 productId / product_id 不一致
+        const items = itemsRaw.map(product => {
+          const productId = product.productId || product.product_id || product.spuId || product.id || '';
+          const productName = product.productName || product.product_name || product.name || '商品';
+          const price = Number(product.price || product.sale_price || 0) || 0;
+          const quantity = Number(product.quantity || product.count || 1) || 1;
+          const cover = product.cover_image || product.coverImage || product.image || '';
+          return {
+            ...product,
+            productId,
+            productName,
+            price,
+            quantity,
+            cover_image: cover
+          };
+        });
         
         // 计算商品总数
         const productCount = items.reduce((total, product) => {
@@ -188,26 +245,28 @@ Page({
         }, 0);
         
         // 格式化创建时间（容错处理）
-        const createTime = order.createTime ? orderUtil.formatOrderTime(order.createTime) : '';
+        const rawCreateTime = order.createTime || order.createdAt || order.create_time || order.create_at || '';
+        const createTime = rawCreateTime ? orderUtil.formatOrderTime(rawCreateTime) : '';
         
         // 获取订单状态文本和颜色（确保status存在）
-        const status = order.status || '';
+        const status = order.status || order.order_status || '';
         const statusText = orderUtil.getOrderStatusText(status);
         const statusColor = orderUtil.getOrderStatusColor(status);
         
         // 确保金额字段存在且为数字
-        const totalPrice = typeof order.totalPrice === 'number' ? order.totalPrice : parseFloat(order.totalPrice) || 0;
-        const deliveryFee = typeof order.deliveryFee === 'number' ? order.deliveryFee : parseFloat(order.deliveryFee) || 0;
+        const totalPrice = Number(order.totalPrice || order.total_amount || order.totalAmount || 0) || 0;
+        const deliveryFee = Number(order.deliveryFee || order.shippingFee || order.freight || 0) || 0;
         
         return {
           ...order,
-          items: items,
-          productCount: productCount,
-          createTime: createTime,
-          statusText: statusText,
-          statusColor: statusColor,
-          totalPrice: totalPrice,
-          deliveryFee: deliveryFee,
+          orderId,
+          items,
+          productCount,
+          createTime,
+          statusText,
+          statusColor,
+          totalPrice,
+          deliveryFee,
           // 添加金额格式化方法到订单对象
           formatPrice: (price) => {
             return this.formatPrice(price);
@@ -228,6 +287,7 @@ Page({
       }
     });
   },
+
 
   // 去购物
   goShopping: function() {
@@ -250,21 +310,44 @@ Page({
 
   // 支付订单
   payOrder: function(e) {
-    const orderId = e.currentTarget?.dataset?.orderId;
+    // 尽量从多个字段兜底获取 orderId，避免提示“订单信息获取失败”
+    // 注意：WXML 使用 data-order-id，dataset 中键为 orderId（驼峰）
+    let orderId = e.currentTarget?.dataset?.orderId
+      || e.currentTarget?.dataset?.order_id
+      || e.currentTarget?.dataset?.orderid
+      || '';
+
+    // 从列表缓存中再兜底一次
+    if (!orderId) {
+      const orderIndex = e.currentTarget?.dataset?.index;
+      if (typeof orderIndex === 'number' && this.data.orders[orderIndex]) {
+        const item = this.data.orders[orderIndex];
+        orderId = item.orderId || item.order_id || item.orderNo || item.out_trade_no || item._id || '';
+      }
+    }
+
     if (!orderId) {
       this.showError('订单信息获取失败');
       return;
     }
     
-    const order = this.data.orders.find(order => order.orderId === orderId);
+    const order = this.data.orders.find(order => {
+      const id = order.orderId || order.order_id || order.orderNo || order.out_trade_no || order._id;
+      return id === orderId;
+    });
     if (order) {
+      // 新增：启动本地倒计时，防未支付超时
+      this.startAutoCancelTimer(orderId);
       wx.navigateTo({
-        url: `/pages/pay/pay?orderId=${orderId}&totalPrice=${order.totalPrice || 0}`
+        url: `/pages/pay/pay?orderId=${orderId}&totalPrice=${order.totalPrice || order.total_amount || 0}`
       });
     } else {
       this.showError('未找到该订单');
     }
   },
+
+
+
 
   // 取消订单
   cancelOrder: function(e) {
@@ -541,5 +624,13 @@ Page({
   // 页面上拉触底
   onReachBottom: function() {
     // TODO: 实现分页加载
+  },
+
+  // 页面隐藏/卸载时清理计时器
+  onHide: function() {
+    this.clearAutoCancelTimer();
+  },
+  onUnload: function() {
+    this.clearAutoCancelTimer();
   }
 });

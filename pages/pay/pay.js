@@ -3,6 +3,9 @@ const app = getApp();
 const auth = require('../../utils/auth');
 const orderUtil = require('../../utils/orderUtil');
 
+// 新增：自动取消计时器句柄
+let autoCancelTimer = null;
+
 Page({
   data: {
     // 订单信息
@@ -185,6 +188,36 @@ Page({
     });
   },
 
+  // 新增：启动15分钟自动取消计时
+  startAutoCancelTimer: function(orderId) {
+    this.clearAutoCancelTimer();
+    const TTL = 15 * 60 * 1000;
+    autoCancelTimer = setTimeout(() => {
+      this.callAutoCancel(orderId);
+    }, TTL);
+  },
+
+  // 新增：清理计时器
+  clearAutoCancelTimer: function() {
+    if (autoCancelTimer) {
+      clearTimeout(autoCancelTimer);
+      autoCancelTimer = null;
+    }
+  },
+
+  // 新增：调用自动取消云函数
+  callAutoCancel: function(orderId) {
+    if (!orderId) return;
+    wx.cloud.callFunction({
+      name: 'autoCancelOrder',
+      data: { orderId },
+      success: () => {
+        wx.showToast({ title: '订单已超时取消', icon: 'none' });
+        this.loadOrderInfo(orderId);
+      }
+    });
+  },
+
   // 返回上一页
   navigateBack: function() {
     wx.navigateBack();
@@ -232,6 +265,13 @@ Page({
               quantity: quantity     // 确保quantity存在
             }
           });
+
+          // 新增：pending 时启动倒计时，其他状态清理
+          if (order.status === 'pending') {
+            this.startAutoCancelTimer(orderIdFromRes);
+          } else {
+            this.clearAutoCancelTimer();
+          }
           
           console.log('【支付页面日志】更新后的订单信息:', this.data.order);
         } else {
@@ -428,7 +468,8 @@ Page({
               success: (payRes) => {
                 // 支付成功，更新订单状态
                 console.log('【支付页面日志15】唤起微信支付组件成功:', payRes);
-                this.updateOrderStatus(orderId, 'paid');
+                this.clearAutoCancelTimer();
+                this.updateOrderStatus(orderId, 'paid', { autoCancelStatus: 'paid' });
                 // 显示支付成功结果
                 this.showPaymentResult(true, '支付成功');
               },
@@ -439,10 +480,15 @@ Page({
                 
                 // 【核心修复：支付失败时更新订单状态】
                 let status = 'payment_fail';
+                let extra = {};
                 if (payErr.errMsg === 'requestPayment:fail cancel') {
                   status = 'cancelled';
+                  // 新增：记录取消时间，保持 pending 自动取消
+                  const nowTs = Date.now();
+                  extra = { cancelPayTime: nowTs, autoCancelStatus: 'pending' };
+                  this.startAutoCancelTimer(orderId);
                 }
-                this.updateOrderStatus(orderId, status);
+                this.updateOrderStatus(orderId, status, extra);
                 
                 // 精准错误提示：根据微信支付失败原因给出友好提示
                 let failMsg = '支付失败：' + (payErr.errMsg || '未知错误');
@@ -513,14 +559,15 @@ Page({
     });
   },
 
-  // 更新订单状态
-  updateOrderStatus: function(orderId, status) {
+  // 更新订单状态（新增：支持超时字段）
+  updateOrderStatus: function(orderId, status, extra = {}) {
     try {
       wx.cloud.callFunction({
         name: 'order-update-status',
         data: {
           orderId: orderId,
-          status: status
+          status: status,
+          ...extra
         },
         success: res => {
           console.log('更新订单状态成功', res);
@@ -567,9 +614,15 @@ Page({
 
   // 页面卸载
   onUnload: function() {
+    this.clearAutoCancelTimer();
     // 如果支付成功，清除订单缓存
     if (this.data.paymentResult) {
       wx.removeStorageSync('pendingOrderId');
     }
+  },
+
+  // 页面隐藏
+  onHide: function() {
+    this.clearAutoCancelTimer();
   }
 });

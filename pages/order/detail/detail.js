@@ -1,5 +1,6 @@
 // 订单详情页面逻辑
-const auth = require('../../utils/auth.js');
+const auth = require('../../../utils/auth.js');
+
 
 Page({
   data: {
@@ -9,14 +10,16 @@ Page({
   },
 
   onLoad: function (options) {
-    // 获取订单ID
+    // 获取订单ID（兼容多种字段）
+    const orderId = options.orderId || options.order_id || options.orderNo || options.out_trade_no || options.id || '';
     this.setData({
-      orderId: options.orderId
+      orderId
     });
     
     // 加载订单详情
     this.loadOrderDetail();
   },
+
 
   onShow: function () {
     // 页面显示时刷新订单信息
@@ -46,17 +49,40 @@ Page({
       const result = await wx.cloud.callFunction({
         name: 'order-get',
         data: {
-          orderId: this.data.orderId
+          orderId: this.data.orderId,
+          order_id: this.data.orderId,
+          orderNo: this.data.orderId,
+          out_trade_no: this.data.orderId
         }
       });
 
+
       if (result.result.code === 200) {
-        const order = result.result.data?.order;
+        const raw = result.result.data?.order || {};
+        const goods = (raw.goods || []).map((g) => ({
+          ...g,
+          priceYuan: this.formatPrice(g.price)
+        }));
+        const totalPrice = Number(raw.totalPrice || raw.totalAmount || 0);
+        const shippingFee = Number(raw.shippingFee || 0);
+        const discountAmount = Number(raw.discountAmount || 0);
+        const payAmount = totalPrice + shippingFee - discountAmount;
+        const order = {
+          ...raw,
+          goods,
+          createTimeFmt: this.formatTime(raw.createTime || raw.createdAt),
+          totalPriceYuan: this.formatPrice(totalPrice),
+          shippingFeeYuan: this.formatPrice(shippingFee),
+          discountAmountYuan: this.formatPrice(discountAmount),
+          payAmountYuan: this.formatPrice(payAmount)
+        };
+
         this.setData({
-          order: order,
+          order,
           statusText: this.getStatusText(order?.status)
         });
       } else {
+
         wx.showToast({
           title: result.result.message || '获取订单失败',
           icon: 'none'
@@ -89,25 +115,26 @@ Page({
   // 格式化时间
   formatTime: function (timestamp) {
     if (!timestamp) return '';
-    
     const date = new Date(timestamp);
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    const seconds = date.getSeconds().toString().padStart(2, '0');
-    
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    const pad = (n) => (n < 10 ? '0' + n : n);
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
   },
+
+  // 格式化价格（分→元，两位小数）
+  formatPrice: function (cents) {
+    const n = Number(cents || 0);
+    return (n / 100).toFixed(2);
+  },
+
 
   // 去支付
   goToPay: function () {
-    // 跳转到支付页面
+    // 跳转到支付页面（保持兼容，若有新支付页可替换）
     wx.navigateTo({
-      url: '/pages/payment/payment?id=' + this.data.orderId
+      url: `/pages/pay/pay?orderId=${this.data.orderId}`
     });
   },
+
 
   // 取消订单
   cancelOrder: async function () {

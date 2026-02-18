@@ -1,0 +1,9 @@
+{
+  "triggers": [
+    {
+      "name": "autoCancelTimer",
+      "type": "timer",
+      "config": "*/5 * * * *"
+    }
+  ]
+}

@@ -25,14 +25,22 @@ const handler = async (event = {}) => {
       return { code: 500, message: '用户不存在', data: {} };
     }
 
-    const orderId = event.order_id || event.orderId;
+    const orderId = event.order_id || event.orderId || event.orderNo || event.out_trade_no || event.outTradeNo || event._id;
     if (!orderId) {
       return { code: 500, message: '缺少订单ID参数', data: {} };
-
     }
 
+    // 兼容多种订单ID字段，避免字段不一致导致查不到
+    const orderWhere = _.or([
+      { order_id: orderId, openid },
+      { orderId: orderId, openid },
+      { orderNo: orderId, openid },
+      { out_trade_no: orderId, openid },
+      { _id: orderId, openid }
+    ]);
+
     const orderRes = await db.collection(ORDER_COLLECTION)
-      .where({ order_id: orderId, openid })
+      .where(orderWhere)
       .limit(1)
       .get();
 
@@ -40,8 +48,9 @@ const handler = async (event = {}) => {
       return { code: 500, message: '订单不存在或无权限', data: {} };
     }
 
-
     const order = orderRes.data[0];
+    const normalizedOrderId = order.order_id || order.orderId || order.orderNo || order.out_trade_no || order._id;
+
 
     const orderItemsRes = await db.collection(ORDER_ITEMS_COLLECTION)
       .where({ order_id: orderId, openid })
@@ -84,6 +93,7 @@ const handler = async (event = {}) => {
 
     const formattedOrder = {
       ...order,
+      orderId: normalizedOrderId,
       goods: Array.isArray(order.goods) && order.goods.length > 0 ? order.goods : goods,
       address
     };
@@ -93,6 +103,7 @@ const handler = async (event = {}) => {
       message: '获取订单详情成功',
       data: { order: formattedOrder }
     };
+
   } catch (error) {
     console.error('获取订单详情失败', error);
     return { code: 500, message: '获取订单详情失败', data: {} };

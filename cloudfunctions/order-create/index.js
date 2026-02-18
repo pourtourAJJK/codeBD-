@@ -111,6 +111,14 @@ const handler = async (event = {}) => {
         spec: item.spec,
         cover_image: item.cover_image
       })),
+      // 新增：超时与库存锁定信息（兼容旧字段，不影响原有逻辑）
+      cancelPayTime: null,
+      autoCancelStatus: 'pending',
+      stockLocked: true,
+      lockedStock: orderItems.map(it => ({
+        productId: it.product_id,
+        quantity: it.quantity
+      })),
       createdAt: db.serverDate(),
       updatedAt: db.serverDate(),
       createTime: db.serverDate()

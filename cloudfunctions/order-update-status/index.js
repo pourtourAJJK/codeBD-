@@ -1,5 +1,7 @@
 const cloud = require('wx-server-sdk');
-const { withResponse } = require('../utils/response');
+// 使用本地副本，避免部署遗漏公共utils
+const { withResponse } = require('./response');
+
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
@@ -23,7 +25,7 @@ const handler = async (event = {}) => {
     }
 
     const { status } = event;
-    const orderId = event.order_id || event.orderId;
+    const orderId = event.order_id || event.orderId || event.orderNo || event.out_trade_no || event.outTradeNo || event._id;
     if (!orderId || !status) {
       return { code: 500, message: '缺少必要参数', data: {} };
     }
@@ -32,11 +34,28 @@ const handler = async (event = {}) => {
       return { code: 500, message: '订单状态不合法', data: {} };
     }
 
+    const orderWhere = db.command.or([
+      { order_id: orderId, openid },
+      { orderId: orderId, openid },
+      { orderNo: orderId, openid },
+      { out_trade_no: orderId, openid },
+      { _id: orderId, openid }
+    ]);
+
+    // 新增：允许更新超时控制相关字段
+    const updateData = {
+      status,
+      updatedAt: db.serverDate(),
+    };
+    if (event.cancelPayTime !== undefined) updateData.cancelPayTime = event.cancelPayTime;
+    if (event.autoCancelStatus) updateData.autoCancelStatus = event.autoCancelStatus;
+
     const updateRes = await db.collection(ORDER_COLLECTION)
-      .where({ order_id: orderId, openid })
-      .update({ data: { status, updatedAt: db.serverDate() } });
+      .where(orderWhere)
+      .update({ data: updateData });
 
     if (!updateRes.stats || updateRes.stats.updated === 0) {
+
       return { code: 500, message: '订单不存在或无权限', data: {} };
     }
 

@@ -25,13 +25,13 @@
   <view class="goods-section">
     <view class="section-title">商品信息</view>
     <view class="goods-list">
-      <view class="goods-item" wx:for="{{order.items}}" wx:key="_id" wx:for-item="item">
-        <image class="goods-image" src="{{item.productInfo.cover_image}}" mode="aspectFill"></image>
+      <view class="goods-item" wx:for="{{order.goods}}" wx:key="product_id" wx:for-item="item">
+        <image class="goods-image" src="{{item.cover_image || '/assets/images/default-product.png'}}" mode="aspectFill"></image>
         <view class="goods-info">
-          <text class="goods-name">{{item.productInfo.name}}</text>
+          <text class="goods-name">{{item.product_name}}</text>
           <text class="goods-spec" wx:if="item.spec">{{item.spec}}</text>
           <view class="goods-price-count">
-            <text class="price">¥{{(item.price / 100).toFixed(2)}}</text>
+            <text class="price">¥{{item.priceYuan}}</text>
             <text class="count">x{{item.quantity}}</text>
           </view>
         </view>
@@ -78,19 +78,19 @@
     <view class="price-info">
       <view class="price-item">
         <text class="label">商品总价</text>
-        <text class="value">¥{{(order.totalAmount / 100).toFixed(2)}}</text>
+        <text class="value">¥{{order.totalPriceYuan}}</text>
       </view>
       <view class="price-item">
         <text class="label">运费</text>
-        <text class="value">¥{{(order.shippingFee / 100).toFixed(2)}}</text>
+        <text class="value">¥{{order.shippingFeeYuan}}</text>
       </view>
       <view class="price-item" wx:if="order.discountAmount > 0">
         <text class="label">优惠</text>
-        <text class="value discount">-¥{{(order.discountAmount / 100).toFixed(2)}}</text>
+        <text class="value discount">-¥{{order.discountAmountYuan}}</text>
       </view>
       <view class="price-item total">
         <text class="label">实付金额</text>
-        <text class="value total-value">¥{{((order.totalAmount + order.shippingFee - order.discountAmount) / 100).toFixed(2)}}</text>
+        <text class="value total-value">¥{{order.payAmountYuan}}</text>
       </view>
     </view>
   </view>
