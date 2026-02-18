@@ -61,21 +61,33 @@ Page({
         const raw = result.result.data?.order || {};
         const goods = (raw.goods || []).map((g) => ({
           ...g,
-          priceYuan: this.formatPrice(g.price)
+          price: Number(g.price || g.sale_price || g.pay_price || 0),
+          priceYuan: this.formatPrice(g.price || g.sale_price || g.pay_price || 0)
         }));
-        const totalPrice = Number(raw.totalPrice || raw.totalAmount || 0);
-        const shippingFee = Number(raw.shippingFee || 0);
-        const discountAmount = Number(raw.discountAmount || 0);
-        const payAmount = totalPrice + shippingFee - discountAmount;
+        const totalPrice = Number(raw.totalPrice || raw.total_amount || raw.totalAmount || 0);
+        const shippingFee = Number(raw.shippingFee || raw.freight || 0);
+        const discountAmount = Number(raw.discountAmount || raw.discount || 0);
+        const payAmount = Number(
+          raw.payAmount || raw.pay_amount || raw.paymentAmount || (totalPrice + shippingFee - discountAmount) || 0
+        );
+
+        // 展示用订单号：不再回退到 Mongo _id
+        const orderIdNormalized = raw.order_id || raw.orderId || raw.orderNo || raw.out_trade_no || this.data.orderId;
+
         const order = {
           ...raw,
+          orderId: orderIdNormalized,
           goods,
           createTimeFmt: this.formatTime(raw.createTime || raw.createdAt),
+          payTimeFmt: this.formatTime(raw.paymentTime || raw.pay_time || raw.success_time || raw.payTime),
           totalPriceYuan: this.formatPrice(totalPrice),
           shippingFeeYuan: this.formatPrice(shippingFee),
           discountAmountYuan: this.formatPrice(discountAmount),
-          payAmountYuan: this.formatPrice(payAmount)
+          payAmountYuan: this.formatPrice(payAmount),
+          paymentMethod: raw.paymentMethod || raw.payMethod || '微信支付'
         };
+
+
 
         this.setData({
           order,
@@ -120,11 +132,14 @@ Page({
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
   },
 
-  // 格式化价格（分→元，两位小数）
-  formatPrice: function (cents) {
-    const n = Number(cents || 0);
-    return (n / 100).toFixed(2);
+  // 格式化价格（智能识别分/元，两位小数）
+  formatPrice: function (amount) {
+    const n = Number(amount || 0);
+    // 约定：大于等于1000视为分，否则视为元
+    if (n >= 1000) return (n / 100).toFixed(2);
+    return n.toFixed(2);
   },
+
 
 
   // 去支付
@@ -293,6 +308,22 @@ Page({
       console.log('【订单查询日志10】订单查询流程完成');
       console.log('========================================');
     }
+  },
+
+  // 修改时间（占位：可接入实际改约接口）
+  modifyTime: function () {
+    wx.showToast({
+      title: '请联系客服修改送达时间',
+      icon: 'none'
+    });
+  },
+
+  // 修改地址（占位：可接入地址编辑流程）
+  modifyAddress: function () {
+    wx.showToast({
+      title: '请联系客服修改收货地址',
+      icon: 'none'
+    });
   },
 
   // 关键修复点2：添加退款功能，调用wxpayFunctions

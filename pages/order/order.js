@@ -195,12 +195,43 @@ Page({
     });
   },
 
-  // 金额格式化函数
+  // 价格数值归一（处理分/元、字符串）
+  normalizePrice: function(price) {
+    const num = Number(price);
+    if (!isFinite(num)) return 0;
+    // 如果是大于1000的整数，按分转元
+    if (Number.isInteger(num) && num > 1000) return num / 100;
+    // 其他情况直接返回数值
+    return num;
+  },
+
+  // 将价格转为展示文案
+  displayPrice: function(price) {
+    const val = this.normalizePrice(price);
+    return '¥' + val.toFixed(2);
+  },
+
+  // 创建时间格式化（兼容 Date/时间戳/字符串）
+  formatCreateTime: function(raw) {
+    if (!raw) return '未知时间';
+    let date = null;
+    if (raw instanceof Date) {
+      date = raw;
+    } else if (typeof raw === 'number') {
+      date = new Date(raw);
+    } else if (typeof raw === 'string') {
+      const parsed = Date.parse(raw);
+      if (!isNaN(parsed)) date = new Date(parsed);
+    } else if (raw.$date) {
+      date = new Date(raw.$date);
+    }
+    if (!date || isNaN(date.getTime())) return '未知时间';
+    return orderUtil.formatOrderTime(date.getTime());
+  },
+
+  // 金额格式化函数（保留函数给内部使用）
   formatPrice: function(price) {
-    // 容错处理：确保price是数字
-    const numPrice = typeof price === 'number' ? price : parseFloat(price) || 0;
-    // 格式化为¥XX.XX格式
-    return '¥' + numPrice.toFixed(2);
+    return this.displayPrice(price);
   },
 
   // 格式化订单数据
@@ -225,7 +256,7 @@ Page({
         const items = itemsRaw.map(product => {
           const productId = product.productId || product.product_id || product.spuId || product.id || '';
           const productName = product.productName || product.product_name || product.name || '商品';
-          const price = Number(product.price || product.sale_price || 0) || 0;
+          const price = this.normalizePrice(product.price || product.sale_price || 0);
           const quantity = Number(product.quantity || product.count || 1) || 1;
           const cover = product.cover_image || product.coverImage || product.image || '';
           return {
@@ -234,7 +265,8 @@ Page({
             productName,
             price,
             quantity,
-            cover_image: cover
+            cover_image: cover,
+            displayPrice: this.displayPrice(price)
           };
         });
         
@@ -246,7 +278,7 @@ Page({
         
         // 格式化创建时间（容错处理）
         const rawCreateTime = order.createTime || order.createdAt || order.create_time || order.create_at || '';
-        const createTime = rawCreateTime ? orderUtil.formatOrderTime(rawCreateTime) : '';
+        const displayCreateTime = this.formatCreateTime(rawCreateTime);
         
         // 获取订单状态文本和颜色（确保status存在）
         const status = order.status || order.order_status || '';
@@ -254,23 +286,24 @@ Page({
         const statusColor = orderUtil.getOrderStatusColor(status);
         
         // 确保金额字段存在且为数字
-        const totalPrice = Number(order.totalPrice || order.total_amount || order.totalAmount || 0) || 0;
-        const deliveryFee = Number(order.deliveryFee || order.shippingFee || order.freight || 0) || 0;
+        const totalPriceNum = this.normalizePrice(order.totalPrice || order.total_amount || order.totalAmount || 0);
+        const deliveryFeeNum = this.normalizePrice(order.deliveryFee || order.shippingFee || order.freight || 0);
+        const totalAmountNum = totalPriceNum + deliveryFeeNum;
         
         return {
           ...order,
           orderId,
           items,
           productCount,
-          createTime,
+          displayCreateTime,
           statusText,
           statusColor,
-          totalPrice,
-          deliveryFee,
-          // 添加金额格式化方法到订单对象
-          formatPrice: (price) => {
-            return this.formatPrice(price);
-          }
+          totalPrice: totalPriceNum,
+          deliveryFee: deliveryFeeNum,
+          totalAmount: totalAmountNum,
+          displayTotalPrice: this.displayPrice(totalPriceNum),
+          displayDeliveryFee: this.displayPrice(deliveryFeeNum),
+          displayTotalAmount: this.displayPrice(totalAmountNum)
         };
       } catch (e) {
         console.error('【formatOrders】格式化订单失败:', e, order);
@@ -278,15 +311,20 @@ Page({
           ...order,
           items: [],
           productCount: 0,
-          createTime: '',
+          displayCreateTime: '未知时间',
           statusText: '未知状态',
           statusColor: '#999',
           totalPrice: 0,
-          deliveryFee: 0
+          deliveryFee: 0,
+          totalAmount: 0,
+          displayTotalPrice: this.displayPrice(0),
+          displayDeliveryFee: this.displayPrice(0),
+          displayTotalAmount: this.displayPrice(0)
         };
       }
     });
   },
+
 
 
   // 去购物

@@ -214,40 +214,40 @@
   left: 0;
   right: 0;
   background-color: #fff;
-  padding: 20rpx;
-  border-top: 1rpx solid #eee;
+  padding: 12rpx 18rpx;
+  border-top: 1rpx solid #e5e7eb;
   display: flex;
-  justify-content: flex-end;
-  gap: 20rpx;
+  justify-content: center;
 }
 
-.btn {
-  width: 200rpx;
-  height: 80rpx;
-  line-height: 80rpx;
-  font-size: 28rpx;
-  background-color: #ff6b6b;
-  color: #fff;
-  border-radius: 40rpx;
-  margin: 0;
+.pill-group {
+  display: flex;
+  gap: 10rpx;
 }
 
-.btn-secondary {
+.pill-btn {
+  padding: 8rpx 18rpx;
+  font-size: 24rpx;
+  color: #3b4252;
   background-color: #fff;
-  color: #666;
-  border: 1rpx solid #ddd;
+  border: 1rpx solid #d0d5dd;
+  border-radius: 999rpx;
+  min-width: 118rpx;
+  text-align: center;
+  line-height: 1.45;
+  box-shadow: 0 4rpx 10rpx rgba(0, 0, 0, 0.05);
 }
 
-.btn-info {
-  background-color: #17a2b8;
-  color: #fff;
+.pill-danger {
+  background-color: #fff7eb;
+  border-color: #f59e0b;
+  color: #b45309;
+  box-shadow: 0 4rpx 12rpx rgba(245, 158, 11, 0.18);
 }
 
-.btn-warning {
-  background-color: #ffc107;
-  color: #333;
-}
-
-.btn::after {
+.pill-btn::after {
   border: none;
 }
+
+
+

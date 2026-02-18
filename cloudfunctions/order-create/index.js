@@ -68,7 +68,12 @@ const handler = async (event = {}) => {
       }
     }
 
-    const orderNo = `D${Date.now()}${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
+    // 新编号：FX + yyyyMMddHHmmss + 7位随机数（仅影响新订单）
+    const now = new Date();
+    const pad = (n) => (n < 10 ? '0' + n : '' + n);
+    const datePart = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+    const randPart = Math.floor(Math.random() * 1e7).toString().padStart(7, '0');
+    const orderNo = `FX${datePart}${randPart}`;
     const orderItems = normalizedItems.map(item => {
       const product = productMap[item.product_id] || {};
       return {

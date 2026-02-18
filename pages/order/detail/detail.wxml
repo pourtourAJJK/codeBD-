@@ -43,32 +43,27 @@
   <view class="order-info-section">
     <view class="section-title">订单信息</view>
     <view class="order-info">
+      <!-- 仅展示业务订单号，不显示 Mongo _id -->
       <view class="info-item">
         <text class="label">订单编号</text>
-        <text class="value">{{order._id}}</text>
+        <text class="value">{{order.orderId}}</text>
       </view>
-      <view class="info-item">
-        <text class="label">下单时间</text>
-        <text class="value">{{formatTime(order.createTime)}}</text>
-      </view>
+
       <view class="info-item">
         <text class="label">支付方式</text>
         <text class="value">{{order.paymentMethod}}</text>
       </view>
-      <view class="info-item" wx:if="order.paymentTime">
+      <view class="info-item">
+        <text class="label">下单时间</text>
+        <text class="value">{{order.createTimeFmt}}</text>
+      </view>
+      <view class="info-item" wx:if="order.payTimeFmt">
         <text class="label">支付时间</text>
-        <text class="value">{{formatTime(order.paymentTime)}}</text>
+        <text class="value">{{order.payTimeFmt}}</text>
       </view>
-      <view class="info-item" wx:if="order.deliveryTime">
-        <text class="label">发货时间</text>
-        <text class="value">{{formatTime(order.deliveryTime)}}</text>
-      </view>
-      <view class="info-item" wx:if="order.deliveryCompany && order.trackingNumber">
-        <text class="label">物流信息</text>
-        <text class="value">
-          {{order.deliveryCompany}} {{order.trackingNumber}}
-        </text>
-      </view>
+      <!-- 已按需求去掉发货时间与物流信息 -->
+
+
     </view>
   </view>
   
@@ -95,16 +90,4 @@
     </view>
   </view>
   
-  <!-- 操作按钮 -->
-  <view class="action-buttons" wx:if="order">
-    <button class="btn" wx:if="order.status === 'pending'" bindtap="goToPay">去支付</button>
-    <button class="btn btn-secondary" wx:if="order.status === 'pending'" bindtap="cancelOrder">取消订单</button>
-    <button class="btn" wx:if="order.status === 'paid'">提醒发货</button>
-    <button class="btn" wx:if="order.status === 'shipped'" bindtap="confirmReceipt">确认收货</button>
-    <button class="btn" wx:if="order.status === 'delivered'" bindtap="viewOrder">查看订单</button>
-    <!-- 添加订单查询按钮 -->
-    <button class="btn btn-info" bindtap="queryWxOrder">查询订单</button>
-    <!-- 添加申请退款按钮，仅在已支付或已发货状态显示 -->
-    <button class="btn btn-warning" wx:if="order.status === 'paid' || order.status === 'shipped'" bindtap="applyRefund">申请退款</button>
-  </view>
 </view>

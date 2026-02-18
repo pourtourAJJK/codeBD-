@@ -76,8 +76,9 @@
         </view>
         <view class="info-row">
           <text class="info-label">下单时间</text>
-          <text class="info-value">{{item.createTime}}</text>
+          <text class="info-value">{{item.displayCreateTime}}</text>
         </view>
+
       </view>
 
       <!-- 商品列表 -->
@@ -94,9 +95,10 @@
             <text class="product-name">{{product.productName}}</text>
             <text class="product-spec">{{product.spec || '默认规格'}}</text>
             <view class="product-price-count">
-              <text class="product-price">{{item.formatPrice(product.price)}}</text>
+              <text class="product-price">{{product.displayPrice}}</text>
               <text class="product-count">x{{product.quantity}}</text>
             </view>
+
           </view>
         </view>
         <view wx:if="{{item.items.length > 1}}" class="product-more">
@@ -108,17 +110,18 @@
       <view class="amount-info">
         <view class="amount-row">
           <text class="amount-label">商品金额</text>
-          <text class="amount-value">{{item.formatPrice(item.totalPrice)}}</text>
+          <text class="amount-value">{{item.displayTotalPrice}}</text>
         </view>
         <view class="amount-row">
           <text class="amount-label">配送费</text>
-          <text class="amount-value">{{item.formatPrice(item.deliveryFee || 0)}}</text>
+          <text class="amount-value">{{item.displayDeliveryFee}}</text>
         </view>
         <view class="amount-total">
           <text class="total-label">合计</text>
-          <text class="total-value">{{item.formatPrice(item.totalPrice + (item.deliveryFee || 0))}}</text>
+          <text class="total-value">{{item.displayTotalAmount}}</text>
         </view>
       </view>
+
 
       <!-- 操作按钮 -->
       <view class="action-buttons">

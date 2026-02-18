@@ -7,7 +7,9 @@
     "pages/user/info/info",
     "pages/address/address",
     "pages/address/new/new",
+    "pages/address/edit/edit",
     "pages/order/order",
+
     "pages/order/detail/detail",
     "pages/order/refund/refund",
     "pages/order/confirm/confirm",

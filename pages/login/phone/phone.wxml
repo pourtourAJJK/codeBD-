@@ -1,7 +1,7 @@
 <!--pages/login/phone/phone.wxml-->
 <view class="container">
   <view class="content">
-    <image class="phone-icon" src="/assets/phone-icon.png" mode="aspectFit"></image>
+    <image class="phone-icon" src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/logo圆形.png" mode="aspectFit"></image>
     <view class="title">绑定手机号</view>
     <view class="description">为了方便我们与您联系，请授权绑定手机号</view>
 
