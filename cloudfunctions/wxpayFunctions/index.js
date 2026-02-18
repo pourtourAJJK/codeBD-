@@ -4,7 +4,8 @@
 
 // 导入依赖
 const cloud = require('wx-server-sdk');
-const { withResponse } = require('../utils/response');
+// 使用本地 response 副本，避免依赖丢失
+const { withResponse } = require('./response');
 
 const https = require('https');
 const crypto = require('crypto');

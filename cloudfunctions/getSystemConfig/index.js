@@ -3,7 +3,8 @@
 // 适配 wx-server-sdk 最新版，使用动态环境配置
 const cloud = require('wx-server-sdk');
 
-const { withResponse } = require('../utils/response');
+// 使用本地副本，避免依赖缺失
+const { withResponse } = require('./response');
 
 /**
  * 云函数入口函数
