@@ -7,12 +7,14 @@
     "pages/user/info/info",
     "pages/address/address",
     "pages/address/new/new",
-    "pages/address/edit/edit",
     "pages/order/order",
+
 
     "pages/order/detail/detail",
     "pages/order/refund/refund",
+    "pages/order/refund-confirm/refund-confirm",
     "pages/order/confirm/confirm",
+
     "pages/pay/pay",
     "pages/search/search",
 

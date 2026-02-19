@@ -46,8 +46,11 @@ const orderUtil = {
       'paid': '已支付',
       'shipped': '已发货',
       'completed': '已完成',
-      'cancelled': '已取消'
+      'cancelled': '已取消',
+      'refunding': '退款中',
+      'refunded': '已退款'
     };
+
     // 转换状态为字符串，确保能匹配
     const statusStr = String(status);
     return statusMap[statusStr] || '未知状态';
@@ -70,8 +73,11 @@ const orderUtil = {
       'paid': '#f39c12', // 已支付-橙色
       'shipped': '#3498db', // 已发货-蓝色
       'completed': '#27ae60', // 已完成-绿色
-      'cancelled': '#95a5a6' // 已取消-灰色
+      'cancelled': '#95a5a6', // 已取消-灰色
+      'refunding': '#e11',    // 退款中-红色
+      'refunded': '#27ae60'   // 已退款-绿色
     };
+
     // 转换状态为字符串，确保能匹配
     const statusStr = String(status);
     return colorMap[statusStr] || '#666'; // 未知状态-深灰

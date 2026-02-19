@@ -4,10 +4,11 @@
   title-size="20"
   title-color="white"
   bg-color="#2F8FC7"
-  location-text="{{currentLocation}}"
+  show-location="{{false}}"
   bind:navBarHeightReady="onNavBarHeightReady"
-  bind:locationClick="navigateToAddress"
 ></custom-nav-bar>
+
+
 <!-- 头部搜索栏 -->
 <view class="search-bar" style="top: {{navBarHeight}}px;">
     <view class="search-container" bindtap="navigateToSearch">

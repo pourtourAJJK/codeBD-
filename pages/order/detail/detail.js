@@ -6,8 +6,10 @@ Page({
   data: {
     orderId: '',
     order: null,
-    loading: true
+    loading: true,
+    showActionBar: false
   },
+
 
   onLoad: function (options) {
     // 获取订单ID（兼容多种字段）
@@ -23,8 +25,22 @@ Page({
 
   onShow: function () {
     // 页面显示时刷新订单信息
+    const statusMap = wx.getStorageSync('refundStatusMap') || {};
+    const pendingStatus = statusMap[this.data.orderId];
+    if (pendingStatus === 'refunding') {
+      this.setData({
+        order: { ...(this.data.order || {}), status: 'refunding' },
+        statusText: '退款中'
+      });
+    } else if (pendingStatus === 'refunded') {
+      this.setData({
+        order: { ...(this.data.order || {}), status: 'refunded' },
+        statusText: '已退款'
+      });
+    }
     this.loadOrderDetail();
   },
+
 
   // 加载订单详情
   loadOrderDetail: async function () {
@@ -87,12 +103,25 @@ Page({
           paymentMethod: raw.paymentMethod || raw.payMethod || '微信支付'
         };
 
+        // 覆盖本地退款状态（支持多种订单号键）
+        const statusMap = wx.getStorageSync('refundStatusMap') || {};
+        const possibleKeys = [orderIdNormalized, raw._id, raw.order_no, raw.orderNo, raw.out_trade_no].filter(Boolean);
+        const matchedKey = possibleKeys.find(k => statusMap[k]);
+        const pendingStatus = matchedKey ? statusMap[matchedKey] : undefined;
+        if (pendingStatus === 'refunding' || pendingStatus === 'refunded') {
+          order.status = pendingStatus;
+        }
+
+        const showActionBar = ['paid', 'pending'].includes(order?.status);
 
 
         this.setData({
           order,
-          statusText: this.getStatusText(order?.status)
+          statusText: this.getStatusText(order?.status),
+          showActionBar
         });
+
+
       } else {
 
         wx.showToast({
@@ -119,8 +148,11 @@ Page({
       'shipped': '待收货',
       'delivered': '已完成',
       'completed': '已完成',
-      'cancelled': '已取消'
+      'cancelled': '已取消',
+      'refunding': '退款中',
+      'refunded': '已退款'
     };
+
     return statusMap[status] || '未知状态';
   },
 
@@ -151,46 +183,65 @@ Page({
   },
 
 
-  // 取消订单
-  cancelOrder: async function () {
-    wx.showModal({
-      title: '确认取消',
-      content: '确定要取消这个订单吗？',
-      success: async (res) => {
-        if (res.confirm) {
-          try {
-            // 调用云函数取消订单
-            const result = await wx.cloud.callFunction({
-              name: 'order-cancel',
-              data: {
-                orderId: this.data.orderId
-              }
-            });
-
-            if (result.result.code === 200) {
-              wx.showToast({
-                title: '订单已取消',
-                icon: 'success'
-              });
-              // 刷新订单信息
-              this.loadOrderDetail();
-            } else {
-              wx.showToast({
-                title: result.result.message || '取消失败',
-                icon: 'none'
-              });
-            }
-          } catch (error) {
-            console.error('取消订单失败', error);
-            wx.showToast({
-              title: '网络错误，请稍后重试',
-              icon: 'none'
-            });
+  // 底部操作：根据状态处理取消
+  onCancelAction: function () {
+    if (!this.data.order) {
+      wx.showToast({ title: '订单信息缺失', icon: 'none' });
+      return;
+    }
+    const status = this.data.order.status;
+    if (status === 'paid') {
+      wx.navigateTo({ url: `/pages/order/refund/refund?orderId=${this.data.orderId}` });
+      return;
+    }
+    if (status === 'pending') {
+      wx.showModal({
+        title: '提示',
+        content: '是否取消订单',
+        cancelText: '否',
+        confirmText: '是',
+        success: (res) => {
+          if (res.confirm) {
+            this.performCancelOrder();
           }
         }
-      }
-    });
+      });
+      return;
+    }
+    wx.showToast({ title: '当前状态不可取消', icon: 'none' });
   },
+
+  // 取消订单（实际执行）
+  performCancelOrder: async function () {
+    try {
+      const result = await wx.cloud.callFunction({
+        name: 'order-cancel',
+        data: {
+          orderId: this.data.orderId
+        }
+      });
+
+      if (result.result.code === 200) {
+        wx.showToast({
+          title: '订单已取消',
+          icon: 'success'
+        });
+        this.loadOrderDetail();
+      } else {
+        wx.showToast({
+          title: result.result.message || '取消失败',
+          icon: 'none'
+        });
+      }
+    } catch (error) {
+      console.error('取消订单失败', error);
+      wx.showToast({
+        title: '网络错误，请稍后重试',
+        icon: 'none'
+      });
+    }
+  },
+
 
   // 确认收货
   confirmReceipt: async function () {
@@ -318,13 +369,54 @@ Page({
     });
   },
 
-  // 修改地址（占位：可接入地址编辑流程）
+  // 修改地址：选择新地址并更新订单地址
   modifyAddress: function () {
-    wx.showToast({
-      title: '请联系客服修改收货地址',
-      icon: 'none'
+    if (!this.data.order) {
+      wx.showToast({ title: '订单信息缺失', icon: 'none' });
+      return;
+    }
+
+    const that = this;
+    wx.navigateTo({
+      url: '/pages/address/address?selectMode=true&from=orderDetail',
+      events: {
+        selectedAddress: function (data) {
+          if (data && data.address) {
+            that.updateOrderAddress(data.address);
+          }
+        }
+      }
     });
   },
+
+  // 更新订单地址到数据库
+  updateOrderAddress: async function (address) {
+    try {
+      wx.showLoading({ title: '更新中...', mask: true });
+      const result = await wx.cloud.callFunction({
+        name: 'order-update-status',
+        data: {
+          orderId: this.data.orderId,
+          status: this.data.order?.status || 'paid',
+          address
+        }
+      });
+      wx.hideLoading();
+
+      if (result.result.code === 200) {
+        wx.showToast({ title: '地址已更新', icon: 'success' });
+        const newOrder = { ...this.data.order, address };
+        this.setData({ order: newOrder });
+      } else {
+        wx.showToast({ title: result.result.message || '更新失败', icon: 'none' });
+      }
+    } catch (err) {
+      wx.hideLoading();
+      console.error('更新订单地址失败', err);
+      wx.showToast({ title: '更新失败，请稍后重试', icon: 'none' });
+    }
+  },
+
 
   // 关键修复点2：添加退款功能，调用wxpayFunctions
   applyRefund: async function () {

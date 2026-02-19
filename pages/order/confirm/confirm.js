@@ -31,6 +31,16 @@ Page({
     subtotalPrice: 0, // 与WXML中使用的字段名保持一致
     deliveryFee: 0, // 配送费
     totalPrice: 0, // 订单总价
+    // 预约时间
+    appointmentDates: [],
+    appointmentTimes: [
+      { label: '09:00-11:00', value: '09:00-11:00' },
+      { label: '13:00-15:00', value: '13:00-15:00' },
+      { label: '15:00-17:00', value: '15:00-17:00' }
+    ],
+    pickerValue: [0, 0],
+    selectedAppointmentText: '请选择送达时间',
+    selectedAppointment: null,
     // 加载状态
     loading: false,
     submitting: false, // 与WXML中使用的字段名保持一致
@@ -48,12 +58,13 @@ Page({
     const loginStatus = this.checkLoginStatus();
     console.log('登录状态检查结果：', loginStatus);
     
-    // 获取eventChannel
-    const eventChannel = this.getOpenerEventChannel();
+    // 获取eventChannel（兼容无事件通道的进入方式）
+    const eventChannel = (typeof this.getOpenerEventChannel === 'function') ? this.getOpenerEventChannel() : null;
     console.log('获取到eventChannel：', !!eventChannel);
     
-    // 监听来自商品详情页的商品信息
-    eventChannel.on('productInfo', (data) => {
+    if (eventChannel && typeof eventChannel.on === 'function') {
+      // 监听来自商品详情页的商品信息
+      eventChannel.on('productInfo', (data) => {
       console.log('✅ 接收到商品详情页传递的信息：', data); // 新增
       // 格式化商品数据，确保字段名与购物车一致
       const formattedProduct = {
@@ -75,17 +86,17 @@ Page({
     });
     
     // 监听来自购物车页的商品信息
-    eventChannel.on('cartItems', (data) => {
-      console.log('✅ 接收到购物车页传递的信息：', data); // 新增
-      this.setData({
-        products: data.cartItems,
-        orderItems: data.cartItems // 同时设置orderItems，确保WXML能显示
+      eventChannel.on('cartItems', (data) => {
+        console.log('✅ 接收到购物车页传递的信息：', data); // 新增
+        this.setData({
+          products: data.cartItems,
+          orderItems: data.cartItems // 同时设置orderItems，确保WXML能显示
+        });
+        this.calculatePrice();
       });
-      this.calculatePrice();
-    });
-    
-    // 新增：监听来自地址管理页或添加地址页的地址信息
-    eventChannel.on('selectedAddress', (data) => {
+      
+      // 新增：监听来自地址管理页或添加地址页的地址信息
+      eventChannel.on('selectedAddress', (data) => {
       console.log('✅ 接收到地址信息：', data);
       if (data && data.address) {
         // 确保地址数据结构完整
@@ -115,7 +126,13 @@ Page({
         });
       }
     });
+    } else {
+      console.warn('未获取到事件通道，跳过事件监听，直接初始化本地数据');
+    }
     
+    // 构建最近三天的预约日期
+    this.buildAppointmentDates();
+
     // 计算价格
     this.calculatePrice();
     console.log('✅ 订单确认页初始化完成'); // 新增
@@ -327,6 +344,55 @@ Page({
     }
   },
 
+  // 构建最近三天日期
+  buildAppointmentDates: function() {
+    const days = [];
+    const now = new Date();
+    const weekMap = ['日','一','二','三','四','五','六'];
+    for (let i = 0; i < 3; i++) {
+      const d = new Date(now.getTime() + i * 24 * 60 * 60 * 1000);
+      const month = d.getMonth() + 1;
+      const date = d.getDate();
+      const label = `${month}月${date}日 (周${weekMap[d.getDay()]})`;
+      days.push({ label, value: `${d.getFullYear()}-${month}-${date}` });
+    }
+    // 默认选中第一天第一个时间段，确保picker有可选项和默认值
+    const defaultDay = days[0];
+    const defaultTime = this.data.appointmentTimes[0];
+    const defaultText = defaultDay && defaultTime ? `${defaultDay.label} ${defaultTime.label}` : '请选择送达时间';
+
+    this.setData({
+      appointmentDates: days,
+      pickerValue: [0, 0],
+      selectedAppointmentText: defaultText,
+      selectedAppointment: defaultDay && defaultTime ? {
+        day: defaultDay.value,
+        dayLabel: defaultDay.label,
+        time: defaultTime.value,
+        timeLabel: defaultTime.label
+      } : null
+    });
+  },
+
+  // 打开预约选择器（WXML 使用 picker 直接选择）
+  onAppointmentChange: function(e) {
+    const [dayIdx, timeIdx] = e.detail.value;
+    const day = this.data.appointmentDates[dayIdx];
+    const time = this.data.appointmentTimes[timeIdx];
+    if (!day || !time) return;
+    const text = `${day.label} ${time.label}`;
+    this.setData({
+      pickerValue: [dayIdx, timeIdx],
+      selectedAppointmentText: text,
+      selectedAppointment: {
+        day: day.value,
+        dayLabel: day.label,
+        time: time.value,
+        timeLabel: time.label
+      }
+    });
+  },
+
   // 输入订单备注
   onRemarkChange: function(e) {
     this.setData({
@@ -471,7 +537,8 @@ Page({
         quantity: product.quantity
       })),
       totalPrice: this.data.totalPrice,
-      remark: this.data.remark
+      remark: this.data.remark,
+      appointment: this.data.selectedAppointment
     };
     console.log('【订单确认日志7】构建的订单数据:', orderData);
     

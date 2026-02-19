@@ -16,6 +16,11 @@ Component({
       type: String,
       value: '#2F8FC7'
     },
+    // 是否展示位置选择区域
+    showLocation: {
+      type: Boolean,
+      value: true
+    },
     locationText: {
       type: String,
       value: '广东省清远市佛冈县...'

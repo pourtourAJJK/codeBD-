@@ -133,8 +133,18 @@
         >
           管理
         </button>
+
+        <!-- 查看详情（所有状态均可进入） -->
+        <button 
+          class="btn-primary" 
+          bindtap="viewOrderDetail"
+          data-order-id="{{item.orderId}}"
+        >
+          查看详情
+        </button>
         
         <!-- 待支付状态 -->
+
         <button 
           wx:if="{{item.status === 'pending'}}" 
           class="btn-primary" 
@@ -150,11 +160,12 @@
         <button 
           wx:if="{{item.status === 'paid'}}" 
           class="btn-primary" 
-          bindtap="viewOrderDetail"
+          bindtap="manageOrder"
           data-order-id="{{item.orderId}}"
         >
-          查看详情
+          管理
         </button>
+
 
         <!-- 已发货待收货 -->
         <button 
@@ -167,14 +178,7 @@
         </button>
 
         <!-- 已完成/已取消 -->
-        <button 
-          wx:if="{{item.status === 'completed' || item.status === 'cancelled'}}" 
-          class="btn-primary" 
-          bindtap="viewOrderDetail"
-          data-order-id="{{item.orderId}}"
-        >
-          查看详情
-        </button>
+
 
       </view>
     </view>

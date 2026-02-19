@@ -90,4 +90,14 @@
     </view>
   </view>
   
+  <!-- 底部操作按钮：修改地址 / 取消或退款 -->
+  <view class="action-buttons" wx:if="{{showActionBar && order}}">
+    <view class="pill-group">
+      <button class="pill-btn" bindtap="modifyAddress">修改地址</button>
+      <button class="pill-btn pill-danger" bindtap="onCancelAction">
+        {{order.status === 'paid' ? '申请退款' : '取消订单'}}
+      </button>
+    </view>
+  </view>
+  
 </view>

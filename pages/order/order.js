@@ -40,9 +40,12 @@ Page({
 
   // 页面显示
   onShow: function() {
+    // 如果有退款状态本地标记，先行覆盖再加载
+    this.applyRefundingStatus();
     // 加载订单列表
     this.loadOrders();
   },
+
 
   // 检查登录状态
   checkLoginStatus: function() {
@@ -104,8 +107,25 @@ Page({
     }
   },
 
+  applyRefundingStatus: function() {
+    const statusMap = wx.getStorageSync('refundStatusMap') || {};
+    if (!statusMap || Object.keys(statusMap).length === 0) return;
+    const updated = (this.data.orders || []).map(o => {
+      const id = o.orderId || o.order_id || o.orderNo || o.out_trade_no || o._id;
+      if (statusMap[id] === 'refunding') {
+        return { ...o, status: 'refunding', statusText: '退款中', statusColor: '#e11' };
+      }
+      if (statusMap[id] === 'refunded') {
+        return { ...o, status: 'refunded', statusText: '已退款', statusColor: '#27ae60' };
+      }
+      return o;
+    });
+    this.setData({ orders: updated });
+  },
+
   // 加载订单列表
   loadOrders: function(callback) {
+
     console.log('========================================');
     console.log('【订单列表日志0】开始加载订单列表');
     console.log('【订单列表日志0.1】当前选中标签:', this.data.activeTab);
@@ -131,7 +151,8 @@ Page({
     console.log('【订单列表日志0.6】基础查询参数:', params);
     
     // 如果不是全部订单，添加状态筛选（校验状态合法性）
-    const validStatus = ['all', 'pending', 'paid', 'shipped', 'completed', 'cancelled'];
+    const validStatus = ['all', 'pending', 'paid', 'shipped', 'completed', 'cancelled', 'refunding', 'refunded'];
+
     if (this.data.activeTab !== 'all' && validStatus.includes(this.data.activeTab)) {
       params.status = this.data.activeTab;
       console.log('【订单列表日志0.7】添加状态筛选:', this.data.activeTab);
@@ -155,12 +176,26 @@ Page({
           console.log('【订单列表日志4】原始订单数据:', rawOrders);
           const formattedOrders = this.formatOrders(rawOrders);
           console.log('【订单列表日志5】格式化后的订单数据:', formattedOrders);
+
+          // 退款状态本地覆盖
+          const statusMap = wx.getStorageSync('refundStatusMap') || {};
+          const mergedOrders = formattedOrders.map(o => {
+            const id = o.orderId || o.order_id || o.orderNo || o.out_trade_no || o._id;
+            if (statusMap[id] === 'refunding') {
+              return { ...o, status: 'refunding', statusText: '退款中', statusColor: '#e11' };
+            }
+            if (statusMap[id] === 'refunded') {
+              return { ...o, status: 'refunded', statusText: '已退款', statusColor: '#27ae60' };
+            }
+            return o;
+          });
           
           // 终极修复：强制清空错误信息，确保万无一失
           this.setData({
-            orders: formattedOrders,
+            orders: mergedOrders,
             errorMsg: '' // 再次强制清空错误提示
           }, () => {
+
             console.log('【订单列表日志6】订单数据加载成功，共', formattedOrders.length, '条订单');
             console.log('【订单列表日志7】当前errorMsg状态:', this.data.errorMsg); // 打印确认
             console.log('========================================');

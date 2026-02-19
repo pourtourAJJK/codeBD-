@@ -1,0 +1,37 @@
+<view class="confirm-page">
+  <view class="header">退款申请</view>
+
+  <view class="item-card">
+    <image class="item-img" src="{{item.cover}}" mode="aspectFill"></image>
+    <view class="item-info">
+      <view class="item-title">{{item.title}}</view>
+      <view class="item-spec">规格：{{item.spec}}</view>
+      <view class="item-price">¥ {{item.priceYuan}}</view>
+    </view>
+  </view>
+
+  <view class="form">
+    <view class="form-row" bindtap="chooseStatus">
+      <view class="label">收货状态</view>
+      <view class="value">{{statusText || '请选择'}} ></view>
+    </view>
+    <view class="form-row" bindtap="chooseReason">
+      <view class="label">退款原因</view>
+      <view class="value">{{reasonText || '请选择'}} ></view>
+    </view>
+    <view class="amount-row">
+      <view class="label">退款金额：</view>
+      <view class="amount">¥ {{item.priceYuan}}</view>
+      <view class="tips">最多可退 ¥ {{item.priceYuan}} （按实付金额退款）</view>
+    </view>
+    <view class="desc-block">
+      <view class="label">问题描述（选填）</view>
+      <textarea maxlength="200" placeholder="请输入不少于10个字的描述" bindinput="onDesc" value="{{desc}}"></textarea>
+      <view class="count">{{desc.length}}/200</view>
+    </view>
+  </view>
+
+  <view class="footer">
+    <button class="confirm-btn" bindtap="submit">确认</button>
+  </view>
+</view>

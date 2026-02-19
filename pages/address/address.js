@@ -118,19 +118,13 @@ Page({
         }
       }
     } else {
-      // 非选择模式，正常跳转到编辑或添加页面
-      let url = '';
-      if (addressId) {
-        // 编辑现有地址
-        url = `/pages/address/edit/edit?id=${addressId}`;
-      } else {
-        // 添加新地址
-        url = '/pages/address/new/new';
-      }
+      // 非选择模式，统一跳转到新增页；若有 addressId 则在新增页回填并执行更新
+      const url = addressId
+        ? `/pages/address/new/new?id=${addressId}&mode=edit`
+        : '/pages/address/new/new';
       
       console.log('【地址管理日志4】准备跳转到URL:', url);
       
-      // 尝试跳转
       wx.navigateTo({
         url: url,
         success: function(res) {
@@ -144,8 +138,6 @@ Page({
           console.error('【地址管理日志9】错误message:', err.errMsg);
           console.error('【地址管理日志10】错误详细信息:', JSON.stringify(err));
           console.error('========================================');
-          
-          // 显示错误提示
           wx.showToast({
             title: '跳转失败: ' + err.errMsg,
             icon: 'none',
@@ -155,6 +147,7 @@ Page({
       });
     }
   },
+
 
   // 设置默认地址
   setDefault: function(e) {

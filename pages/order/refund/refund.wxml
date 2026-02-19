@@ -1,2 +1,28 @@
-<!--pages/order/refund/refund.wxml-->
-<text>pages/order/refund/refund.wxml</text>
+<view class="refund-page">
+  <view class="header">申请退款</view>
+
+  <view class="item-card">
+    <checkbox-group>
+      <label class="item-row">
+        <checkbox value="all" checked bindtap="toggleSelectAll" class="item-checkbox"></checkbox>
+        <image class="item-img" src="{{item.cover || '/assets/images/default-product.png'}}" mode="aspectFill"></image>
+        <view class="item-info">
+          <view class="item-title">{{item.title}}</view>
+          <view class="item-spec">规格：{{item.spec}}</view>
+        </view>
+        <view class="item-price">
+          <text class="price">¥{{item.priceYuan}}</text>
+          <text class="count">x{{item.quantity}}</text>
+        </view>
+      </label>
+    </checkbox-group>
+  </view>
+
+  <view class="bottom-bar">
+    <view class="select-all" bindtap="toggleSelectAll">
+      <checkbox checked="{{selectAll}}" class="small-checkbox"></checkbox>
+      <text class="select-text">全选</text>
+    </view>
+    <button class="submit-btn" bindtap="submit">提交</button>
+  </view>
+</view>

@@ -65,6 +65,20 @@
         </label>
       </radio-group>
     </view>
+
+    <!-- 预约时间 -->
+    <view class="appointment-row">
+      <view class="appt-label">预约时间</view>
+      <picker 
+        mode="multiSelector" 
+        range="{{[appointmentDates, appointmentTimes]}}" 
+        range-key="label" 
+        value="{{pickerValue}}" 
+        bindchange="onAppointmentChange"
+      >
+        <view class="appt-value">{{selectedAppointmentText}}</view>
+      </picker>
+    </view>
   </view>
 
   <!-- 支付方式 -->

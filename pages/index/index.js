@@ -10,8 +10,7 @@ Page({
     navBarHeight: 0,
     contentPaddingTop: 0,
     statusBarHeight: 0,
-    // 当前位置信息
-    currentLocation: '请选择位置',
+
     // 轮播图数据
     bannerList: [
       {
@@ -239,55 +238,7 @@ Page({
     });
   },
 
-  /**
-   * 打开腾讯定位地图选择位置
-   */
-  navigateToAddress: function() {
-    // 直接调用地图选点API
-    wx.chooseLocation({
-      success: (res) => {
-        console.log('地图选点成功', res);
-        // 这里可以将选择的位置信息保存到全局或者传递给需要的地方
-        // 例如，可以更新首页显示的地址信息
-        this.setData({
-          currentLocation: res.name || res.address
-        });
-        
-        // 可以选择跳转到地址列表或者直接使用选择的地址
-        // wx.navigateTo({
-        //   url: '/pages/address/address?location=' + encodeURIComponent(JSON.stringify(res))
-        // });
-      },
-      fail: (err) => {
-        console.log('地图选点失败', err);
-        // 如果用户拒绝授权，提示用户打开设置
-        if (err.errMsg.indexOf('auth deny') > -1) {
-          wx.showModal({
-            title: '位置授权',
-            content: '需要您的位置信息来使用地图选点功能，请开启位置授权',
-            success: (modalRes) => {
-              if (modalRes.confirm) {
-                // 打开设置页面
-                wx.openSetting({
-                  success: (settingRes) => {
-                    if (settingRes.authSetting['scope.userLocation']) {
-                      // 用户在设置中开启了授权
-                      this.navigateToAddress();
-                    }
-                  }
-                });
-              }
-            }
-          });
-        } else {
-          // 其他错误，可以选择跳转到地址列表
-          // wx.navigateTo({
-          //   url: '/pages/address/address'
-          // });
-        }
-      }
-    });
-  },
+
 
   /**
    * 跳转到购物车

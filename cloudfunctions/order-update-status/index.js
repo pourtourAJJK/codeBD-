@@ -8,7 +8,8 @@ const db = cloud.database();
 
 const ORDER_COLLECTION = 'shop_order';
 const USER_COLLECTION = 'shop_user';
-const ALLOWED_STATUS = ['pending', 'paid', 'shipped', 'completed', 'cancelled', 'payment_fail'];
+const ALLOWED_STATUS = ['pending', 'paid', 'shipped', 'completed', 'cancelled', 'payment_fail', 'refunding', 'refunded'];
+
 
 const handler = async (event = {}) => {
   try {
@@ -49,6 +50,9 @@ const handler = async (event = {}) => {
     };
     if (event.cancelPayTime !== undefined) updateData.cancelPayTime = event.cancelPayTime;
     if (event.autoCancelStatus) updateData.autoCancelStatus = event.autoCancelStatus;
+    // 允许同步更新收货地址
+    if (event.address) updateData.address = event.address;
+
 
     const updateRes = await db.collection(ORDER_COLLECTION)
       .where(orderWhere)

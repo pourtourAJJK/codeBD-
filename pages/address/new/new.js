@@ -18,24 +18,69 @@ Page({
     // 地址标签选项
     tagOptions: ['家', '公司', '父母', '朋友', '其他'],
     // 加载状态
-    loading: false
+    loading: false,
+    // 编辑模式相关
+    editId: '',
+    isEdit: false
   },
 
   // 页面加载
   onLoad: function(options) {
     console.log('新增地址页面加载成功', options);
-    // 保存来源信息，判断是否从订单确认页跳转过来
     this.setData({
-      from: options.from
+      from: options.from || 'addressList',
+      editId: options.id || '',
+      isEdit: !!options.id
+    }, () => {
+
+      if (this.data.editId) {
+        this.loadAddressDetail(this.data.editId);
+      }
     });
   },
+
 
   // 返回上一页
   navigateBack: function() {
     wx.navigateBack();
   },
 
+  // 加载已有地址详情用于回填
+  loadAddressDetail: function(addressId) {
+    console.log('[address-new] 加载地址详情用于回填，id:', addressId);
+    wx.cloud.callFunction({
+      name: 'address-get',
+      data: { addressId },
+      success: (res) => {
+        if (res?.result?.code === 200 && res.result.data?.address) {
+          const addr = res.result.data.address;
+          this.setData({
+            formData: {
+              ...this.data.formData,
+              name: addr.name || '',
+              phone: addr.phone || '',
+              province: addr.province || '',
+              city: addr.city || '',
+              district: addr.district || '',
+              detail: addr.detail || addr.street || '',
+              houseNumber: addr.houseNumber || '',
+              isDefault: !!addr.isDefault,
+              tag: addr.tag || ''
+            }
+          });
+        } else {
+          wx.showToast({ title: res?.result?.message || '加载地址失败', icon: 'none' });
+        }
+      },
+      fail: (err) => {
+        console.error('[address-new] 加载地址详情失败', err);
+        wx.showToast({ title: '加载地址失败', icon: 'none' });
+      }
+    });
+  },
+
   // 获取微信地址
+
   getWechatAddress: function() {
     wx.chooseAddress({
       success: (res) => {
@@ -205,17 +250,20 @@ Page({
     this.setData({ loading: true });
     
     wx.showLoading({
-      title: '正在保存...',
+      title: this.data.isEdit ? '正在更新...' : '正在保存...',
       mask: true
     });
     
     // ==================== 第四步：提交到后端数据库 ====================
-    console.log('[address-new] 🚀 准备调用云函数 address-create');
-    console.log('[address-new] 📦 请求参数:', JSON.stringify(submitData, null, 2));
+    const fnName = this.data.isEdit ? 'address-update' : 'address-create';
+    const payload = this.data.isEdit ? { addressId: this.data.editId, ...submitData } : submitData;
+    console.log(`[address-new] 🚀 准备调用云函数 ${fnName}`);
+    console.log('[address-new] 📦 请求参数:', JSON.stringify(payload, null, 2));
     
     wx.cloud.callFunction({
-      name: 'address-create',
-      data: submitData,
+      name: fnName,
+      data: payload,
+
       success: (res) => {
         console.log('[address-new] ✅ 云函数返回成功');
         console.log('[address-new] 📥 返回数据:', JSON.stringify(res, null, 2));
@@ -236,17 +284,18 @@ Page({
         console.log('[address-new] ✅ 地址保存成功');
         
         const createdAddress = res.result.data?.address || null;
-        const addressId = res.result.data?.addressId;
+        const addressId = this.data.isEdit ? this.data.editId : res.result.data?.addressId;
         
         wx.hideLoading();
         
         // 显示成功提示
         wx.showToast({
-          title: '地址保存成功',
+          title: this.data.isEdit ? '地址已更新' : '地址保存成功',
           icon: 'success',
           duration: 1500
         });
         
+
         // ==================== 第六步：页面跳转逻辑 ====================
         setTimeout(() => {
           console.log('[address-new] 准备执行页面跳转...');
@@ -300,9 +349,23 @@ Page({
             wx.navigateBack();
             return;
           }
+
+          // 从地址列表创建新地址，保存后返回地址列表
+          if (this.data.from === 'addressList') {
+            console.log('[address-new] 从地址列表进入，保存后返回列表');
+            wx.navigateBack();
+            return;
+          }
+          
+          if (this.data.isEdit) {
+            console.log('[address-new] 编辑完成，返回上一页');
+            wx.navigateBack();
+            return;
+          }
           
           // 优先级3：默认跳转到首页
           console.log('[address-new] 没有特殊跳转需求，跳转到首页');
+
           wx.switchTab({ 
             url: '/pages/index/index',
             success: () => {
@@ -316,6 +379,7 @@ Page({
           });
           
         }, 1500); // 等待Toast显示完成
+
       },
       fail: (err) => {
         console.error('[address-new] ❌ 云函数调用失败');
