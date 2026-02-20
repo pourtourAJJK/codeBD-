@@ -1,5 +1,8 @@
 {
   "navigationBarTitleText": "搜索",
   "navigationBarBackgroundColor": "#ffffff",
-  "navigationBarTextStyle": "black"
+  "navigationBarTextStyle": "black",
+  "usingComponents": {
+    "loading": "/components/loading/loading"
+  }
 }

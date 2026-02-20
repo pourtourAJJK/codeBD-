@@ -2,5 +2,8 @@
   "navigationBarTitleText": "我的",
   "navigationBarBackgroundColor": "#ffffff",
   "navigationBarTextStyle": "black",
-  "backgroundColor": "#f5f5f5"
+  "backgroundColor": "#f5f5f5",
+  "usingComponents": {
+    "loading": "/components/loading/loading"
+  }
 }

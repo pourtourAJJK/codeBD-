@@ -26,11 +26,12 @@
   transition: all 0.3s ease;
 }
 
-.manage-btn:active {
+.manage-btn-hover {
   background-color: #007aff;
   color: #fff;
   transform: scale(0.95);
 }
+
 
 /* 价格信息样式 */
 .price-info {
@@ -127,10 +128,11 @@
   transition: all 0.3s ease;
 }
 
-.go-shopping-btn:active {
+.go-shopping-btn-hover {
   transform: scale(0.95);
   box-shadow: 0 2rpx 6rpx rgba(47, 143, 199, 0.4);
 }
+
 
 /* 购物车列表样式 */
 .cart-list {
@@ -338,9 +340,10 @@
   height: 100%;
 }
 
-.delete-btn:active {
+.delete-btn-hover {
   opacity: 1;
 }
+
 
 /* 底部结算栏样式 */
 .cart-footer {
@@ -470,13 +473,14 @@
   transition: all 0.3s ease;
 }
 
-.cart-item:active {
+.cart-item-hover {
   background-color: #f5f5f5;
 }
 
-.quantity-btn:active {
+.quantity-btn-hover {
   background-color: #f5f5f5;
 }
+
 
 /* 推荐商品区域样式 */
 .recommend-section {
@@ -514,9 +518,10 @@
   position: relative;
 }
 
-.product-item:active {
+.product-item-hover {
   transform: scale(0.98);
 }
+
 
 .product-content {
   width: 100%;
@@ -553,10 +558,11 @@
   z-index: 10;
 }
 
-.add-cart-btn:active {
+.add-cart-btn-hover {
   transform: scale(1.1);
   background-color: #ff4757;
 }
+
 
 .cart-icon {
   width: 36rpx;

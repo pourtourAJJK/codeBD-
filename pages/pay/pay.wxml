@@ -30,6 +30,7 @@
       <view 
         class="payment-option {{selectedPayment === 'wechat' ? 'active' : ''}}"
         bindtap="selectPayment"
+        hover-class="payment-option-hover"
         data-payment="wechat"
       >
         <view class="payment-icon">
@@ -45,6 +46,7 @@
       <view 
         class="payment-option {{selectedPayment === 'balance' ? 'active' : ''}}"
         bindtap="selectPayment"
+        hover-class="payment-option-hover"
         data-payment="balance"
       >
         <view class="payment-icon">
@@ -72,7 +74,7 @@
 
   <!-- 底部支付按钮 -->
   <view class="pay-bottom">
-    <button class="pay-btn" bindtap="confirmPayment" disabled="{{loading}}">
+    <button class="pay-btn" bindtap="confirmPayment" disabled="{{loading}}" hover-class="pay-btn-hover">
       <text wx:if="{{!loading}}">立即支付 ¥{{order.totalPrice}}</text>
       <text wx:if="{{loading}}">
         支付中...
@@ -89,6 +91,7 @@
         <button 
           class="action-btn primary"
           bindtap="handleResultAction"
+          hover-class="action-btn-hover"
         >
           {{paymentResult ? '查看订单' : '重新支付'}}
         </button>
@@ -96,6 +99,7 @@
           wx:if="{{paymentResult}}"
           class="action-btn secondary"
           bindtap="goHome"
+          hover-class="action-btn-hover"
         >
           返回首页
         </button>

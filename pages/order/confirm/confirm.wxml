@@ -9,7 +9,7 @@
   </view>
 
   <!-- 地址选择区域 -->
-  <view class="address-section" bindtap="selectAddress">
+  <view class="address-section" bindtap="selectAddress" hover-class="address-section-hover">
     <view class="address-icon">
     </view>
     <view class="address-info" wx:if="{{selectedAddress}}">
@@ -33,7 +33,7 @@
   <view class="products-section">
     <view class="section-title">商品信息</view>
     <block wx:for="{{orderItems}}" wx:key="productId">
-      <view class="product-item" bindtap="navigateToDetail" data-product-id="{{item.productId}}">
+      <view class="product-item" bindtap="navigateToDetail" data-product-id="{{item.productId}}" hover-class="product-item-hover">
         <image class="product-image" src="{{item.productImage}}" mode="aspectFit"></image>
         <view class="product-info">
           <view class="product-title">{{item.productTitle}}</view>
@@ -57,7 +57,7 @@
     <view class="section-title">配送方式</view>
     <view class="delivery-options">
       <radio-group bindchange="onDeliveryChange" data-type="express">
-        <label class="delivery-option" wx:for="{{deliveryOptions}}" wx:key="id">
+        <label class="delivery-option" wx:for="{{deliveryOptions}}" wx:key="id" hover-class="delivery-option-hover">
           <radio value="{{item.id}}" checked="{{item.id === selectedDelivery.id}}" color="#ff4d4f"></radio>
           <text class="option-name">{{item.name}}</text>
           <text class="option-fee" wx:if="{{item.fee > 0}}">+¥{{item.fee}}</text>
@@ -86,7 +86,7 @@
     <view class="section-title">支付方式</view>
     <view class="payment-options">
       <radio-group bindchange="onPaymentChange" data-type="payment">
-        <label class="payment-option" wx:for="{{paymentOptions}}" wx:key="id">
+        <label class="payment-option" wx:for="{{paymentOptions}}" wx:key="id" hover-class="payment-option-hover">
           <radio value="{{item.id}}" checked="{{item.id === selectedPayment.id}}" color="#ff4d4f"></radio>
           <image class="payment-icon" src="{{item.icon}}" mode="aspectFit"></image>
           <text class="option-name">{{item.name}}</text>
@@ -123,7 +123,7 @@
       <text class="price-label">合计：</text>
       <text class="price-value"><text class="price-symbol">¥</text>{{totalPrice}}</text>
     </view>
-    <button class="submit-btn" bindtap="submitOrder" disabled="{{!selectedAddress || submitting}}">
+    <button class="submit-btn" bindtap="submitOrder" disabled="{{!selectedAddress || submitting}}" hover-class="submit-btn-hover">
       {{submitting ? '提交中...' : '提交订单'}}
     </button>
   </view>

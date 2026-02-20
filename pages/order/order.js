@@ -46,6 +46,17 @@ Page({
     this.loadOrders();
   },
 
+  onHide: function() {
+    this.clearAutoCancelTimer();
+    this.clearChunkTimer();
+  },
+
+  onUnload: function() {
+    this.clearAutoCancelTimer();
+    this.clearChunkTimer();
+  },
+
+
 
   // 检查登录状态
   checkLoginStatus: function() {
@@ -123,8 +134,32 @@ Page({
     this.setData({ orders: updated });
   },
 
+  // 渲染分片定时器
+  clearChunkTimer: function() {
+    if (this.chunkTimer) {
+      clearTimeout(this.chunkTimer);
+      this.chunkTimer = null;
+    }
+  },
+
+  renderOrdersInChunks: function(list) {
+    this.clearChunkTimer();
+    const chunkSize = 20;
+    let index = 0;
+    const render = () => {
+      const next = list.slice(0, (index + 1) * chunkSize);
+      this.setData({ orders: next });
+      index++;
+      if (next.length < list.length) {
+        this.chunkTimer = setTimeout(render, 0);
+      }
+    };
+    render();
+  },
+
   // 加载订单列表
   loadOrders: function(callback) {
+
 
     console.log('========================================');
     console.log('【订单列表日志0】开始加载订单列表');
@@ -137,14 +172,14 @@ Page({
     }
     
 
-    // 核心修复：在开始加载前，彻底重置所有状态
+    // 核心修复：在开始加载前，仅设置 loading / errorMsg，避免大列表二次清空闪屏
     this.setData({
       loading: true,
-      errorMsg: '', // 清空错误提示
-      orders: [] // 清空旧订单数据
+      errorMsg: '' // 清空错误提示
     });
     
     console.log('【订单列表日志0.5】加载状态设置完成');
+
 
     // 构建查询参数
     const params = {};
@@ -192,9 +227,11 @@ Page({
           
           // 终极修复：强制清空错误信息，确保万无一失
           this.setData({
-            orders: mergedOrders,
             errorMsg: '' // 再次强制清空错误提示
           }, () => {
+            // 分片渲染，降低单次 setData 体积
+            this.renderOrdersInChunks(mergedOrders);
+
 
             console.log('【订单列表日志6】订单数据加载成功，共', formattedOrders.length, '条订单');
             console.log('【订单列表日志7】当前errorMsg状态:', this.data.errorMsg); // 打印确认

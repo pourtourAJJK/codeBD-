@@ -10,7 +10,7 @@
     <!-- 地址列表 -->
     <view class="address-list">
       <block wx:if="{{addresses.length > 0}}">
-        <view class="address-item" wx:for="{{addresses}}" wx:key="_id">
+        <view class="address-item" wx:for="{{addresses}}" wx:key="_id" hover-class="address-item-hover">
           <view class="address-content" bindtap="navigateToEdit" data-id="{{item._id}}">
             <view class="address-header">
               <text class="name">{{item.name}}</text>
@@ -23,10 +23,10 @@
           </view>
           
           <view class="address-actions" wx:if="{{editMode}}">
-            <view class="action-item" bindtap="setDefault" data-id="{{item._id}}" wx:if="{{!item.isDefault}}">
+            <view class="action-item" bindtap="setDefault" data-id="{{item._id}}" wx:if="{{!item.isDefault}}" hover-class="action-item-hover">
               <text class="action-text">设为默认</text>
             </view>
-            <view class="action-item delete" bindtap="deleteAddress" data-id="{{item._id}}">
+            <view class="action-item delete" bindtap="deleteAddress" data-id="{{item._id}}" hover-class="action-item-hover">
               <text class="action-text">删除</text>
             </view>
           </view>
@@ -40,7 +40,7 @@
   </view>
   
   <!-- 添加新地址按钮 - 固定在底部 -->
-  <view class="add-address-btn" bindtap="navigateToEdit">
+  <view class="add-address-btn" bindtap="navigateToEdit" hover-class="add-address-btn-hover">
     <text class="add-text">添加新地址</text>
   </view>
 </view>

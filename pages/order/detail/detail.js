@@ -111,8 +111,16 @@ Page({
         if (pendingStatus === 'refunding' || pendingStatus === 'refunded') {
           order.status = pendingStatus;
         }
+        // 读取后端真实状态，若已退款/已完成/已取消则回写 storage，避免假“退款中”悬挂
+        if (['refunded', 'cancelled', 'completed'].includes(order.status)) {
+          if (matchedKey && statusMap[matchedKey] !== order.status) {
+            statusMap[matchedKey] = order.status;
+            wx.setStorageSync('refundStatusMap', statusMap);
+          }
+        }
 
         const showActionBar = ['paid', 'pending'].includes(order?.status);
+
 
 
         this.setData({

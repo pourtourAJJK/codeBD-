@@ -82,6 +82,41 @@
   "usingComponents": {
     "loading": "/components/loading/loading"
   },
+  "componentPlaceholder": {
+    "custom-nav-bar": "view",
+    "loading": "view"
+  },
+  "subPackages": [
+    {
+      "root": "pages/test",
+      "pages": [
+        "test",
+        "test-login/test-login",
+        "test-cloud/test-cloud"
+      ]
+    },
+    {
+      "root": "pages/noncore",
+      "pages": [
+        "water-product/water-product",
+        "water-card/water-card",
+        "setting/setting",
+        "service/service",
+        "search/search",
+        "exchange/exchange",
+        "coupon/coupon"
+      ]
+    },
+    {
+      "root": "packagePay",
+      "pages": [
+        "refund/refund",
+        "payment-settings/payment-settings",
+        "payment-history/payment-history",
+        "order-query/order-query"
+      ]
+    }
+  ],
   
   "requiredPrivateInfos": [
     "chooseAddress"

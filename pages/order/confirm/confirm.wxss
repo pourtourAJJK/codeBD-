@@ -462,14 +462,14 @@
 }
 
 /* 动画效果 */
-.address-section:active,
-.product-item:active,
-.delivery-option:active,
-.payment-option:active,
-.coupon-section:active {
+.address-section-hover,
+.product-item-hover,
+.delivery-option-hover,
+.payment-option-hover,
+.coupon-section-hover {
   background-color: #f5f5f5;
 }
 
-.submit-btn:active {
+.submit-btn-hover {
   background-color: #d32f2f;
 }

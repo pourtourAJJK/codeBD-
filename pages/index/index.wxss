@@ -133,10 +133,11 @@
   background-color: white;
 }
 
-.entry-item:active {
+.entry-item-hover {
   background-color: #f5f5f5;
   transform: scale(0.95);
 }
+
 
 .entry-icon {
   width: 140rpx;
@@ -213,9 +214,10 @@
   transition: transform 0.3s;
 }
 
-.feature-item:active {
+.feature-item-hover {
   transform: scale(0.98);
 }
+
 
 .feature-item:nth-child(1) {
   background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
@@ -279,9 +281,10 @@
   transition: transform 0.3s;
 }
 
-.coupon-section:active {
+.coupon-section-hover {
   transform: scale(0.98);
 }
+
 
 .coupon-content {
   display: flex;
@@ -374,9 +377,10 @@
   background-color: white;
 }
 
-.product-item:active {
+.product-item-hover {
   transform: scale(0.98);
 }
+
 
 .product-image {
   width: 100%;
