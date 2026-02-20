@@ -353,15 +353,15 @@ const generatePaymentParams = (prepayId, appid, privateKey) => {
     const nonceStr = Math.random().toString(36).substring(2, 18);
     console.log('随机字符串：', nonceStr);
     
-    // 3. 构建package参数
-    const package = `prepay_id=${prepayId}`;
-    console.log('package：', package);
+    // 3. 构建package参数（避免与保留字冲突，改名 pkg）
+    const pkg = `prepay_id=${prepayId}`;
+    console.log('package：', pkg);
     
     // 4. 固定的signType
     const signType = 'RSA';
     
     // 5. 构建签名串：appId + '\n' + timeStamp + '\n' + nonceStr + '\n' + package + '\n'
-    const signStr = `${appid}\n${timeStamp}\n${nonceStr}\n${package}\n`;
+    const signStr = `${appid}\n${timeStamp}\n${nonceStr}\n${pkg}\n`;
     console.log('前端签名串：', signStr);
     
     // 6. 使用商户私钥进行RSA-SHA256签名
@@ -376,7 +376,7 @@ const generatePaymentParams = (prepayId, appid, privateKey) => {
     return {
       timeStamp,      // 时间戳（秒），字符串格式
       nonceStr,       // 随机字符串
-      package,        // 格式为 prepay_id=xxx
+      package: pkg,   // 格式为 prepay_id=xxx
       signType,       // 固定为 RSA
       paySign         // 签名结果
     };

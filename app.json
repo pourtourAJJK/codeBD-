@@ -86,7 +86,9 @@
     "custom-nav-bar": "view",
     "loading": "view"
   },
+  "lazyCodeLoading": "requiredComponents",
   "subPackages": [
+
     {
       "root": "pages/test",
       "pages": [
