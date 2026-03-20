@@ -140,6 +140,7 @@
 .product-scroll {
   flex: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* 核心修改：单列商品列表样式（强化适配） */

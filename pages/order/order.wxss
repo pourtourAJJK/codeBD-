@@ -16,6 +16,7 @@
   overflow-x: auto;
   white-space: nowrap;
   padding: 0 20rpx;
+  -webkit-overflow-scrolling: touch;
 }
 .tab-item {
   padding: 0 30rpx;

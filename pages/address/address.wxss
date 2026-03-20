@@ -27,6 +27,7 @@
   overflow-y: auto;
   margin-bottom: 70px; /* 避开固定的底部按钮 */
   background-color: #f7f7f7;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* 地址列表 */
