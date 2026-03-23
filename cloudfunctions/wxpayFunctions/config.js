@@ -45,5 +45,6 @@ module.exports = {
   // 2. 域名必须经过ICP备案
   // 3. 不能携带查询参数
   // 注意：请将下方地址替换为您在云开发控制台获取的云函数URL化地址
-  notifyUrl: 'https://fuxididai8888-5g9tptvfb7056681-1397228946.ap-shanghai.app.tcloudbase.com'
+  // 已改为 pay-notify 的 HTTP 访问路径（tcb.tencentcs.com 域名）
+  notifyUrl: 'https://fuxididai8888-5g9tptvfb7056681-1397228946.ap-shanghai.app.tcloudbase.com/pay-notify'
 };

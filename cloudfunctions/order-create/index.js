@@ -102,7 +102,7 @@ const handler = async (event = {}) => {
       paidAmount: 0,
       couponId: couponId || '',
       status: 'pending',
-      pay_status: 0,
+      pay_status: '0',
       // 避免 transaction_id 唯一索引重复，统一使用订单号占位
       out_trade_no: transactionId,
       transaction_id: transactionId,
@@ -129,23 +129,46 @@ const handler = async (event = {}) => {
       createTime: db.serverDate()
     };
 
-    const transaction = await db.startTransaction();
+    let transaction;
     try {
+      transaction = await db.startTransaction();
+      console.log('开始事务，订单号:', orderNo);
+      
       // 顺序更新库存，避免事务长时间占用导致 TransactionNotExist
+      console.log('更新商品库存，商品数量:', normalizedItems.length);
       for (const item of normalizedItems) {
+        console.log('更新商品:', item.product_id, '数量:', item.quantity);
         await transaction.collection(PRODUCT_COLLECTION)
           .doc(item.product_id)
           .update({ data: { lockedStock: _.inc(Number(item.quantity) || 0), updatedAt: db.serverDate() } });
+        console.log('商品库存更新成功:', item.product_id);
       }
 
+      console.log('写入订单数据:', orderNo);
       const orderResult = await transaction.collection(ORDER_COLLECTION).add({ data: orderData });
-      if (!orderResult._id) throw new Error('订单写入失败');
+      if (!orderResult._id) {
+        const error = new Error('订单写入失败：未返回订单ID');
+        console.error('订单写入失败:', error);
+        throw error;
+      }
+      console.log('订单写入成功，订单ID:', orderResult._id);
 
+      console.log('写入订单商品，商品数量:', orderItems.length);
       for (const item of orderItems) {
+        console.log('写入商品:', item.product_id);
         await transaction.collection(ORDER_ITEMS_COLLECTION).add({ data: item });
+        console.log('商品写入成功:', item.product_id);
       }
 
+      console.log('提交事务');
       await transaction.commit();
+      console.log('事务提交成功');
+
+      // 事务提交成功后 立即添加
+      const checkRes = await db.collection('shop_order').where({
+        orderNo: orderNo
+      }).get();
+      console.log('✅ 事务提交后立即查询结果：', checkRes.data);
 
       return {
         code: 200,
@@ -156,10 +179,15 @@ const handler = async (event = {}) => {
         }
       };
     } catch (error) {
-      try {
-        await transaction.rollback();
-      } catch (rollbackErr) {
-        console.error('订单创建回滚失败', rollbackErr);
+      console.error('订单创建过程中出错:', error);
+      if (transaction) {
+        try {
+          console.log('回滚事务');
+          await transaction.rollback();
+          console.log('事务回滚成功');
+        } catch (rollbackErr) {
+          console.error('订单创建回滚失败', rollbackErr);
+        }
       }
       throw error;
     }

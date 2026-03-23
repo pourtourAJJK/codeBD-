@@ -1,17 +1,20 @@
 const cloud = require('wx-server-sdk');
 const crypto = require('crypto');
-const wxpayConfig = require('../wxpayFunctions/config');
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
+
+// 平台证书只读环境变量：PAY_PUBLIC_KEY（多行或使用\n转义）
+const PLATFORM_CERT = (process.env.PAY_PUBLIC_KEY || '').replace(/\\n/g, '\n');
 
 const PAY_CONFIG = {
   appid: process.env.PAY_APPID,
   mchid: process.env.PAY_MCH_ID,
   apiV3Key: process.env.PAY_API_KEY,
   apiV2Key: process.env.PAY_API_V2_KEY || process.env.PAY_API_KEY,
-  publicKey: wxpayConfig.publicKey
+  publicKey: PLATFORM_CERT
 };
+
 
 function normalizeHeaders(headers = {}) {
   const normalized = {};
@@ -103,25 +106,108 @@ exports.main = async (event) => {
     const successTime = orderData.success_time || '';
 
     if (!outTradeNo) {
+      console.error('缺少订单号');
       return { statusCode: 400, body: '缺少订单号' };
     }
 
-    await db.collection('shop_order').where({ out_trade_no: outTradeNo }).update({
-      data: {
-        pay_status: 1,
-        status: 'paid',
-        openid: openid || '',
-        transaction_id: transactionId,
-        success_time: successTime || db.serverDate(),
-        updatedAt: db.serverDate()
-      }
+    console.log('支付回调数据:', {
+      outTradeNo,
+      openid,
+      transactionId,
+      successTime
     });
 
-    return {
-      statusCode: 200,
-      headers: { 'Content-Type': 'text/plain' },
-      body: 'SUCCESS'
-    };
+    // 双字段匹配逻辑：优先通过order_id匹配，其次通过out_trade_no匹配
+    let updateResult;
+    let matchMethod = 'none';
+
+    try {
+      // 尝试通过order_id匹配（订单号格式：FX开头）
+      if (outTradeNo.startsWith('FX')) {
+        console.log('尝试通过order_id匹配:', outTradeNo);
+        updateResult = await db.collection('shop_order').where({ order_id: outTradeNo }).update({
+          data: {
+            pay_status: '1',
+            status: 'paid',
+            openid: openid || '',
+            transaction_id: transactionId,
+            success_time: successTime || db.serverDate(),
+            paymentTime: successTime || db.serverDate(),
+            updatedAt: db.serverDate()
+          }
+        });
+
+        console.log('order_id匹配更新结果:', updateResult);
+        if (updateResult.stats && updateResult.stats.updated > 0) {
+          matchMethod = 'order_id';
+        }
+      }
+
+      // 如果order_id匹配失败，尝试通过out_trade_no匹配
+      if (!matchMethod) {
+        console.log('尝试通过out_trade_no匹配:', outTradeNo);
+        updateResult = await db.collection('shop_order').where({ out_trade_no: outTradeNo }).update({
+          data: {
+            pay_status: '1',
+            status: 'paid',
+            openid: openid || '',
+            transaction_id: transactionId,
+            success_time: successTime || db.serverDate(),
+            paymentTime: successTime || db.serverDate(),
+            updatedAt: db.serverDate()
+          }
+        });
+
+        console.log('out_trade_no匹配更新结果:', updateResult);
+        if (updateResult.stats && updateResult.stats.updated > 0) {
+          matchMethod = 'out_trade_no';
+        }
+      }
+
+      // 如果匹配失败，记录错误信息
+      if (!matchMethod) {
+        console.error('订单匹配失败，outTradeNo:', outTradeNo);
+        // 记录到错误日志集合
+        await db.collection('pay_notify_errors').add({
+          data: {
+            out_trade_no: outTradeNo,
+            transaction_id: transactionId,
+            error: '订单匹配失败',
+            createTime: db.serverDate(),
+            orderData: orderData
+          }
+        });
+        return {
+          statusCode: 200,
+          headers: { 'Content-Type': 'text/plain' },
+          body: 'SUCCESS' // 即使匹配失败也返回成功，避免微信重复回调
+        };
+      }
+
+      console.log('订单更新成功，匹配方式:', matchMethod, '更新数量:', updateResult.stats.updated);
+      return {
+        statusCode: 200,
+        headers: { 'Content-Type': 'text/plain' },
+        body: 'SUCCESS'
+      };
+    } catch (updateError) {
+      console.error('订单更新失败:', updateError);
+      // 记录更新失败错误
+      await db.collection('pay_notify_errors').add({
+        data: {
+          out_trade_no: outTradeNo,
+          transaction_id: transactionId,
+          error: updateError.message,
+          createTime: db.serverDate(),
+          orderData: orderData
+        }
+      });
+      return {
+        statusCode: 200,
+        headers: { 'Content-Type': 'text/plain' },
+        body: 'SUCCESS' // 即使更新失败也返回成功，避免微信重复回调
+      };
+    }
   } catch (err) {
     console.error('支付回调失败:', err);
     return { statusCode: 500, body: 'FAIL' };

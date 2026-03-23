@@ -118,7 +118,7 @@ const handler = async (event = {}) => {
       .update({
         data: {
           out_trade_no: outTradeNo,
-          pay_status: 0,
+          pay_status: '0',
           status: 'pending',
           payData,
           paymentAmount: totalAmount,

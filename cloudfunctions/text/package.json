@@ -1,0 +1,19 @@
+{
+  "name": "text",
+  "version": "1.0.0",
+  "description": "订单数据扫描和排查工具",
+  "main": "scan_collections.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "cloudfunction",
+    "order",
+    "scan"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}
