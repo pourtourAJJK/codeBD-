@@ -83,9 +83,14 @@ Page({
         const totalPrice = Number(raw.totalPrice || raw.total_amount || raw.totalAmount || 0);
         const shippingFee = Number(raw.shippingFee || raw.freight || 0);
         const discountAmount = Number(raw.discountAmount || raw.discount || 0);
-        const payAmount = Number(
+        const payAmountRaw = Number(
           raw.payAmount || raw.pay_amount || raw.paymentAmount || (totalPrice + shippingFee - discountAmount) || 0
         );
+        // 金额单位修正：若 payAmountRaw 大约等于 totalPrice 的 100 倍，则认为 payAmountRaw 是“分”，转换为元
+        const payAmount = totalPrice > 0 && payAmountRaw >= totalPrice * 100 - 0.0001
+          ? payAmountRaw / 100
+          : payAmountRaw;
+
 
         // 展示用订单号：不再回退到 Mongo _id
         const orderIdNormalized = raw.order_id || raw.orderId || raw.orderNo || raw.out_trade_no || this.data.orderId;
@@ -124,10 +129,14 @@ Page({
 
 
         this.setData({
-          order,
+          order: {
+            ...order,
+            payAmount
+          },
           statusText: this.getStatusText(order?.status),
           showActionBar
         });
+
 
 
       } else {
