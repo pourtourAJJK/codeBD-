@@ -50,30 +50,37 @@ const handler = async (event, context) => {
     
     // 转换状态为英文
     const statusMap = {
-      10: 'pending',
-      20: 'paid',
-      30: 'shipped',
-      40: 'delivering',
-      50: 'delivered',
-      60: 'completed',
-      70: 'cancelled',
-      80: 'refunding',
-      90: 'refunded'
+      10: 'pending', '10': 'pending', 'pending': 'pending',
+      20: 'paid', '20': 'paid', 'paid': 'paid',
+      30: 'shipped', '30': 'shipped', 'shipped': 'shipped',
+      40: 'delivering', '40': 'delivering', 'delivering': 'delivering',
+      50: 'delivered', '50': 'delivered', 'delivered': 'delivered',
+      60: 'completed', '60': 'completed', 'completed': 'completed',
+      70: 'cancelled', '70': 'cancelled', 'cancelled': 'cancelled',
+      80: 'refunding', '80': 'refunding', 'refunding': 'refunding',
+      90: 'refunded', '90': 'refunded', 'refunded': 'refunded'
     };
     
     // 构建订单详情
+    const statusKey = order.status !== undefined ? String(order.status) : '';
+    
     const orderDetail = {
       order_id: order.order_id,
       openid: order.openid,
-      status: statusMap[order.status] || 'unknown',
-      pay_status: order.pay_status || 'unpaid',
+      status: statusMap[statusKey] || 'unknown',
+      pay_status: order.pay_status || '0',
       total_price: order.totalPrice || 0,
       create_time: order.createTime,
-      out_trade_no: order.outTradeNo || '',
-      transaction_id: order.transactionId || '',
-      payment_time: order.paymentTime || null,
+      out_trade_no: order.out_trade_no || order.outTradeNo || '',
+      transaction_id: order.transaction_id || order.transactionId || '',
+      payment_time: order.paymentTime || order.success_time || null,
+      paymentTime: order.paymentTime ? new Date(order.paymentTime).getTime() : (order.success_time ? new Date(order.success_time).getTime() : null),
       user_info: order.userInfo || {},
-      address: order.address || {},
+      userInfo: Array.isArray(order.userInfo) ? order.userInfo : (order.userInfo ? [order.userInfo] : []),
+      nickName: order.nickName || order.nickname || '',
+      avatarUrl: order.avatarUrl || order.avatar || '',
+      consignee: order.consignee || order.address?.name || '',
+      address: Array.isArray(order.address) ? order.address : (order.address ? [order.address] : []),
       items: orderItemsRes.data.map(item => ({
         product_id: item.product_id,
         quantity: item.quantity,

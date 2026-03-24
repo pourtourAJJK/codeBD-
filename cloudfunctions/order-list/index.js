@@ -40,10 +40,12 @@ const handler = async (event = {}) => {
 
     const orders = (listRes.data || []).map(order => {
       const goods = Array.isArray(order.goods) ? order.goods : [];
+      const address = Array.isArray(order.address) ? order.address : (order.address ? [order.address] : []);
 
       return {
         ...order,
-        goods
+        goods,
+        address
       };
     });
 

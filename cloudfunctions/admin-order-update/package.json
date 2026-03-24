@@ -1,0 +1,14 @@
+{
+  "name": "admin-order-update",
+  "version": "1.0.0",
+  "description": "管理员订单更新云函数",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

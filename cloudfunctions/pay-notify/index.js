@@ -132,7 +132,7 @@ exports.main = async (event) => {
             openid: openid || '',
             transaction_id: transactionId,
             success_time: successTime || db.serverDate(),
-            paymentTime: successTime || db.serverDate(),
+            paymentTime: successTime ? new Date(successTime).getTime() : db.serverDate(),
             updatedAt: db.serverDate()
           }
         });
@@ -153,7 +153,7 @@ exports.main = async (event) => {
             openid: openid || '',
             transaction_id: transactionId,
             success_time: successTime || db.serverDate(),
-            paymentTime: successTime || db.serverDate(),
+            paymentTime: successTime ? new Date(successTime).getTime() : db.serverDate(),
             updatedAt: db.serverDate()
           }
         });

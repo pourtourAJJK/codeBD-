@@ -91,17 +91,29 @@ const handler = async (event = {}) => {
 
     const transactionId = orderNo || `TX${Date.now()}${Math.floor(Math.random() * 100000).toString().padStart(5, '0')}`;
 
+    // 获取用户信息
+    const user = userRes.data[0];
+    
+    // 构建用户信息对象
+    const userInfoObj = {
+      nickName: user.nickName || user.nickname || '',
+      avatarUrl: user.avatarUrl || user.avatar || ''
+    };
+    
     const orderData = {
       order_id: orderNo,
       orderNo,
       openid,
-      userInfo: userInfo || {},
-      address,
+      userInfo: Array.isArray(userInfo) ? userInfo : (userInfo ? [userInfo] : [userInfoObj]),
+      nickName: user.nickName || user.nickname || '',
+      avatarUrl: user.avatarUrl || user.avatar || '',
+      address: Array.isArray(address) ? address : (address ? [address] : []),
       addressId: address._id || '',
+      consignee: address.name || '',
       totalPrice: Number(totalPrice || 0),
       paidAmount: 0,
       couponId: couponId || '',
-      status: 'pending',
+      status: '1',
       pay_status: '0',
       // 避免 transaction_id 唯一索引重复，统一使用订单号占位
       out_trade_no: transactionId,

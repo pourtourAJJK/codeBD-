@@ -37,7 +37,11 @@ const handler = async (event, context) => {
     if (keyword) {
       console.log('按订单号搜索:', keyword);
       query = query.where({
-        orderNo: _.regex({ regex: keyword, options: 'i' })
+        $or: [
+          { orderNo: _.regex({ regex: keyword, options: 'i' }) },
+          { order_id: _.regex({ regex: keyword, options: 'i' })
+          }
+        ]
       });
     }
     
@@ -54,34 +58,48 @@ const handler = async (event, context) => {
       .get();
     
     console.log('查询到订单数量:', ordersRes.data.length);
+    console.log('原始订单数据:', ordersRes.data);
     
     // 转换状态为英文
     const orders = ordersRes.data.map(order => {
+      // 兼容数字/字符串状态，以及 pay-notify 写入的字符串状态
       const statusMap = {
-        10: 'pending',
-        20: 'paid',
-        30: 'shipped',
-        40: 'delivering',
-        50: 'delivered',
-        60: 'completed',
-        70: 'cancelled',
-        80: 'refunding',
-        90: 'refunded'
+        10: 'pending', '10': 'pending', 'pending': 'pending',
+        20: 'paid', '20': 'paid', 'paid': 'paid',
+        30: 'shipped', '30': 'shipped', 'shipped': 'shipped',
+        40: 'delivering', '40': 'delivering', 'delivering': 'delivering',
+        50: 'delivered', '50': 'delivered', 'delivered': 'delivered',
+        60: 'completed', '60': 'completed', 'completed': 'completed',
+        70: 'cancelled', '70': 'cancelled', 'cancelled': 'cancelled',
+        80: 'refunding', '80': 'refunding', 'refunding': 'refunding',
+        90: 'refunded', '90': 'refunded', 'refunded': 'refunded'
       };
-      
+
+      const statusKey = order.status !== undefined ? String(order.status) : '';
+
       return {
         order_id: order.order_id,
         orderNo: order.orderNo,
         openid: order.openid,
-        status: statusMap[order.status] || 'unknown',
+        status: statusMap[statusKey] || 'unknown',
         pay_status: order.pay_status || '0',
         total_price: order.totalPrice || 0,
         create_time: order.createTime,
-        out_trade_no: order.outTradeNo || '',
-        transaction_id: order.transactionId || '',
-        payment_time: order.paymentTime || null
+        out_trade_no: order.out_trade_no || order.outTradeNo || '',
+        transaction_id: order.transaction_id || order.transactionId || '',
+        payment_time: order.paymentTime || order.success_time || null,
+        paymentTime: order.paymentTime ? new Date(order.paymentTime).getTime() : (order.success_time ? new Date(order.success_time).getTime() : null),
+        userInfo: Array.isArray(order.userInfo) ? order.userInfo : (order.userInfo ? [order.userInfo] : []),
+        nickName: order.nickName || order.nickname || '',
+        avatarUrl: order.avatarUrl || order.avatar || '',
+        consignee: order.consignee || order.address?.name || '',
+        address: Array.isArray(order.address) ? order.address : (order.address ? [order.address] : [])
       };
     });
+    
+    console.log('处理后的订单数据:', orders);
+    console.log('包含 pay_status=1 的订单数量:', orders.filter(o => o.pay_status === '1').length);
+    console.log('目标订单 FX202603201658553209840 是否存在:', orders.some(o => o.orderNo === 'FX202603201658553209840' || o.order_id === 'FX202603201658553209840'));
     
     return {
       code: 200,

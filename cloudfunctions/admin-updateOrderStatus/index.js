@@ -58,7 +58,7 @@ const handler = async (event, context) => {
     const order = orderRes.data[0];
     
     // 检查状态是否发生变化
-    if (order.status === status) {
+    if (String(order.status) === String(status)) {
       return {
         code: 200,
         message: '订单状态未发生变化',
@@ -69,10 +69,13 @@ const handler = async (event, context) => {
       };
     }
     
+    // 标准化状态值（转换为字符串格式）
+    const normalizedStatus = String(status);
+    
     // 更新订单状态    
     const updateResult = await db.collection('shop_order').where({ order_id: orderId }).update({
       data: {
-        status: status,
+        status: normalizedStatus,
         updateTime: db.serverDate()
       }
     });
@@ -82,8 +85,8 @@ const handler = async (event, context) => {
       data: {
         orderId: orderId,
         orderNo: order.orderNo,
-        beforeStatus: order.status,
-        afterStatus: status,
+        beforeStatus: String(order.status),
+        afterStatus: normalizedStatus,
         operatorId: operatorId,
         operatorName: adminRes.data[0].username,
         remark: remark || '',
@@ -92,7 +95,7 @@ const handler = async (event, context) => {
     });
     
     // 订单状态变更通知（注意：实际项目应使用订阅消息或消息推送）
-    await sendOrderStatusNotification(order, status); 
+    await sendOrderStatusNotification(order, normalizedStatus); 
     return {
       code: 200,
       message: '更新订单状态成功',
@@ -160,20 +163,22 @@ async function sendOrderStatusNotification(order, newStatus) {
 
 /**
  * 获取订单状态文本
- * @param {number} status - 订单状态码
+ * @param {string|number} status - 订单状态码
  * @returns {string} - 订单状态文本
  */
 function getOrderStatusText(status) {
   const statusMap = {
-    10: '待支付',
-    20: '已支付',
-    30: '已发货',
-    40: '已完成',
-    50: '已取消',
-    60: '已退款',
-    70: '已取货',
+    10: '待支付', '10': '待支付', 'pending': '待支付',
+    20: '已支付', '20': '已支付', 'paid': '已支付',
+    30: '已发货', '30': '已发货', 'shipped': '已发货',
+    40: '已完成', '40': '已完成', 'completed': '已完成',
+    50: '已取消', '50': '已取消', 'cancelled': '已取消',
+    60: '已退款', '60': '已退款', 'refunded': '已退款',
+    70: '已取货', '70': '已取货',
+    80: '退款中', '80': '退款中', 'refunding': '退款中',
+    90: '已退款', '90': '已退款', 'refunded': '已退款'
   };
-  return statusMap[status] || '未知状态';
+  return statusMap[String(status)] || '未知状态';
 }
 
 exports.main = withResponse(handler);

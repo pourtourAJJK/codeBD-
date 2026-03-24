@@ -51,7 +51,7 @@ const handler = async (event = {}) => {
     if (event.cancelPayTime !== undefined) updateData.cancelPayTime = event.cancelPayTime;
     if (event.autoCancelStatus) updateData.autoCancelStatus = event.autoCancelStatus;
     // 允许同步更新收货地址
-    if (event.address) updateData.address = event.address;
+    if (event.address) updateData.address = Array.isArray(event.address) ? event.address : (event.address ? [event.address] : []);
 
 
     const updateRes = await db.collection(ORDER_COLLECTION)
