@@ -25,7 +25,11 @@ const handler = async (event, context) => {
     let query = db.collection('shop_spu');
     
     // 状态筛选
-    if (status === 'active') {
+    if (status === '上架') {
+      query = query.where({ status: _.eq(1) });
+    } else if (status === '下架') {
+      query = query.where({ status: _.eq(0) });
+    } else if (status === 'active') {
       query = query.where({ status: _.eq(1) });
     } else if (status === 'inactive') {
       query = query.where({ status: _.eq(0) });
@@ -56,7 +60,10 @@ const handler = async (event, context) => {
       price: product.price || 0,
       stock: product.stock || 0,
       image: product.cover_image || product.image || '',
-      status: product.status === 1 ? 'active' : 'inactive',
+      status: product.status === 1 ? '上架' : '下架',
+      category: product.category || '',
+      sales: product.sales || 0,
+      spec: product.spec || [],
       create_time: product.createTime || product.createdAt
     }));
     
@@ -64,7 +71,7 @@ const handler = async (event, context) => {
       code: 200,
       message: '获取商品列表成功',
       data: {
-        list: products,
+        records: products,
         total,
         page,
         limit

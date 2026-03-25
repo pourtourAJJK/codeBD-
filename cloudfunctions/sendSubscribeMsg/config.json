@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "openapi": [
+      "subscribeMessage.send"
+    ]
+  },
+  "env": "fuxididai8888-5g9tptvfb7056681"
+}

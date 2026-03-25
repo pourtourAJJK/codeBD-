@@ -1,0 +1,14 @@
+{
+  "name": "sendQyWechatMsg",
+  "version": "1.0.0",
+  "description": "企业微信消息推送云函数",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}
