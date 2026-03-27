@@ -33,6 +33,12 @@ const handler = async (event, context) => {
       query = query.where({ pay_status: payStatusValue });
     }
     
+    // 订单状态筛选
+    if (event.statusmax !== undefined) {
+      console.log('按订单状态筛选:', event.statusmax);
+      query = query.where({ statusmax: event.statusmax });
+    }
+    
     // 订单号搜索
     if (keyword) {
       console.log('按订单号搜索:', keyword);
@@ -62,26 +68,14 @@ const handler = async (event, context) => {
     
     // 转换状态为英文
     const orders = ordersRes.data.map(order => {
-      // 兼容数字/字符串状态，以及 pay-notify 写入的字符串状态
-      const statusMap = {
-        10: 'pending', '10': 'pending', 'pending': 'pending',
-        20: 'paid', '20': 'paid', 'paid': 'paid',
-        30: 'shipped', '30': 'shipped', 'shipped': 'shipped',
-        40: 'delivering', '40': 'delivering', 'delivering': 'delivering',
-        50: 'delivered', '50': 'delivered', 'delivered': 'delivered',
-        60: 'completed', '60': 'completed', 'completed': 'completed',
-        70: 'cancelled', '70': 'cancelled', 'cancelled': 'cancelled',
-        80: 'refunding', '80': 'refunding', 'refunding': 'refunding',
-        90: 'refunded', '90': 'refunded', 'refunded': 'refunded'
-      };
-
-      const statusKey = order.status !== undefined ? String(order.status) : '';
+      // 使用statusmax字段
+      const statusmax = order.statusmax || order.status || 0;
 
       return {
         order_id: order.order_id,
         orderNo: order.orderNo,
         openid: order.openid,
-        status: statusMap[statusKey] || 'unknown',
+        statusmax: statusmax,
         pay_status: order.pay_status || '0',
         total_price: order.totalPrice || 0,
         create_time: order.createTime,

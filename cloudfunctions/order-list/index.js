@@ -23,19 +23,22 @@ const handler = async (event = {}) => {
       return { code: 500, message: '用户不存在', data: {} };
     }
 
-    const { status = 'all', page = 1, pageSize = 10 } = event;
+    const { status = 'all', statusmax, page = 1, pageSize = 10 } = event;
     const pageIndex = Math.max(1, Number(page) || 1);
     const limit = Math.min(Math.max(Number(pageSize) || 10, 1), 50);
     const skip = (pageIndex - 1) * limit;
 
     let query = { openid };
-    if (status && status !== 'all') {
-      query = { ...query, status };
+    if (statusmax !== undefined) {
+      query = { ...query, statusmax: statusmax };
+    } else if (status && status !== 'all') {
+      query = { ...query, status: status };
     }
 
+    // 确保查询最新数据，不使用缓存
     const [listRes, countRes] = await Promise.all([
-      db.collection(ORDER_COLLECTION).where(query).orderBy('createTime', 'desc').skip(skip).limit(limit).get(),
-      db.collection(ORDER_COLLECTION).where(query).count()
+      db.collection(ORDER_COLLECTION).where(query).orderBy('createTime', 'desc').skip(skip).limit(limit).get({ forceServer: true }),
+      db.collection(ORDER_COLLECTION).where(query).count({ forceServer: true })
     ]);
 
     const orders = (listRes.data || []).map(order => {

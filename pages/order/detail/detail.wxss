@@ -18,6 +18,18 @@
   color: #333;
   font-weight: bold;
 }
+.countdown {
+  display: block;
+  font-size: 24rpx;
+  color: #ff4d4f;
+  margin-top: 10rpx;
+  font-weight: normal;
+}
+
+.value.countdown {
+  color: #ff4d4f;
+  font-weight: 500;
+}
 
 /* 地址信息 */
 .address-section {

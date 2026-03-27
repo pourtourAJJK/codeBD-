@@ -78,6 +78,10 @@
           <text class="info-label">下单时间</text>
           <text class="info-value">{{item.displayCreateTime}}</text>
         </view>
+        <view class="info-row" wx:if="{{item.statusmax === 1 || item.statusmax === '1' && item.countdown}}">
+          <text class="info-label">剩余支付时间</text>
+          <text class="info-value countdown">{{item.countdown}}</text>
+        </view>
 
       </view>
 
@@ -125,61 +129,49 @@
 
       <!-- 操作按钮 -->
       <view class="action-buttons">
-        <!-- 管理按钮（所有状态都显示） -->
-        <button 
-          class="btn-secondary" 
-          bindtap="manageOrder"
-          data-order-id="{{item.orderId}}"
-        >
-          管理
-        </button>
-
-        <!-- 查看详情（所有状态均可进入） -->
-        <button 
-          class="btn-primary" 
-          bindtap="viewOrderDetail"
-          data-order-id="{{item.orderId}}"
-        >
-          查看详情
-        </button>
+        <!-- 待支付状态：显示管理、查看详情、去支付 -->
+        <block wx:if="{{item.statusmax === 1 || item.statusmax === '1'}}">
+          <button 
+            class="btn-secondary" 
+            bindtap="manageOrder"
+            data-order-id="{{item.orderId}}"
+          >
+            管理
+          </button>
+          <button 
+            class="btn-primary" 
+            bindtap="viewOrderDetail"
+            data-order-id="{{item.orderId}}"
+          >
+            查看详情
+          </button>
+          <button 
+            class="btn-primary" 
+            bindtap="payOrder"
+            data-order-id="{{item.orderId}}"
+            data-index="{{index}}"
+          >
+            去支付
+          </button>
+        </block>
         
-        <!-- 待支付状态 -->
-
-        <button 
-          wx:if="{{item.status === 'pending'}}" 
-          class="btn-primary" 
-          bindtap="payOrder"
-          data-order-id="{{item.orderId}}"
-          data-index="{{index}}"
-        >
-          去支付
-        </button>
-
-
-        <!-- 已支付待发货 -->
-        <button 
-          wx:if="{{item.status === 'paid'}}" 
-          class="btn-primary" 
-          bindtap="manageOrder"
-          data-order-id="{{item.orderId}}"
-        >
-          管理
-        </button>
-
-
-        <!-- 已发货待收货 -->
-        <button 
-          wx:if="{{item.status === 'shipped'}}" 
-          class="btn-primary" 
-          bindtap="confirmReceipt"
-          data-order-id="{{item.orderId}}"
-        >
-          确认收货
-        </button>
-
-        <!-- 已完成/已取消 -->
-
-
+        <!-- 其他状态：只显示管理、查看详情 -->
+        <block wx:else>
+          <button 
+            class="btn-secondary" 
+            bindtap="manageOrder"
+            data-order-id="{{item.orderId}}"
+          >
+            管理
+          </button>
+          <button 
+            class="btn-primary" 
+            bindtap="viewOrderDetail"
+            data-order-id="{{item.orderId}}"
+          >
+            查看详情
+          </button>
+        </block>
       </view>
     </view>
   </view>

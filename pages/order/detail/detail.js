@@ -1,5 +1,6 @@
 // 订单详情页面逻辑
 const auth = require('../../../utils/auth.js');
+const timeUtil = require('../../../utils/timeUtil.js');
 
 
 Page({
@@ -7,7 +8,10 @@ Page({
     orderId: '',
     order: null,
     loading: true,
-    showActionBar: false
+    showActionBar: false,
+    pollTimer: null,
+    timer: null,
+    platform: ''
   },
 
 
@@ -18,26 +22,26 @@ Page({
       orderId
     });
     
+    // 获取设备平台（处理iOS时间兼容）
+    const that = this;
+    wx.getSystemInfo({
+      success: function (res) {
+        that.setData({
+          platform: res.platform
+        });
+      }
+    });
+    
     // 加载订单详情
     this.loadOrderDetail();
+    
+    // 开启轮询
+    this.startPoll(orderId);
   },
 
 
   onShow: function () {
     // 页面显示时刷新订单信息
-    const statusMap = wx.getStorageSync('refundStatusMap') || {};
-    const pendingStatus = statusMap[this.data.orderId];
-    if (pendingStatus === 'refunding') {
-      this.setData({
-        order: { ...(this.data.order || {}), status: 'refunding' },
-        statusText: '退款中'
-      });
-    } else if (pendingStatus === 'refunded') {
-      this.setData({
-        order: { ...(this.data.order || {}), status: 'refunded' },
-        statusText: '已退款'
-      });
-    }
     this.loadOrderDetail();
   },
 
@@ -86,7 +90,7 @@ Page({
         const payAmountRaw = Number(
           raw.payAmount || raw.pay_amount || raw.paymentAmount || (totalPrice + shippingFee - discountAmount) || 0
         );
-        // 金额单位修正：若 payAmountRaw 大约等于 totalPrice 的 100 倍，则认为 payAmountRaw 是“分”，转换为元
+        // 金额单位修正：若 payAmountRaw 大约等于 totalPrice 的 100 倍，则认为 payAmountRaw 是"分"，转换为元
         const payAmount = totalPrice > 0 && payAmountRaw >= totalPrice * 100 - 0.0001
           ? payAmountRaw / 100
           : payAmountRaw;
@@ -95,47 +99,55 @@ Page({
         // 展示用订单号：不再回退到 Mongo _id
         const orderIdNormalized = raw.order_id || raw.orderId || raw.orderNo || raw.out_trade_no || this.data.orderId;
 
+        // 获取当前订单状态（使用statusmax字段）
+        const currentStatusmax = raw.statusmax || raw.status || 0;
+        const oldStatusmax = this.data.order?.statusmax || 0;
+
         const order = {
           ...raw,
           orderId: orderIdNormalized,
+          statusmax: currentStatusmax,
           goods,
           createTimeFmt: this.formatTime(raw.createTime || raw.createdAt),
           payTimeFmt: this.formatTime(raw.paymentTime || raw.pay_time || raw.success_time || raw.payTime),
+          appointmentTimeFmt: this.getAppointmentTime(raw),
           totalPriceYuan: this.formatPrice(totalPrice),
           shippingFeeYuan: this.formatPrice(shippingFee),
           discountAmountYuan: this.formatPrice(discountAmount),
           payAmountYuan: this.formatPrice(payAmount),
-          paymentMethod: raw.paymentMethod || raw.payMethod || '微信支付'
+          paymentMethod: raw.paymentMethod || raw.payMethod || '微信支付',
+          address: Array.isArray(raw.address) && raw.address.length > 0 ? raw.address[0] : raw.address
         };
 
-        // 覆盖本地退款状态（支持多种订单号键）
-        const statusMap = wx.getStorageSync('refundStatusMap') || {};
-        const possibleKeys = [orderIdNormalized, raw._id, raw.order_no, raw.orderNo, raw.out_trade_no].filter(Boolean);
-        const matchedKey = possibleKeys.find(k => statusMap[k]);
-        const pendingStatus = matchedKey ? statusMap[matchedKey] : undefined;
-        if (pendingStatus === 'refunding' || pendingStatus === 'refunded') {
-          order.status = pendingStatus;
-        }
-        // 读取后端真实状态，若已退款/已完成/已取消则回写 storage，避免假“退款中”悬挂
-        if (['refunded', 'cancelled', 'completed'].includes(order.status)) {
-          if (matchedKey && statusMap[matchedKey] !== order.status) {
-            statusMap[matchedKey] = order.status;
-            wx.setStorageSync('refundStatusMap', statusMap);
-          }
+        // 状态变化检测：如果状态发生变化，显示提示
+        if (oldStatusmax && oldStatusmax !== currentStatusmax) {
+          const newStatusText = this.getStatusText(currentStatusmax);
+          wx.showToast({
+            title: `订单状态更新：${newStatusText}`,
+            icon: 'none',
+            duration: 2000
+          });
         }
 
-        const showActionBar = ['paid', 'pending'].includes(order?.status);
-
-
+        // 根据statusmax判断是否显示操作栏
+        // 待支付状态显示操作栏，其他状态不显示
+        const showActionBar = currentStatusmax === 1 || currentStatusmax === "1";
 
         this.setData({
           order: {
             ...order,
             payAmount
           },
-          statusText: this.getStatusText(order?.status),
+          statusText: this.getStatusText(currentStatusmax),
           showActionBar
         });
+
+        // 启动倒计时（仅对待支付订单）
+        if (currentStatusmax === 1 || currentStatusmax === "1") {
+          this.countDown();
+        } else {
+          this.clearCountDownTimer();
+        }
 
 
 
@@ -160,17 +172,59 @@ Page({
   // 获取订单状态文本
   getStatusText: function (status) {
     const statusMap = {
-      'pending': '待付款',
-      'paid': '待发货',
-      'shipped': '待收货',
-      'delivered': '已完成',
-      'completed': '已完成',
-      'cancelled': '已取消',
-      'refunding': '退款中',
-      'refunded': '已退款'
+      1: '待支付',
+      2: '待接单',
+      3: '待配送',
+      4: '配送中',
+      5: '已完成',
+      6: '已取消',
+      7: '退款中',
+      8: '退款中',
+      9: '退款成功',
+      '1': '待支付',
+      '2': '待接单',
+      '3': '待配送',
+      '4': '配送中',
+      '5': '已完成',
+      '6': '已取消',
+      '7': '退款中',
+      '8': '退款中',
+      '9': '退款成功'
     };
 
     return statusMap[status] || '未知状态';
+  },
+
+  // 开启轮询：5秒请求一次
+  startPoll: function(orderId) {
+    const timer = setInterval(() => {
+      this.loadOrderDetail();
+    }, 5000);
+
+    this.setData({ pollTimer: timer });
+  },
+
+  // 页面隐藏时清除定时器
+  onHide: function() {
+    clearInterval(this.data.pollTimer);
+    this.clearCountDownTimer();
+  },
+
+  // 页面卸载时清除定时器
+  onUnload: function() {
+    clearInterval(this.data.pollTimer);
+    this.clearCountDownTimer();
+  },
+
+  // 清除倒计时定时器
+  clearCountDownTimer() {
+    if (this.data.timer) {
+      clearInterval(this.data.timer);
+      this.setData({
+        timer: null
+      });
+      console.log('详情页倒计时定时器已清除');
+    }
   },
 
   // 格式化时间
@@ -187,6 +241,85 @@ Page({
     // 约定：大于等于1000视为分，否则视为元
     if (n >= 1000) return (n / 100).toFixed(2);
     return n.toFixed(2);
+  },
+
+  // 获取预约时间（优先使用原始字符串，formatTime仅做兜底）
+  getAppointmentTime: function (raw) {
+    // 1. 优先用存储的原始时间段字符串（最直接，不用转换）
+    if (raw.deliveryTimeStr) {
+      return raw.deliveryLabel || `${raw.deliveryDateStr} ${raw.deliveryTimeStr}`;
+    }
+    
+    // 2. 兜底：如果没有原始字符串，再用formatTime处理时间戳（兼容旧数据）
+    const timeStamp = raw.deliveryTime || raw.appointmentTime;
+    if (timeStamp && typeof timeStamp === 'number') {
+      return this.formatTime(timeStamp);
+    }
+    
+    // 3. 无数据时的默认值
+    return '暂无预约时间';
+  },
+
+  // 待支付订单倒计时核心方法（15分钟超时）
+  countDown() {
+    const that = this;
+    const { order } = this.data;
+    // 先清除旧定时器，避免重复创建
+    this.clearCountDownTimer();
+
+    // 启动新的定时器（每秒执行一次）
+    const timer = setInterval(() => {
+      let newOrder = { ...order };
+      
+      // 订单创建时间：兼容云开发的serverDate（时间戳/字符串）
+      let createdTime = newOrder.createTime || newOrder.createdAt;
+      if (createdTime && createdTime._seconds) { // 云开发serverDate的时间戳格式
+        createdTime = new Date(createdTime._seconds * 1000);
+      }
+      // 15分钟超时：计算支付截止时间（创建时间+15分钟）
+      const payDeadline = new Date(new Date(createdTime).getTime() + 15 * 60 * 1000);
+      const nowTime = new Date(); // 当前时间
+      // 计算时间差（毫秒数）
+      const timeDiff = timeUtil.compareDate(payDeadline, nowTime);
+
+      if (timeDiff > 0) {
+        // 未超时：格式化剩余时间，赋值给countdown字段
+        newOrder.countdown = timeUtil.formatMsToMinSec(timeDiff);
+      } else {
+        // 已超时：删除倒计时字段
+        delete newOrder.countdown;
+        that.cancelOrderAuto(newOrder.orderId || newOrder._id); // 调用自动取消订单方法
+        // 超时后把订单状态置为已取消（前端临时更新，云函数会同步）
+        newOrder.statusmax = '6';
+        newOrder.statusText = '已取消';
+        that.clearCountDownTimer();
+      }
+
+      // 更新订单信息，页面自动刷新倒计时
+      that.setData({
+        order: newOrder,
+        timer: timer
+      });
+    }, 1000); // 每秒刷新一次
+  },
+
+  // 超时自动取消订单（调用order-cancel云函数）
+  cancelOrderAuto(orderId) {
+    if (!orderId) return;
+    wx.cloud.callFunction({
+      name: 'order-cancel', // 取消订单云函数
+      data: {
+        orderId: orderId // 传递订单ID
+      }
+    }).then(res => {
+      if (res.result.code === 200) {
+        console.log('订单超时自动取消成功：', orderId);
+      } else {
+        console.error('订单超时取消失败：', res.result.message);
+      }
+    }).catch(err => {
+      console.error('调用取消订单云函数失败：', err);
+    });
   },
 
 
@@ -206,12 +339,9 @@ Page({
       wx.showToast({ title: '订单信息缺失', icon: 'none' });
       return;
     }
-    const status = this.data.order.status;
-    if (status === 'paid') {
-      wx.navigateTo({ url: `/pages/order/refund/refund?orderId=${this.data.orderId}` });
-      return;
-    }
-    if (status === 'pending') {
+    const statusmax = this.data.order.statusmax;
+    // 只有待支付状态可以取消
+    if (statusmax === 1) {
       wx.showModal({
         title: '提示',
         content: '是否取消订单',
@@ -414,7 +544,7 @@ Page({
         name: 'order-update-status',
         data: {
           orderId: this.data.orderId,
-          status: this.data.order?.status || 'paid',
+          statusmax: this.data.order?.statusmax || 1,
           address
         }
       });
@@ -445,8 +575,9 @@ Page({
       return;
     }
 
-    // 订单状态校验
-    if (this.data.order.status !== 'paid' && this.data.order.status !== 'shipped') {
+    // 订单状态校验 - 使用statusmax
+    const statusmax = this.data.order.statusmax;
+    if (statusmax !== 2 && statusmax !== 3) {
       wx.showToast({
         title: '当前订单状态不允许退款',
         icon: 'none'

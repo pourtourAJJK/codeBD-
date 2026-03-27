@@ -530,6 +530,9 @@ Page({
       products = products.flat();
     }
     
+    // 获取用户信息
+    const userInfo = wx.getStorageSync('userInfo') || {};
+    
     const orderData = {
       address: this.data.selectedAddress,
       goods: products.map(product => ({
@@ -538,7 +541,11 @@ Page({
       })),
       totalPrice: this.data.totalPrice,
       remark: this.data.remark,
-      appointment: this.data.selectedAppointment
+      selectedAppointment: this.data.selectedAppointment,
+      userInfo: {
+        nickName: userInfo.nickName || userInfo.nickname,
+        avatarUrl: userInfo.avatarUrl
+      }
     };
     console.log('【订单确认日志7】构建的订单数据:', orderData);
     

@@ -95,7 +95,8 @@ const handler = async (event = {}) => {
       ...order,
       orderId: normalizedOrderId,
       goods: Array.isArray(order.goods) && order.goods.length > 0 ? order.goods : goods,
-      address: Array.isArray(address) ? address : (address ? [address] : [])
+      address: Array.isArray(address) ? address : (address ? [address] : []),
+      paymentAmount: order.paymentAmount || order.totalPrice || 0
     };
 
     return {

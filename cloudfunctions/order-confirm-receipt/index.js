@@ -27,7 +27,7 @@ const handler = async (event = {}) => {
     }
 
     const orderRes = await db.collection(ORDER_COLLECTION)
-      .where({ order_id: orderId, openid, status: 'shipped' })
+      .where({ order_id: orderId, openid, statusmax: "3" })
       .limit(1)
       .get();
 
@@ -37,11 +37,29 @@ const handler = async (event = {}) => {
 
     await db.collection(ORDER_COLLECTION).doc(orderRes.data[0]._id).update({
       data: {
-        status: 'completed',
+        statusmax: "5",
         completionTime: db.serverDate(),
         updatedAt: db.serverDate()
       }
     });
+    
+    // ============== 新增：调用推送云函数 ==============
+    try {
+      await cloud.callFunction({
+        name: "order-push",
+        data: {
+          doc: {
+            statusmax: "5",
+            _id: orderId,
+            openid: openid
+          }
+        }
+      });
+      console.log("✅ 确认收货，推送触发成功");
+    } catch (e) {
+      console.error("❌ 推送失败", e);
+    }
+    // ==================================================
 
     return { code: 200, message: '确认收货成功', data: { orderId } };
   } catch (error) {

@@ -24,7 +24,11 @@ const handler = async (event = {}) => {
       return { code: 500, message: '用户不存在', data: {} };
     }
 
-    const { goods, items, address, userInfo, totalPrice, couponId, remark } = event;
+    // ========== 新增：接收预约配送时间字段 ==========
+    const { 
+      goods, items, address, userInfo, totalPrice, couponId, remark, 
+      selectedAppointment // 新增：预约配送时间（从前端confirm.js传过来）
+    } = event;
     const rawItems = Array.isArray(goods) ? goods.flat() : (Array.isArray(items) ? items.flat() : []);
 
     if (!rawItems || rawItems.length === 0) {
@@ -94,28 +98,59 @@ const handler = async (event = {}) => {
     // 获取用户信息
     const user = userRes.data[0];
     
-    // 构建用户信息对象
+    // 构建用户信息对象（兼容 nickname/nickName）
     const userInfoObj = {
-      nickName: user.nickName || user.nickname || '',
+      nickName: user.nickName || user.nickname || '', // 兼容两种字段名
       avatarUrl: user.avatarUrl || user.avatar || ''
     };
     
+    // ========== 最终版：预约配送时间处理（模型不变+前端兼容） ==========
+    const appointmentDay = selectedAppointment?.day || ''; // 原始日期字符串 "2026-3-27"
+    const appointmentTime = selectedAppointment?.time || ''; // 原始时间段字符串 "09:00-11:00"
+    const appointmentDayLabel = selectedAppointment?.dayLabel || ''; // "3月27日 (周五)"
+    const appointmentTimeLabel = selectedAppointment?.timeLabel || ''; // "09:00-11:00"
+
+    // 1. 满足模型数字类型：转时间戳（deliveryDate/deliveryTime 必须是数字）
+    const deliveryDate = appointmentDay ? new Date(appointmentDay).getTime() : 0; // 日期时间戳
+    let deliveryTime = 0;
+    if (appointmentDay && appointmentTime) {
+      const timeStart = appointmentTime.split('-')[0]; // 取时间段开始值 "09:00"
+      const fullDateTime = `${appointmentDay} ${timeStart}`; // "2026-3-27 09:00"
+      deliveryTime = new Date(fullDateTime).getTime(); // 转成时间戳数字
+    }
+
+    // 2. 新增：存储原始字符串（供前端直接展示，不用再转）
+    const deliveryTimeStr = appointmentTime; // 原始 "09:00-11:00"
+    const deliveryDateStr = appointmentDay; // 原始 "2026-3-27"
+
+    // 3. 展示标签（不变）
+    const deliveryLabel = `${appointmentDayLabel} ${appointmentTimeLabel}`.trim();
+    // ========== 结束：预约配送时间处理 ==========
+
     const orderData = {
       order_id: orderNo,
       orderNo,
       openid,
+      // ========== 优化：用户信息字段（兼容前端 nickname/nickName） ==========
       userInfo: Array.isArray(userInfo) ? userInfo : (userInfo ? [userInfo] : [userInfoObj]),
-      nickName: user.nickName || user.nickname || '',
+      nickName: user.nickName || user.nickname || '', // 统一兼容
       avatarUrl: user.avatarUrl || user.avatar || '',
+      // ========== 优化：地址字段（name对应用户姓名） ==========
       address: Array.isArray(address) ? address : (address ? [address] : []),
       addressId: address._id || '',
-      consignee: address.name || '',
+      consignee: address.name || '', // 地址中的name对应收货人姓名（如"饺子"）
+      deliveryDate: deliveryDate,        // 数字：满足模型要求
+      deliveryTime: deliveryTime,        // 数字：满足模型要求
+      deliveryTimeStr: deliveryTimeStr,  // 字符串：供前端直接展示 "09:00-11:00"
+      deliveryDateStr: deliveryDateStr,  // 字符串：供前端直接展示 "2026-3-27"
+      deliveryLabel: deliveryLabel,      // 字符串：完整展示标签 "3月27日 (周五) 09:00-11:00"
+      // ========== 原有字段保留 ==========
       totalPrice: Number(totalPrice || 0),
+      paymentAmount: Number(totalPrice || 0),
       paidAmount: 0,
       couponId: couponId || '',
-      status: '1',
-      pay_status: '0',
-      // 避免 transaction_id 唯一索引重复，统一使用订单号占位
+      statusmax: "1",
+      pay_status: "0",
       out_trade_no: transactionId,
       transaction_id: transactionId,
       success_time: '',
@@ -128,8 +163,7 @@ const handler = async (event = {}) => {
         spec: item.spec,
         cover_image: item.cover_image
       })),
-      // 新增：超时与库存锁定信息（兼容旧字段，不影响原有逻辑）
-      cancelPayTime: null,
+      cancelPayTime: new Date(Date.now() + 15 * 60 * 1000), // 15分钟后自动取消时间
       autoCancelStatus: 'pending',
       stockLocked: true,
       lockedStock: orderItems.map(it => ({

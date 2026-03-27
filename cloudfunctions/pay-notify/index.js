@@ -127,12 +127,13 @@ exports.main = async (event) => {
         console.log('尝试通过order_id匹配:', outTradeNo);
         updateResult = await db.collection('shop_order').where({ order_id: outTradeNo }).update({
           data: {
-            pay_status: '1',
-            status: 'paid',
+            pay_status: "1",
+            statusmax: "2",
             openid: openid || '',
             transaction_id: transactionId,
             success_time: successTime || db.serverDate(),
             paymentTime: successTime ? new Date(successTime).getTime() : db.serverDate(),
+            paymentAmount: Number(orderData.amount?.total || orderData.total_fee || 0) / 100,
             updatedAt: db.serverDate()
           }
         });
@@ -140,6 +141,25 @@ exports.main = async (event) => {
         console.log('order_id匹配更新结果:', updateResult);
         if (updateResult.stats && updateResult.stats.updated > 0) {
           matchMethod = 'order_id';
+          
+          // ============== 新增：调用推送云函数 ==============
+          try {
+            // 调用order-push，把订单数据传过去
+            await cloud.callFunction({
+              name: "order-push",
+              data: {
+                doc: {
+                  statusmax: "2",
+                  _id: outTradeNo,
+                  openid: openid
+                }
+              }
+            });
+            console.log("✅ 支付成功，推送触发成功");
+          } catch (e) {
+            console.error("❌ 推送失败", e);
+          }
+          // ==================================================
         }
       }
 
@@ -148,12 +168,13 @@ exports.main = async (event) => {
         console.log('尝试通过out_trade_no匹配:', outTradeNo);
         updateResult = await db.collection('shop_order').where({ out_trade_no: outTradeNo }).update({
           data: {
-            pay_status: '1',
-            status: 'paid',
+            pay_status: "1",
+            statusmax: "2",
             openid: openid || '',
             transaction_id: transactionId,
             success_time: successTime || db.serverDate(),
             paymentTime: successTime ? new Date(successTime).getTime() : db.serverDate(),
+            paymentAmount: Number(orderData.amount?.total || orderData.total_fee || 0) / 100,
             updatedAt: db.serverDate()
           }
         });
@@ -161,6 +182,25 @@ exports.main = async (event) => {
         console.log('out_trade_no匹配更新结果:', updateResult);
         if (updateResult.stats && updateResult.stats.updated > 0) {
           matchMethod = 'out_trade_no';
+          
+          // ============== 新增：调用推送云函数 ==============
+          try {
+            // 调用order-push，把订单数据传过去
+            await cloud.callFunction({
+              name: "order-push",
+              data: {
+                doc: {
+                  statusmax: "2",
+                  _id: outTradeNo,
+                  openid: openid
+                }
+              }
+            });
+            console.log("✅ 支付成功，推送触发成功");
+          } catch (e) {
+            console.error("❌ 推送失败", e);
+          }
+          // ==================================================
         }
       }
 
@@ -185,6 +225,26 @@ exports.main = async (event) => {
       }
 
       console.log('订单更新成功，匹配方式:', matchMethod, '更新数量:', updateResult.stats.updated);
+      
+      // 验证更新是否真正生效
+      try {
+        const verifyResult = await db.collection('shop_order').where({
+          [matchMethod === 'order_id' ? 'order_id' : 'out_trade_no']: outTradeNo
+        }).get();
+        if (verifyResult.data && verifyResult.data.length > 0) {
+          const updatedOrder = verifyResult.data[0];
+          console.log('✅ 更新后订单状态验证:', {
+            order_id: updatedOrder.order_id,
+            statusmax: updatedOrder.statusmax,
+            pay_status: updatedOrder.pay_status,
+            transaction_id: updatedOrder.transaction_id,
+            paymentAmount: updatedOrder.paymentAmount
+          });
+        }
+      } catch (verifyError) {
+        console.error('❌ 验证更新结果失败:', verifyError);
+      }
+      
       return {
         statusCode: 200,
         headers: { 'Content-Type': 'text/plain' },

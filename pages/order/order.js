@@ -2,6 +2,7 @@
 const app = getApp();
 const auth = require('../../utils/auth');
 const orderUtil = require('../../utils/orderUtil');
+const timeUtil = require('../../utils/timeUtil.js');
 
 // 新增：自动取消计时器句柄
 let autoCancelTimer = null;
@@ -16,7 +17,11 @@ Page({
     // 加载状态
     loading: false,
     // 错误提示
-    errorMsg: ''
+    errorMsg: '',
+    // 倒计时定时器
+    timer: null,
+    // 设备平台
+    platform: ''
   },
 
   // 页面加载
@@ -25,6 +30,16 @@ Page({
     if (!this.checkLoginStatus()) {
       return;
     }
+    
+    // 获取设备平台（处理iOS时间兼容）
+    const that = this;
+    wx.getSystemInfo({
+      success: function (res) {
+        that.setData({
+          platform: res.platform
+        });
+      }
+    });
     
     // 如果有传入的tab参数或type参数，切换到对应标签页（增加参数校验）
     if (options?.tab && typeof options.tab === 'string') {
@@ -40,20 +55,34 @@ Page({
 
   // 页面显示
   onShow: function() {
+    console.log('【订单列表】页面显示，开始刷新订单');
     // 如果有退款状态本地标记，先行覆盖再加载
     this.applyRefundingStatus();
-    // 加载订单列表
+    // 加载订单列表，确保获取最新状态
     this.loadOrders();
   },
 
   onHide: function() {
     this.clearAutoCancelTimer();
     this.clearChunkTimer();
+    this.clearCountDownTimer();
   },
 
   onUnload: function() {
     this.clearAutoCancelTimer();
     this.clearChunkTimer();
+    this.clearCountDownTimer();
+  },
+
+  // 封装：清除倒计时定时器
+  clearCountDownTimer() {
+    if (this.data.timer) {
+      clearInterval(this.data.timer);
+      this.setData({
+        timer: null
+      });
+      console.log('倒计时定时器已清除');
+    }
   },
 
 
@@ -124,10 +153,10 @@ Page({
     const updated = (this.data.orders || []).map(o => {
       const id = o.orderId || o.order_id || o.orderNo || o.out_trade_no || o._id;
       if (statusMap[id] === 'refunding') {
-        return { ...o, status: 'refunding', statusText: '退款中', statusColor: '#e11' };
+        return { ...o, statusmax: 7, statusText: '退款中', statusColor: '#e11' };
       }
       if (statusMap[id] === 'refunded') {
-        return { ...o, status: 'refunded', statusText: '已退款', statusColor: '#27ae60' };
+        return { ...o, statusmax: 9, statusText: '退款成功', statusColor: '#27ae60' };
       }
       return o;
     });
@@ -185,17 +214,28 @@ Page({
     const params = {};
     console.log('【订单列表日志0.6】基础查询参数:', params);
     
-    // 如果不是全部订单，添加状态筛选（校验状态合法性）
-    const validStatus = ['all', 'pending', 'paid', 'shipped', 'completed', 'cancelled', 'refunding', 'refunded'];
-
-    if (this.data.activeTab !== 'all' && validStatus.includes(this.data.activeTab)) {
-      params.status = this.data.activeTab;
-      console.log('【订单列表日志0.7】添加状态筛选:', this.data.activeTab);
+    // 如果不是全部订单，添加状态筛选
+    if (this.data.activeTab !== 'all') {
+      // 映射标签到statusmax
+      const tabToStatus = {
+        'pending': 1,
+        'paid': 2,
+        'shipped': 3,
+        'delivering': 4,
+        'completed': 5,
+        'cancelled': 6,
+        'refunding': 7
+      };
+      const statusmax = tabToStatus[this.data.activeTab];
+      if (statusmax) {
+        params.statusmax = statusmax;
+        console.log('【订单列表日志0.7】添加状态筛选:', statusmax);
+      }
     }
     console.log('【订单列表日志0.8】最终查询参数:', params);
     
     // 调用获取订单列表云函数
-    console.log('【订单列表日志0.9】准备调用getOrders云函数');
+    console.log('【订单列表日志0.9】准备调用order-list云函数');
 
     wx.cloud.callFunction({
       name: 'order-list',
@@ -217,10 +257,10 @@ Page({
           const mergedOrders = formattedOrders.map(o => {
             const id = o.orderId || o.order_id || o.orderNo || o.out_trade_no || o._id;
             if (statusMap[id] === 'refunding') {
-              return { ...o, status: 'refunding', statusText: '退款中', statusColor: '#e11' };
+              return { ...o, statusmax: 7, statusText: '退款中', statusColor: '#e11' };
             }
             if (statusMap[id] === 'refunded') {
-              return { ...o, status: 'refunded', statusText: '已退款', statusColor: '#27ae60' };
+              return { ...o, statusmax: 9, statusText: '退款成功', statusColor: '#27ae60' };
             }
             return o;
           });
@@ -232,6 +272,13 @@ Page({
             // 分片渲染，降低单次 setData 体积
             this.renderOrdersInChunks(mergedOrders);
 
+            // 启动倒计时（仅对待支付或全部订单）
+            const activeTab = this.data.activeTab;
+            if (!activeTab || activeTab === 'all' || activeTab === 'pending') {
+              this.countDown();
+            } else {
+              this.clearCountDownTimer();
+            }
 
             console.log('【订单列表日志6】订单数据加载成功，共', formattedOrders.length, '条订单');
             console.log('【订单列表日志7】当前errorMsg状态:', this.data.errorMsg); // 打印确认
@@ -352,10 +399,10 @@ Page({
         const rawCreateTime = order.createTime || order.createdAt || order.create_time || order.create_at || '';
         const displayCreateTime = this.formatCreateTime(rawCreateTime);
         
-        // 获取订单状态文本和颜色（确保status存在）
-        const status = order.status || order.order_status || '';
-        const statusText = orderUtil.getOrderStatusText(status);
-        const statusColor = orderUtil.getOrderStatusColor(status);
+        // 获取订单状态文本和颜色（确保statusmax存在）
+        const status = order.statusmax || order.status || order.order_status || '';
+        const statusText = this.getOrderStatusText(status);
+        const statusColor = this.getOrderStatusColor(status);
         
         // 确保金额字段存在且为数字
         const totalPriceNum = this.normalizePrice(order.totalPrice || order.total_amount || order.totalAmount || 0);
@@ -723,11 +770,130 @@ Page({
     }, 3000);
   },
 
+  // 获取订单状态文本
+  getOrderStatusText: function(status) {
+    const statusMap = {
+      1: '待支付',
+      2: '待接单',
+      3: '待配送',
+      4: '配送中',
+      5: '已完成',
+      6: '已取消',
+      7: '退款中',
+      8: '退款中',
+      9: '退款成功',
+      '1': '待支付',
+      '2': '待接单',
+      '3': '待配送',
+      '4': '配送中',
+      '5': '已完成',
+      '6': '已取消',
+      '7': '退款中',
+      '8': '退款中',
+      '9': '退款成功'
+    };
+    return statusMap[status] || '未知状态';
+  },
+
+  // 获取订单状态颜色
+  getOrderStatusColor: function(status) {
+    const colorMap = {
+      1: '#ff9500', // 待支付 - 橙色
+      2: '#3498db', // 待接单 - 蓝色
+      3: '#9b59b6', // 待配送 - 紫色
+      4: '#f39c12', // 配送中 - 黄色
+      5: '#27ae60', // 已完成 - 绿色
+      6: '#95a5a6', // 已取消 - 灰色
+      7: '#e74c3c', // 退款中 - 红色
+      8: '#e74c3c', // 退款中 - 红色
+      9: '#27ae60', // 退款成功 - 绿色
+      '1': '#ff9500',
+      '2': '#3498db',
+      '3': '#9b59b6',
+      '4': '#f39c12',
+      '5': '#27ae60',
+      '6': '#95a5a6',
+      '7': '#e74c3c',
+      '8': '#e74c3c',
+      '9': '#27ae60'
+    };
+    return colorMap[status] || '#999';
+  },
+
   // 页面下拉刷新
   onPullDownRefresh: function() {
     // 重新加载订单列表，在加载完成后停止刷新
     this.loadOrders(() => {
       wx.stopPullDownRefresh();
+    });
+  },
+
+  // 待支付订单倒计时核心方法（15分钟超时）
+  countDown() {
+    const that = this;
+    const { orders, platform } = this.data;
+    // 先清除旧定时器，避免重复创建
+    this.clearCountDownTimer();
+
+    // 启动新的定时器（每秒执行一次）
+    const timer = setInterval(() => {
+      let newOrders = [...orders];
+      // 遍历所有订单，仅处理statusmax=1的待支付订单
+      for (let i = 0; i < newOrders.length; i++) {
+        const item = newOrders[i];
+        if (item.statusmax !== 1 && item.statusmax !== '1') {
+          delete newOrders[i].countdown; // 非待支付，删除倒计时字段
+          continue;
+        }
+
+        // 订单创建时间：兼容云开发的serverDate（时间戳/字符串）
+        let createdTime = item.createTime || item.createdAt;
+        if (createdTime && createdTime._seconds) { // 云开发serverDate的时间戳格式
+          createdTime = new Date(createdTime._seconds * 1000);
+        }
+        // 15分钟超时：计算支付截止时间（创建时间+15分钟）
+        const payDeadline = new Date(new Date(createdTime).getTime() + 15 * 60 * 1000);
+        const nowTime = new Date(); // 当前时间
+        // 计算时间差（毫秒数）
+        const timeDiff = timeUtil.compareDate(payDeadline, nowTime);
+
+        if (timeDiff > 0) {
+          // 未超时：格式化剩余时间，赋值给countdown字段
+          newOrders[i].countdown = timeUtil.formatMsToMinSec(timeDiff);
+        } else {
+          // 已超时：删除倒计时字段 + 自动取消订单
+          delete newOrders[i].countdown;
+          that.cancelOrderAuto(newOrders[i].orderId || newOrders[i]._id); // 调用自动取消订单方法
+          // 超时后把订单状态置为已取消（前端临时更新，云函数会同步）
+          newOrders[i].statusmax = '6';
+          newOrders[i].statusText = '已取消';
+        }
+      }
+
+      // 更新订单列表，页面自动刷新倒计时
+      that.setData({
+        orders: newOrders,
+        timer: timer
+      });
+    }, 1000); // 每秒刷新一次
+  },
+
+  // 超时自动取消订单（调用order-cancel云函数）
+  cancelOrderAuto(orderId) {
+    if (!orderId) return;
+    wx.cloud.callFunction({
+      name: 'order-cancel', // 取消订单云函数
+      data: {
+        orderId: orderId // 传递订单ID
+      }
+    }).then(res => {
+      if (res.result.code === 200) {
+        console.log('订单超时自动取消成功：', orderId);
+      } else {
+        console.error('订单超时取消失败：', res.result.message);
+      }
+    }).catch(err => {
+      console.error('调用取消订单云函数失败：', err);
     });
   },
 

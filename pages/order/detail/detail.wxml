@@ -3,6 +3,9 @@
   <!-- 订单状态 -->
   <view class="order-status">
     <text class="status-text">{{statusText}}</text>
+    <text wx:if="{{order && (order.statusmax === 1 || order.statusmax === '1') && order.countdown}}" class="countdown">
+      剩余支付时间：{{order.countdown}}
+    </text>
   </view>
   
   <!-- 收货地址 -->
@@ -51,15 +54,23 @@
 
       <view class="info-item">
         <text class="label">支付方式</text>
-        <text class="value">{{order.paymentMethod}}</text>
+        <text class="value">{{order.statusmax === 6 || order.statusmax === '6' ? '已取消' : order.paymentMethod}}</text>
+      </view>
+      <view class="info-item" wx:if="order.remark && (order.statusmax !== 6 && order.statusmax !== '6')">
+        <text class="label">备注</text>
+        <text class="value">{{order.remark}}</text>
       </view>
       <view class="info-item">
         <text class="label">下单时间</text>
         <text class="value">{{order.createTimeFmt}}</text>
       </view>
-      <view class="info-item" wx:if="order.payTimeFmt">
+      <view class="info-item" wx:if="order.payTimeFmt && (order.statusmax !== 6 && order.statusmax !== '6')">
         <text class="label">支付时间</text>
         <text class="value">{{order.payTimeFmt}}</text>
+      </view>
+      <view class="info-item" wx:if="order.appointmentTimeFmt">
+        <text class="label">预约时间</text>
+        <text class="value">{{order.appointmentTimeFmt}}</text>
       </view>
       <!-- 已按需求去掉发货时间与物流信息 -->
 
@@ -90,13 +101,22 @@
     </view>
   </view>
   
-  <!-- 底部操作按钮：修改地址 / 取消或退款 -->
+  <!-- 底部操作按钮 -->
+  <!-- 待支付状态：修改地址 / 取消订单 -->
   <view class="action-buttons" wx:if="{{showActionBar && order}}">
     <view class="pill-group">
       <button class="pill-btn" bindtap="modifyAddress">修改地址</button>
       <button class="pill-btn pill-danger" bindtap="onCancelAction">
-        {{order.status === 'paid' ? '申请退款' : '取消订单'}}
+        取消订单
       </button>
+    </view>
+  </view>
+  
+  <!-- 已支付状态：管理 / 查看详情 -->
+  <view class="action-buttons" wx:if="{{!showActionBar && order && (order.pay_status === 1 || order.pay_status === '1')}}">
+    <view class="pill-group">
+      <button class="pill-btn" bindtap="queryWxOrder">管理</button>
+      <button class="pill-btn pill-danger" bindtap="viewOrder">查看详情</button>
     </view>
   </view>
   

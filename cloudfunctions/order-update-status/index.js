@@ -8,7 +8,7 @@ const db = cloud.database();
 
 const ORDER_COLLECTION = 'shop_order';
 const USER_COLLECTION = 'shop_user';
-const ALLOWED_STATUS = ['pending', 'paid', 'shipped', 'completed', 'cancelled', 'payment_fail', 'refunding', 'refunded'];
+const ALLOWED_STATUS = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
 
 const handler = async (event = {}) => {
@@ -25,13 +25,13 @@ const handler = async (event = {}) => {
       return { code: 500, message: '用户不存在', data: {} };
     }
 
-    const { status } = event;
+    const { statusmax } = event;
     const orderId = event.order_id || event.orderId || event.orderNo || event.out_trade_no || event.outTradeNo || event._id;
-    if (!orderId || !status) {
+    if (!orderId || statusmax === undefined) {
       return { code: 500, message: '缺少必要参数', data: {} };
     }
 
-    if (!ALLOWED_STATUS.includes(status)) {
+    if (!ALLOWED_STATUS.includes(statusmax)) {
       return { code: 500, message: '订单状态不合法', data: {} };
     }
 
@@ -43,15 +43,47 @@ const handler = async (event = {}) => {
       { _id: orderId, openid }
     ]);
 
+    // 先查询订单当前状态，进行双字段安全校验
+    const orderRes = await db.collection(ORDER_COLLECTION).where(orderWhere).limit(1).get();
+    if (!orderRes.data || orderRes.data.length === 0) {
+      return { code: 500, message: '订单不存在或无权限', data: {} };
+    }
+    
+    const currentOrder = orderRes.data[0];
+    const currentPayStatus = currentOrder.pay_status;
+    const currentStatusmax = currentOrder.statusmax;
+    
+    // 双字段安全校验
+    // 规则1: pay_status=0（未支付）→ 只允许 statusmax=1/6（待支付/已取消）
+    if (currentPayStatus === 0 || currentPayStatus === '0') {
+      if (statusmax !== "1" && statusmax !== "6") {
+        return { code: 500, message: '未支付订单只能更新为待支付或已取消状态', data: {} };
+      }
+    }
+    
+    // 规则2: pay_status=1（已支付）→ 禁止 statusmax=1（待支付）
+    if (currentPayStatus === 1 || currentPayStatus === '1') {
+      if (statusmax === "1") {
+        return { code: 500, message: '已支付订单不能更新为待支付状态', data: {} };
+      }
+    }
+
     // 新增：允许更新超时控制相关字段
     const updateData = {
-      status,
+      statusmax,
       updatedAt: db.serverDate(),
     };
     if (event.cancelPayTime !== undefined) updateData.cancelPayTime = event.cancelPayTime;
     if (event.autoCancelStatus) updateData.autoCancelStatus = event.autoCancelStatus;
     // 允许同步更新收货地址
-    if (event.address) updateData.address = Array.isArray(event.address) ? event.address : (event.address ? [event.address] : []);
+    if (event.address) {
+      updateData.address = Array.isArray(event.address) ? event.address : (event.address ? [event.address] : []);
+      // 同时更新收货人字段
+      const addressObj = Array.isArray(event.address) && event.address.length > 0 ? event.address[0] : event.address;
+      if (addressObj && addressObj.name) {
+        updateData.consignee = addressObj.name;
+      }
+    }
 
 
     const updateRes = await db.collection(ORDER_COLLECTION)
@@ -62,11 +94,29 @@ const handler = async (event = {}) => {
 
       return { code: 500, message: '订单不存在或无权限', data: {} };
     }
+    
+    // ============== 新增：调用推送云函数 ==============
+    try {
+      await cloud.callFunction({
+        name: "order-push",
+        data: {
+          doc: {
+            statusmax: statusmax,
+            _id: orderId,
+            openid: openid
+          }
+        }
+      });
+      console.log("✅ 商家修改状态，推送触发成功");
+    } catch (e) {
+      console.error("❌ 推送失败", e);
+    }
+    // ==================================================
 
     return {
       code: 200,
       message: '更新订单状态成功',
-      data: { orderId, status }
+      data: { orderId, statusmax }
     };
   } catch (error) {
     console.error('更新订单状态失败', error);

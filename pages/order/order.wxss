@@ -129,6 +129,16 @@
   font-size: 28rpx;
   font-weight: 500;
 }
+.countdown {
+  color: #ff4d4f;
+  font-size: 24rpx;
+  white-space: nowrap;
+}
+
+.info-value.countdown {
+  color: #ff4d4f;
+  font-weight: 500;
+}
 
 /* 订单信息 */
 .order-info {

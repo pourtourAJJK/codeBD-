@@ -31,7 +31,7 @@ const handler = async (event = {}) => {
     }
 
     const orderRes = await db.collection(ORDER_COLLECTION)
-      .where({ order_id: orderId, openid, status: 'pending' })
+      .where({ order_id: orderId, openid, statusmax: "1" })
       .limit(1)
       .get();
 
@@ -52,7 +52,7 @@ const handler = async (event = {}) => {
     try {
       await transaction.collection(ORDER_COLLECTION).doc(order._id).update({
         data: {
-          status: 'cancelled',
+          statusmax: "6",
           cancelTime: db.serverDate(),
           updatedAt: db.serverDate()
         }
@@ -70,6 +70,24 @@ const handler = async (event = {}) => {
       }
 
       await transaction.commit();
+      
+      // ============== 新增：调用推送云函数 ==============
+      try {
+        await cloud.callFunction({
+          name: "order-push",
+          data: {
+            doc: {
+              statusmax: "6",
+              _id: orderId,
+              openid: openid
+            }
+          }
+        });
+        console.log("✅ 订单取消，推送触发成功");
+      } catch (e) {
+        console.error("❌ 推送失败", e);
+      }
+      // ==================================================
 
       return { code: 200, message: '订单已取消', data: { orderId } };
     } catch (error) {

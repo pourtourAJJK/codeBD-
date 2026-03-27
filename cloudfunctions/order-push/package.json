@@ -1,0 +1,14 @@
+{
+  "name": "order-push",
+  "version": "1.0.0",
+  "description": "9状态全覆盖订单推送云函数",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  },
+  "author": "",
+  "license": "ISC"
+}
