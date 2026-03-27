@@ -44,8 +44,13 @@ Page({
       success: res => {
         this.setData({ loading: false });
         if (res.result.code === 0) {
+          const orderInfo = res.result.data;
+          // 计算支付金额（分转元）
+          if (orderInfo.total) {
+            orderInfo.totalYuan = (orderInfo.total / 100).toFixed(2);
+          }
           this.setData({
-            orderInfo: res.result.data
+            orderInfo: orderInfo
           });
         } else {
           wx.showToast({

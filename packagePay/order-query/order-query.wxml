@@ -29,9 +29,9 @@
       </text>
     </view>
 
-    <view class="info-item" wx:if="{{orderInfo.total}}">
+    <view class="info-item" wx:if="{{orderInfo.totalYuan}}">
       <text class="label">支付金额：</text>
-      <text class="value">¥{{(orderInfo.total / 100).toFixed(2)}}</text>
+      <text class="value">¥{{orderInfo.totalYuan}}</text>
     </view>
 
     <view class="info-item" wx:if="{{orderInfo.pay_time}}">

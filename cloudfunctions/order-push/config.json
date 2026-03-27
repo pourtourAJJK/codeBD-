@@ -1,11 +1,7 @@
 {
-  "triggers": [
-    {
-      "name": "orderStatusChange",
-      "type": "database",
-      "event": "update",
-      "collection": "shop_order",
-      "enable": true
-    }
-  ]
+  "permissions": {
+    "openapi": [
+      "subscribeMessage.send"
+    ]
+  }
 }

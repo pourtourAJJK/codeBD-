@@ -25,7 +25,9 @@ Page({
     // 支付结果
     paymentResult: false,
     // 结果提示信息
-    resultMessage: ''
+    resultMessage: '',
+    // 用户订阅状态（存储每个模板的订阅状态）
+    subscribedTemplates: {}
   },
 
   // 页面加载
@@ -37,6 +39,11 @@ Page({
       });
       return;
     }
+    
+    // 🔥 从本地存储读取用户订阅状态
+    const subscribedTemplates = wx.getStorageSync('subscribedTemplates') || {};
+    this.setData({ subscribedTemplates });
+    console.log('【订阅状态】用户订阅模板状态:', subscribedTemplates);
     
     console.log('=== 支付页面加载开始 ===');
     
@@ -593,7 +600,9 @@ Page({
   // 处理支付结果操作
   handleResultAction: function() {
     if (this.data.paymentResult) {
-      // 支付成功，跳转到订单详情页
+      // 支付成功，触发订阅授权
+      this.afterPaySuccess();
+      // 跳转到订单详情页
       wx.redirectTo({
         url: `/pages/order/detail/detail?orderId=${this.data.order.orderId}`
       });
@@ -603,6 +612,72 @@ Page({
         showResultModal: false
       });
     }
+  },
+
+  // 🔥 支付成功后触发订阅（多模板智能弹窗逻辑）
+  afterPaySuccess() {
+    // 🔥 定义用户相关的模板ID列表
+    const userTemplates = [
+      'TidkABW-BOBT9S2DFiNrymgfi1NE9N4OdlB9P_Ble24',       // 待付款提醒
+      'QHkuglyJklPzMcV-FvWVr5GOlORWNQaiG8XzcIF0Rx4',       // 待配送通知
+      '5EOwWN-HYBplYWkVrZPrkSavP9YY5OQngl0_TL82m2E',        // 配送中通知
+      'LU9u4yjI-QxiR1epETFXEM0uRhNZsmI_DbwlEU9GLsI',       // 订单已完成通知
+      'X7HCBMMFzmu4R-mGTdHXloqskQEQAo9WJIaZlATgO5Q',       // 订单取消通知
+      'Pp5dOOZPKj0AyA3Us6eFevSmhZUTSF5vKxmebWQVIkQ',       // 退款审核通知
+      'xuGxs2flhEEoDR-Iz3KKehzAcj2ZzSHRYskI0H-6e2c'         // 退款成功通知
+    ];
+    
+    // 🔥 筛选出未订阅的模板
+    const unsubscribedTemplates = userTemplates.filter(templateId => {
+      return !this.data.subscribedTemplates[templateId] || this.data.subscribedTemplates[templateId] !== 'accept';
+    });
+    
+    // 🔥 如果所有模板都已订阅，跳过弹窗
+    if (unsubscribedTemplates.length === 0) {
+      console.log('【订阅授权】所有模板已订阅，跳过弹窗');
+      return;
+    }
+    
+    // 🔥 用户未订阅所有模板，弹出授权窗口
+    console.log('【订阅授权】用户未订阅全部模板，弹出授权窗口');
+    console.log('【订阅授权】未订阅的模板:', unsubscribedTemplates);
+    
+    wx.requestSubscribeMessage({
+      tmplIds: unsubscribedTemplates, // 一次性订阅多个模板
+      success: (res) => {
+        console.log('【订阅授权】用户授权结果:', res);
+        
+        // 🔥 更新订阅状态
+        const newSubscribedTemplates = { ...this.data.subscribedTemplates };
+        let hasNewAccept = false;
+        
+        unsubscribedTemplates.forEach(templateId => {
+          newSubscribedTemplates[templateId] = res[templateId] || 'reject';
+          if (res[templateId] === 'accept') {
+            hasNewAccept = true;
+          }
+        });
+        
+        // 保存到本地存储
+        wx.setStorageSync('subscribedTemplates', newSubscribedTemplates);
+        this.setData({ subscribedTemplates: newSubscribedTemplates });
+        
+        // 显示相应的提示
+        if (hasNewAccept) {
+          wx.showToast({ title: '订阅成功，将为你推送订单通知' });
+        } else {
+          wx.showToast({ title: '你拒绝了订阅，将无法收到通知', icon: 'none' });
+        }
+      },
+      fail: (err) => {
+        console.error('订阅授权失败：', err);
+        if (err.errCode === 10004) {
+          wx.showToast({ title: '模板ID无效，请检查配置', icon: 'none' });
+        } else if (err.errCode === 20004) {
+          wx.showToast({ title: '订阅消息功能未开启', icon: 'none' });
+        }
+      }
+    });
   },
 
   // 返回首页
