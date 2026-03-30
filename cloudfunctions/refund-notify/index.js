@@ -21,41 +21,56 @@ const pay = new Wechatpay(payConfig);
 
 // 云函数入口
 const handler = async (event, context) => {
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] [refund-notify-开始] 接收微信退款回调`);
+  console.log(`[${timestamp}] [refund-notify-原始事件]`, event);
+
   try {
     // 1. 解析退款回调原始数据
+    console.log(`[${timestamp}] [refund-notify-解析回调数据] 开始解析回调原始数据`);
     const { headers = {}, body } = event;
     const rawBody = body;
-    const timestamp = headers['wechatpay-timestamp'] || headers['WeChatPay-Timestamp'] || headers['wechatpay-Timestamp'];
+    const wechatpayTimestamp = headers['wechatpay-timestamp'] || headers['WeChatPay-Timestamp'] || headers['wechatpay-Timestamp'];
     const nonce = headers['wechatpay-nonce'] || headers['WeChatPay-Nonce'] || headers['wechatpay-Nonce'];
     const signature = headers['wechatpay-signature'] || headers['WeChatPay-Signature'] || headers['wechatpay-Signature'];
     const serial = headers['wechatpay-serial'] || headers['WeChatPay-Serial'] || headers['wechatpay-Serial'];
 
+    console.log(`[${timestamp}] [refund-notify-回调头信息] 时间戳:${wechatpayTimestamp}, 随机串:${nonce}, 证书序列号:${serial}`);
+
     // 2. 验签
+    console.log(`[${timestamp}] [refund-notify-验签] 开始验签`);
     const verifyResult = pay.verifySign({
-      timestamp,
+      timestamp: wechatpayTimestamp,
       nonce,
       signature,
       body: rawBody,
       serial
     });
     if (!verifyResult) {
+      console.error(`[${timestamp}] [refund-notify-验签失败] 验签未通过`);
       return {
         code: 500,
         data: {},
         message: '验签失败'
       };
     }
+    console.log(`[${timestamp}] [refund-notify-验签成功] 验签通过`);
 
     // 3. 解析退款回调数据
+    console.log(`[${timestamp}] [refund-notify-解析数据] 开始解析退款回调数据`);
     const notifyData = JSON.parse(rawBody);
     const outRefundNo = notifyData.out_refund_no; // 商户退款单号
     const refundStatus = notifyData.refund_status; // 退款状态（SUCCESS/FAIL/CLOSED等）
-    const refundAmount = notifyData.amount.refund; // 退款金额
+    const refundAmount = notifyData.amount?.refund || 0; // 退款金额
     const outTradeNo = notifyData.out_trade_no; // 关联的商户订单号
     const successTime = notifyData.success_time; // 退款成功时间
+    const maskedTransactionId = notifyData.transaction_id ? notifyData.transaction_id.substring(0, 10) + '...' : '未提供';
+
+    console.log(`[${timestamp}] [refund-notify-回调数据] [订单ID:${outTradeNo}] [退款单号:${outRefundNo}] 退款状态:${refundStatus}, 退款金额:${refundAmount}, 支付单号:${maskedTransactionId}`);
 
     // 4. 更新退款记录表状态
-    await db.collection('shop_refund')
+    console.log(`[${timestamp}] [refund-notify-更新退款表] [订单ID:${outTradeNo}] [退款单号:${outRefundNo}] 开始更新shop_refund表`);
+    const updateRefundResult = await db.collection('shop_refund')
       .where({ out_refund_no: outRefundNo })
       .update({
         data: {
@@ -64,11 +79,12 @@ const handler = async (event, context) => {
           update_time: db.serverDate()
         }
       });
+    console.log(`[${timestamp}] [refund-notify-更新退款表] [订单ID:${outTradeNo}] [退款单号:${outRefundNo}] shop_refund表更新成功, 更新记录数:${updateRefundResult.stats?.updated || 0}`);
 
     // 5. 更新订单状态
     if (refundStatus === 'SUCCESS') {
-      // 退款成功：设置状态为9（退款成功）
-      await db.collection('shop_order')
+      console.log(`[${timestamp}] [refund-notify-更新订单状态] [订单ID:${outTradeNo}] 退款成功，开始更新shop_order表`);
+      const updateOrderResult = await db.collection('shop_order')
         .where({ order_id: outTradeNo })
         .update({
           data: {
@@ -78,9 +94,13 @@ const handler = async (event, context) => {
             updateTime: db.serverDate()
           }
         });
+      console.log(`[${timestamp}] [refund-notify-更新订单状态] [订单ID:${outTradeNo}] shop_order表更新成功, 更新记录数:${updateOrderResult.stats?.updated || 0}`);
+    } else {
+      console.log(`[${timestamp}] [refund-notify-更新订单状态] [订单ID:${outTradeNo}] 退款状态非SUCCESS，跳过订单状态更新`);
     }
 
     // 6. 返回成功应答
+    console.log(`[${timestamp}] [refund-notify-成功] [订单ID:${outTradeNo}] [退款单号:${outRefundNo}] 退款回调处理完成`);
     return {
       code: 200,
       data: {},
@@ -88,12 +108,16 @@ const handler = async (event, context) => {
     };
 
   } catch (error) {
-    console.error('退款回调处理失败：', error);
+    console.error(`[${new Date().toISOString()}] [refund-notify-异常] 退款回调处理失败`);
+    console.error(`[${new Date().toISOString()}] [refund-notify-异常详情] 错误信息:`, error.message);
+    console.error(`[${new Date().toISOString()}] [refund-notify-异常详情] 错误堆栈:`, error.stack);
     return {
       code: 500,
       data: {},
       message: '服务器异常'
     };
+  } finally {
+    console.log(`[${new Date().toISOString()}] [refund-notify-结束] 退款回调处理流程结束`);
   }
 };
 
