@@ -2,6 +2,7 @@ const auth = require('../../../utils/auth');
 Page({
   data: {
     orderId: '',
+    order: {},
     item: {},
     selectAll: true
   },
@@ -27,10 +28,11 @@ Page({
         title: first.product_name || first.title || '待退款商品',
         spec: first.spec || first.sku_name || first.option || '',
         cover: first.cover_image || first.productImage || first.image || '/assets/images/default-product.png',
+        price: Number(first.price || first.sale_price || first.pay_price || raw.totalPrice || 0),
         priceYuan: this.formatPrice(first.price || first.sale_price || first.pay_price || raw.totalPrice || 0),
         quantity: first.quantity || first.num || 1
       };
-      this.setData({ item });
+      this.setData({ item, order: raw });
     } catch (e) {
       console.error('load order fail', e);
     }
@@ -50,11 +52,16 @@ Page({
       wx.showToast({ title: '请选择商品', icon: 'none' });
       return;
     }
-    const { item, orderId } = this.data;
+    const { item, orderId, order } = this.data;
     wx.navigateTo({
       url: '/pages/order/refund-confirm/refund-confirm',
       success: (res) => {
-        res.eventChannel?.emit('refundData', { orderId, item });
+        res.eventChannel?.emit('refundData', {
+          orderId,
+          item,
+          transaction_id: order.transaction_id || order.transactionId,
+          totalAmount: order.totalPrice || order.total_amount || order.paymentAmount
+        });
       }
     });
   }

@@ -58,8 +58,8 @@ Page({
   // 页面显示
   onShow: function() {
     console.log('【订单列表】页面显示');
-    // 如果有退款状态本地标记，先行覆盖
-    this.applyRefundingStatus();
+    // 同步最新的退款状态（从数据库获取）
+    this.syncRefundStatus();
     // 🔥 修复：只有【第一次进入页面】才加载订单
     // 标签切换/操作后，禁止onShow自动加载！！！
     if (!this.data.orders || this.data.orders.length === 0) {
@@ -176,6 +176,34 @@ Page({
       return o;
     });
     this.setData({ orders: updated });
+  },
+
+  // 新增：从数据库同步最新退款状态
+  async syncRefundStatus() {
+    const statusMap = wx.getStorageSync('refundStatusMap') || {};
+    const orderIds = Object.keys(statusMap);
+    
+    if (orderIds.length === 0) return;
+    
+    try {
+      // 从数据库获取最新退款状态（防止缓存与数据库不一致）
+      const db = wx.cloud.database();
+      const _ = db.command;
+      const refundRecords = await db.collection('shop_refund')
+        .where({ order_id: _.in(orderIds) })
+        .get();
+      
+      // 更新缓存
+      refundRecords.data.forEach(record => {
+        statusMap[record.order_id] = record.refund_status === 'refunded' ? 'refunded' : 'refunding';
+      });
+      wx.setStorageSync('refundStatusMap', statusMap);
+      
+      // 应用状态更新
+      this.applyRefundingStatus();
+    } catch (error) {
+      console.error('同步退款状态失败:', error);
+    }
   },
 
   // 渲染分片定时器

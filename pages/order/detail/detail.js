@@ -41,10 +41,50 @@ Page({
     this.startPoll(orderId);
   },
 
-
+  // 页面显示时刷新订单信息
   onShow: function () {
     // 页面显示时刷新订单信息
     this.loadOrderDetail();
+    // 同步最新的退款状态
+    this.syncRefundStatus();
+  },
+
+  // 新增：从数据库同步最新退款状态
+  async syncRefundStatus() {
+    const statusMap = wx.getStorageSync('refundStatusMap') || {};
+    const orderId = this.data.orderId;
+    
+    if (!orderId || !statusMap[orderId]) return;
+    
+    try {
+      // 从数据库获取最新退款状态（防止缓存与数据库不一致）
+      const db = wx.cloud.database();
+      const refundRecord = await db.collection('shop_refund')
+        .where({ order_id: orderId })
+        .get();
+      
+      if (refundRecord.data.length > 0) {
+        const record = refundRecord.data[0];
+        // 更新缓存
+        statusMap[orderId] = record.refund_status === 'refunded' ? 'refunded' : 'refunding';
+        wx.setStorageSync('refundStatusMap', statusMap);
+        
+        // 应用状态更新
+        if (this.data.order) {
+          const updatedOrder = { ...this.data.order };
+          if (statusMap[orderId] === 'refunding') {
+            updatedOrder.statusmax = '7';
+            updatedOrder.statusText = '退款中';
+          } else if (statusMap[orderId] === 'refunded') {
+            updatedOrder.statusmax = '9';
+            updatedOrder.statusText = '退款成功';
+          }
+          this.setData({ order: updatedOrder, statusText: updatedOrder.statusText });
+        }
+      }
+    } catch (error) {
+      console.error('同步退款状态失败:', error);
+    }
   },
 
 
