@@ -1,0 +1,18 @@
+<view class="popup" wx:if="{{show}}">
+  <view class="mask" bindtap="onCancel"></view>
+  <view class="content">
+    <view class="title">订单备注</view>
+    <textarea
+      class="textarea"
+      value="{{text}}"
+      bindinput="onInput"
+      placeholder="请输入备注（选填）"
+      maxlength="200"
+      auto-height
+    />
+    <view class="btns">
+      <button bindtap="onCancel">取消</button>
+      <button bindtap="onConfirm">确定</button>
+    </view>
+  </view>
+</view>

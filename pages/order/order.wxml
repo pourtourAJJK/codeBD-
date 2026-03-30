@@ -10,25 +10,25 @@
       全部
     </view>
     <view 
-      class="tab-item {{activeTab === 'pending' ? 'active' : ''}}" 
-      data-tab="pending" 
+      class="tab-item {{activeTab === 'unpaid' ? 'active' : ''}}" 
+      data-tab="unpaid" 
       bindtap="switchTab"
     >
       待支付
     </view>
     <view 
-      class="tab-item {{activeTab === 'paid' ? 'active' : ''}}" 
-      data-tab="paid" 
+      class="tab-item {{activeTab === 'pending_delivery' ? 'active' : ''}}" 
+      data-tab="pending_delivery" 
       bindtap="switchTab"
     >
-      已支付
+      待配送
     </view>
     <view 
-      class="tab-item {{activeTab === 'shipped' ? 'active' : ''}}" 
-      data-tab="shipped" 
+      class="tab-item {{activeTab === 'delivering' ? 'active' : ''}}" 
+      data-tab="delivering" 
       bindtap="switchTab"
     >
-      已发货
+      配送中
     </view>
     <view 
       class="tab-item {{activeTab === 'completed' ? 'active' : ''}}" 

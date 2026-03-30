@@ -102,21 +102,13 @@
   </view>
   
   <!-- 底部操作按钮 -->
-  <!-- 待支付状态：修改地址 / 取消订单 -->
-  <view class="action-buttons" wx:if="{{showActionBar && order}}">
+  <!-- 除去已取消的订单外，都显示修改地址和取消订单按钮 -->
+  <view class="action-buttons" wx:if="{{(showModifyAddress || showCancelAction) && order && order.statusmax !== '6'}}">
     <view class="pill-group">
-      <button class="pill-btn" bindtap="modifyAddress">修改地址</button>
+      <button class="pill-btn" bindtap="modifyAddress" wx:if="{{showModifyAddress}}">修改地址</button>
       <button class="pill-btn pill-danger" bindtap="onCancelAction">
         取消订单
       </button>
-    </view>
-  </view>
-  
-  <!-- 已支付状态：管理 / 查看详情 -->
-  <view class="action-buttons" wx:if="{{!showActionBar && order && (order.pay_status === 1 || order.pay_status === '1')}}">
-    <view class="pill-group">
-      <button class="pill-btn" bindtap="queryWxOrder">管理</button>
-      <button class="pill-btn pill-danger" bindtap="viewOrder">查看详情</button>
     </view>
   </view>
   

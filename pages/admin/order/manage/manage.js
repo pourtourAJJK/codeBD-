@@ -1,9 +1,8 @@
 /**
- * 订单管理页面逻辑
+ * 订单管理页面逻辑（只用 statusmax 管理订单状态）
  */
 const { API } = require('../../../../config/api');
 const request = require('../../../../utils/request');
-const { ORDER_STATUS } = require('../../../../config/constants');
 
 Page({
   /**
@@ -20,7 +19,7 @@ Page({
     showFilter: false,
     // 已选择的订单
     selectedOrders: [],
-    // 筛选条件
+    // 筛选条件（只用 statusmax）
     filters: {
       // 订单状态
       status: 'all',
@@ -130,7 +129,7 @@ Page({
   },
 
   /**
-   * 格式化订单数据
+   * 格式化订单数据（只用 statusmax）
    * @param {Array} orders - 订单列表
    * @returns {Array} 格式化后的订单列表
    */
@@ -140,15 +139,37 @@ Page({
     }
     
     return orders.map(order => {
-      // 获取订单状态信息
-      const statusInfo = ORDER_STATUS[order.status] || ORDER_STATUS.unknown;
+      // 只用 statusmax 获取订单状态信息
+      const statusmax = order.statusmax || '1';
+      const statusInfo = this.getStatusInfo(statusmax);
       
       return {
         ...order,
+        statusmax: statusmax,
         statusText: statusInfo.text,
         statusColor: statusInfo.color
       };
     });
+  },
+
+  /**
+   * 获取状态信息（只用 statusmax）
+   * @param {string} statusmax - 状态码
+   * @returns {Object} 状态信息
+   */
+  getStatusInfo: function (statusmax) {
+    const statusMap = {
+      '1': { text: '待支付', color: '#ff9800' },
+      '2': { text: '待发货', color: '#2196f3' },
+      '3': { text: '待配送', color: '#9c27b0' },
+      '4': { text: '配送中', color: '#673ab7' },
+      '5': { text: '已完成', color: '#4caf50' },
+      '6': { text: '已取消', color: '#f44336' },
+      '80': { text: '退货中', color: '#ff5722' },
+      '90': { text: '已退款', color: '#795548' }
+    };
+    
+    return statusMap[statusmax] || { text: '未知', color: '#999' };
   },
 
   /**
@@ -190,7 +211,7 @@ Page({
   },
 
   /**
-   * 选择订单状态
+   * 选择订单状态（只用 statusmax）
    */
   selectStatus: function (e) {
     const status = e.currentTarget.dataset.status;
@@ -263,44 +284,58 @@ Page({
   },
 
   /**
-   * 更新订单状态
+   * 更新订单状态（只用 statusmax）
    */
   updateOrderStatus: function (e) {
     const order = e.currentTarget.dataset.order;
-    const newStatus = e.currentTarget.dataset.status;
+    const operateType = e.currentTarget.dataset.operateType;
     
-    if (!order || !newStatus) return;
+    if (!order || !operateType) return;
+    
+    const statusInfo = this.getStatusInfoByOperateType(operateType);
     
     // 确认更新
     wx.showModal({
       title: '更新订单状态',
-      content: `确定要将订单 ${order.orderId} 更新为 ${ORDER_STATUS[newStatus].text} 状态吗？`,
+      content: `确定要将订单 ${order.orderId} 更新为 ${statusInfo.text} 状态吗？`,
       success: (res) => {
         if (res.confirm) {
           // 调用更新订单状态接口
-          this.doUpdateOrderStatus(order.orderId, newStatus);
+          this.doUpdateOrderStatus(order.orderId, operateType);
         }
       }
     });
   },
 
   /**
-   * 执行更新订单状态
+   * 根据操作类型获取状态信息
    */
-  doUpdateOrderStatus: function (orderId, status) {
+  getStatusInfoByOperateType: function (operateType) {
+    const map = {
+      'confirmDelivery': { text: '待配送', statusmax: '3' },
+      'startShipping': { text: '配送中', statusmax: '4' },
+      'completeOrder': { text: '已完成', statusmax: '5' }
+    };
+    return map[operateType] || { text: '未知', statusmax: '' };
+  },
+
+  /**
+   * 执行更新订单状态（调用云函数）
+   */
+  doUpdateOrderStatus: function (orderId, operateType) {
     wx.showLoading({
       title: '更新中...'
     });
     
-    request({
-      url: API.ADMIN_UPDATE_ORDER_STATUS,
-      method: 'POST',
+    // 调用 admin-order-update 云函数
+    wx.cloud.callFunction({
+      name: 'admin-order-update',
       data: {
         orderId: orderId,
-        status: status
+        operateType: operateType
       }
     }).then(res => {
-      if (res.code === 0) {
+      if (res.result.code === 0) {
         wx.showToast({
           title: '状态更新成功',
           icon: 'success'
@@ -310,7 +345,7 @@ Page({
         this.loadOrders();
       } else {
         wx.showToast({
-          title: res.message || '更新失败',
+          title: res.result.msg || '更新失败',
           icon: 'none'
         });
       }
@@ -338,7 +373,8 @@ Page({
       content: `确定要取消订单 ${order.orderId} 吗？`,
       success: (res) => {
         if (res.confirm) {
-          this.doUpdateOrderStatus(order.orderId, 'cancelled');
+          // 取消订单直接设置 statusmax 为 6
+          this.doUpdateOrderStatus(order.orderId, 'cancel');
         }
       }
     });
@@ -365,7 +401,7 @@ Page({
   },
 
   /**
-   * 批量接单
+   * 批量接单（statusmax: 1->2）
    */
   batchAccept: function () {
     if (this.data.selectedOrders.length === 0) {
@@ -381,14 +417,14 @@ Page({
       content: `确定要批量接单 ${this.data.selectedOrders.length} 个订单吗？`,
       success: (res) => {
         if (res.confirm) {
-          this.batchUpdateStatus('accepted');
+          this.batchUpdateStatus('confirmDelivery');
         }
       }
     });
   },
 
   /**
-   * 批量配送
+   * 批量配送（statusmax: 2->4）
    */
   batchShip: function () {
     if (this.data.selectedOrders.length === 0) {
@@ -404,7 +440,7 @@ Page({
       content: `确定要批量标记 ${this.data.selectedOrders.length} 个订单为配送中吗？`,
       success: (res) => {
         if (res.confirm) {
-          this.batchUpdateStatus('shipping');
+          this.batchUpdateStatus('startShipping');
         }
       }
     });
@@ -413,36 +449,36 @@ Page({
   /**
    * 批量更新订单状态
    */
-  batchUpdateStatus: function (status) {
+  batchUpdateStatus: function (operateType) {
     wx.showLoading({
       title: '处理中...',
       mask: true
     });
     
-    request({
-      url: API.ADMIN_BATCH_UPDATE_ORDER_STATUS,
-      method: 'POST',
-      data: {
-        orderIds: this.data.selectedOrders,
-        status: status
-      }
-    }).then(res => {
-      if (res.code === 0) {
-        wx.showToast({
-          title: '批量操作成功',
-          icon: 'success'
-        });
-        
-        // 清空选择
-        this.clearSelection();
-        // 重新加载订单数据
-        this.loadOrders();
-      } else {
-        wx.showToast({
-          title: res.message || '批量操作失败',
-          icon: 'none'
-        });
-      }
+    // 批量调用云函数
+    const promises = this.data.selectedOrders.map(orderId => {
+      return wx.cloud.callFunction({
+        name: 'admin-order-update',
+        data: {
+          orderId: orderId,
+          operateType: operateType
+        }
+      });
+    });
+    
+    Promise.all(promises).then(results => {
+      const successCount = results.filter(r => r.result.code === 0).length;
+      const failCount = results.length - successCount;
+      
+      wx.showToast({
+        title: `成功${successCount}个，失败${failCount}个`,
+        icon: 'none'
+      });
+      
+      // 清空选择
+      this.clearSelection();
+      // 重新加载订单数据
+      this.loadOrders();
     }).catch(err => {
       console.error('批量更新订单状态失败:', err);
       wx.showToast({

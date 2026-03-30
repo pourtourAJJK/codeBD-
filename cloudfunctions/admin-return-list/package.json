@@ -1,0 +1,20 @@
+{
+  "name": "admin-return-list",
+  "version": "1.0.0",
+  "description": "退货列表查询云函数",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "cloud",
+    "function",
+    "return",
+    "list"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

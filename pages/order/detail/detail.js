@@ -1,4 +1,4 @@
-// 订单详情页面逻辑
+// 订单详情页面逻辑（只用 statusmax 管理订单状态）
 const auth = require('../../../utils/auth.js');
 const timeUtil = require('../../../utils/timeUtil.js');
 
@@ -9,6 +9,8 @@ Page({
     order: null,
     loading: true,
     showActionBar: false,
+    showCancelAction: false,
+    showModifyAddress: false,
     pollTimer: null,
     timer: null,
     platform: ''
@@ -99,9 +101,9 @@ Page({
         // 展示用订单号：不再回退到 Mongo _id
         const orderIdNormalized = raw.order_id || raw.orderId || raw.orderNo || raw.out_trade_no || this.data.orderId;
 
-        // 获取当前订单状态（使用statusmax字段）
-        const currentStatusmax = raw.statusmax || raw.status || 0;
-        const oldStatusmax = this.data.order?.statusmax || 0;
+        // 只用 statusmax 管理订单状态
+        const currentStatusmax = raw.statusmax || '1';
+        const oldStatusmax = this.data.order?.statusmax || '1';
 
         const order = {
           ...raw,
@@ -130,8 +132,14 @@ Page({
         }
 
         // 根据statusmax判断是否显示操作栏
-        // 待支付状态显示操作栏，其他状态不显示
-        const showActionBar = currentStatusmax === 1 || currentStatusmax === "1";
+        // 已取消的订单不显示任何操作按钮
+        const isCancelled = currentStatusmax === '6';
+        // 待支付状态显示操作栏
+        const showActionBar = currentStatusmax === '1';
+        // 除去已取消的订单外，都显示取消订单按钮
+        const showCancelAction = !isCancelled;
+        // 除去已取消的订单外，都显示修改地址按钮
+        const showModifyAddress = !isCancelled;
 
         this.setData({
           order: {
@@ -139,11 +147,13 @@ Page({
             payAmount
           },
           statusText: this.getStatusText(currentStatusmax),
-          showActionBar
+          showActionBar,
+          showCancelAction,
+          showModifyAddress
         });
 
         // 启动倒计时（仅对待支付订单）
-        if (currentStatusmax === 1 || currentStatusmax === "1") {
+        if (currentStatusmax === '1') {
           this.countDown();
         } else {
           this.clearCountDownTimer();
@@ -169,30 +179,20 @@ Page({
     }
   },
 
-  // 获取订单状态文本
-  getStatusText: function (status) {
+  // 获取订单状态文本（只用 statusmax）
+  getStatusText: function (statusmax) {
     const statusMap = {
-      1: '待支付',
-      2: '待接单',
-      3: '待配送',
-      4: '配送中',
-      5: '已完成',
-      6: '已取消',
-      7: '退款中',
-      8: '退款中',
-      9: '退款成功',
       '1': '待支付',
       '2': '待接单',
       '3': '待配送',
       '4': '配送中',
       '5': '已完成',
       '6': '已取消',
-      '7': '退款中',
-      '8': '退款中',
-      '9': '退款成功'
+      '80': '退货中',
+      '90': '已退款'
     };
 
-    return statusMap[status] || '未知状态';
+    return statusMap[statusmax] || '未知状态';
   },
 
   // 开启轮询：5秒请求一次
@@ -333,29 +333,17 @@ Page({
   },
 
 
-  // 底部操作：根据状态处理取消
+  // 底部操作：取消订单跳转到退款申请页面
   onCancelAction: function () {
     if (!this.data.order) {
       wx.showToast({ title: '订单信息缺失', icon: 'none' });
       return;
     }
-    const statusmax = this.data.order.statusmax;
-    // 只有待支付状态可以取消
-    if (statusmax === 1) {
-      wx.showModal({
-        title: '提示',
-        content: '是否取消订单',
-        cancelText: '否',
-        confirmText: '是',
-        success: (res) => {
-          if (res.confirm) {
-            this.performCancelOrder();
-          }
-        }
-      });
-      return;
-    }
-    wx.showToast({ title: '当前状态不可取消', icon: 'none' });
+    
+    // 跳转到退款申请页面
+    wx.navigateTo({
+      url: '/pages/order/refund/refund?orderId=' + this.data.orderId
+    });
   },
 
   // 取消订单（实际执行）
@@ -544,7 +532,7 @@ Page({
         name: 'order-update-status',
         data: {
           orderId: this.data.orderId,
-          statusmax: this.data.order?.statusmax || 1,
+          statusmax: this.data.order?.statusmax || '1',
           address
         }
       });
@@ -565,7 +553,7 @@ Page({
   },
 
 
-  // 关键修复点2：添加退款功能，调用wxpayFunctions
+  // 关键修复点2：添加退款功能，调用wxpayFunctions（只用 statusmax）
   applyRefund: async function () {
     if (!this.data.order) {
       wx.showToast({
@@ -575,9 +563,10 @@ Page({
       return;
     }
 
-    // 订单状态校验 - 使用statusmax
+    // 订单状态校验 - 只用 statusmax
     const statusmax = this.data.order.statusmax;
-    if (statusmax !== 2 && statusmax !== 3) {
+    // 仅待支付、待接单、待配送可退款，配送中/已完成不允许退款
+    if (statusmax !== '1' && statusmax !== '2' && statusmax !== '3') {
       wx.showToast({
         title: '当前订单状态不允许退款',
         icon: 'none'

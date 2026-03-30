@@ -320,14 +320,25 @@
   margin-bottom: 10px;
 }
 
-.remark-input {
-  width: 100%;
+.remark-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 16px;
-  font-size: 15px;
-  border: none;
-  background-color: transparent;
-  min-height: 80px;
+  font-size: 14px;
+  color: #333;
   line-height: 1.5;
+  min-height: 48px;
+}
+
+.remark-placeholder {
+  color: #999;
+}
+
+.remark-arrow {
+  font-size: 16px;
+  color: #999;
+  margin-left: 8px;
 }
 
 /* 价格详情 */

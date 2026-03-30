@@ -142,6 +142,17 @@ Page({
   // 跳转到对应订单页面
   toOrder(e) {
     const orderType = e.currentTarget.dataset.type;
+    
+    // 售后/退桶跳转到售后页面
+    if (orderType === 'after_sales') {
+      wx.navigateTo({
+        url: '/pages/after-sales/after-sales',
+        fail: () => wx.showToast({ title: "售后页面未配置", icon: "none" }),
+      });
+      return;
+    }
+    
+    // 其他订单类型跳转到订单页面
     wx.navigateTo({
       url: `/pages/order/order?type=${orderType}`,
       fail: () => wx.showToast({ title: "订单页面未配置", icon: "none" }),

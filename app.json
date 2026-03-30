@@ -8,7 +8,7 @@
     "pages/address/address",
     "pages/address/new/new",
     "pages/order/order",
-
+    "pages/after-sales/after-sales",
 
     "pages/order/detail/detail",
     "pages/order/refund/refund",

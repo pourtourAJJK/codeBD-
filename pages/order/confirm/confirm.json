@@ -5,5 +5,8 @@
   "backgroundColor": "#f7f7f7",
   "backgroundTextStyle": "dark",
   "enablePullDownRefresh": false,
-  "disableScroll": false
+  "disableScroll": false,
+  "usingComponents": {
+    "remark-popup": "../../../components/remark-popup/remark-popup"
+  }
 }

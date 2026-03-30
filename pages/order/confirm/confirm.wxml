@@ -98,8 +98,20 @@
   <!-- 订单备注 -->
   <view class="remark-section">
     <view class="section-title">订单备注</view>
-    <input class="remark-input" placeholder="选填，请输入订单备注" value="{{orderRemark}}" bindinput="onRemarkChange"></input>
+    <view class="remark-content" bindtap="openRemarkPopup">
+      <text wx:if="{{orderRemark}}">{{orderRemark}}</text>
+      <text wx:else class="remark-placeholder">选填，请输入订单备注</text>
+      <view class="remark-arrow">></view>
+    </view>
   </view>
+  
+  <!-- 备注弹窗 -->
+  <remark-popup 
+    show="{{showRemarkPopup}}" 
+    defaultText="{{orderRemark}}" 
+    bind:confirm="onRemarkConfirm"
+    bind:cancel="onRemarkCancel"
+  />
 
   <!-- 价格详情 -->
   <view class="price-section">

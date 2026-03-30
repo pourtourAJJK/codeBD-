@@ -23,16 +23,27 @@ const handler = async (event = {}) => {
       return { code: 500, message: '用户不存在', data: {} };
     }
 
-    const { status = 'all', statusmax, page = 1, pageSize = 10 } = event;
+    const { page = 1, pageSize = 10, ...params } = event;
     const pageIndex = Math.max(1, Number(page) || 1);
     const limit = Math.min(Math.max(Number(pageSize) || 10, 1), 50);
     const skip = (pageIndex - 1) * limit;
 
     let query = { openid };
-    if (statusmax !== undefined) {
-      query = { ...query, statusmax: statusmax };
-    } else if (status && status !== 'all') {
-      query = { ...query, status: status };
+    
+    // 处理 statusmax（支持字符串 或 $in 数组查询）
+    if (params.statusmax) {
+      if (params.statusmax.$in) {
+        // 适配待配送的多状态查询：{ statusmax: { $in: ["2", "3"] } }
+        query.statusmax = db.command.in(params.statusmax.$in);
+      } else {
+        // 单状态查询：{ statusmax: "1" }
+        query.statusmax = params.statusmax;
+      }
+    }
+
+    // 处理 pay_status（支持字符串 "0"/"1"）
+    if (params.pay_status) {
+      query.pay_status = params.pay_status;
     }
 
     // 确保查询最新数据，不使用缓存

@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "售后",
+  "usingComponents": {
+    "loading": "/components/loading/loading"
+  },
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "light",
+  "backgroundColor": "#f5f5f5"
+}

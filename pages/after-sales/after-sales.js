@@ -1,4 +1,4 @@
-// 订单列表页逻辑
+// 售后页面逻辑
 const app = getApp();
 const auth = require('../../utils/auth');
 const orderUtil = require('../../utils/orderUtil');
@@ -16,8 +16,6 @@ Page({
     activeTab: 'all',
     // 加载状态
     loading: false,
-    // 防重复加载标志
-    isLoading: false,
     // 错误提示
     errorMsg: '',
     // 倒计时定时器
@@ -57,18 +55,11 @@ Page({
 
   // 页面显示
   onShow: function() {
-    console.log('【订单列表】页面显示');
-    // 如果有退款状态本地标记，先行覆盖
+    console.log('【售后列表】页面显示，开始刷新订单');
+    // 如果有退款状态本地标记，先行覆盖再加载
     this.applyRefundingStatus();
-    // 🔥 修复：只有【第一次进入页面】才加载订单
-    // 标签切换/操作后，禁止onShow自动加载！！！
-    if (!this.data.orders || this.data.orders.length === 0) {
-      console.log('【订单列表】首次加载，执行 loadOrders');
-      this.loadOrders();
-    }
-
-    // 清理旧倒计时（防止干扰）
-    this.clearCountDownTimer();
+    // 加载订单列表，确保获取最新状态
+    this.loadOrders();
   },
 
   onHide: function() {
@@ -93,8 +84,6 @@ Page({
       console.log('倒计时定时器已清除');
     }
   },
-
-
 
   // 检查登录状态
   checkLoginStatus: function() {
@@ -139,7 +128,6 @@ Page({
   },
 
   // 返回上一页
-
   navigateBack: function() {
     wx.navigateBack();
   },
@@ -147,19 +135,13 @@ Page({
   // 切换标签页
   switchTab: function(e) {
     const tab = e.currentTarget?.dataset?.tab;
-    console.log("切换标签到：", tab); // 加日志验证
-    // 防重复+防无效点击
-    if (this.data.isLoading || tab === this.data.activeTab) return;
-
-    this.setData({
-      activeTab: tab,
-      orders: [], // 清空旧数据
-      currentPage: 1, // 重置分页（避免分页错乱）
-      isLoading: true // 上锁
-    }, () => {
-      // 确保 activeTab 已经更新后，再执行加载
+    if (tab && typeof tab === 'string' && tab !== this.data.activeTab) {
+      this.setData({
+        activeTab: tab
+      });
+      // 重新加载订单
       this.loadOrders();
-    });
+    }
   },
 
   applyRefundingStatus: function() {
@@ -203,68 +185,65 @@ Page({
 
   // 加载订单列表
   loadOrders: function(callback) {
-
-
     console.log('========================================');
-    console.log('【订单列表日志0】开始加载订单列表');
-    console.log('【订单列表日志0.1】当前选中标签:', this.data.activeTab);
+    console.log('【售后列表日志0】开始加载订单列表');
+    console.log('【售后列表日志0.1】当前选中标签:', this.data.activeTab);
     
     if (!this.checkLoginStatus()) {
-      console.log('【订单列表日志0.2】登录状态检查失败');
+      console.log('【售后列表日志0.2】登录状态检查失败');
       console.log('========================================');
       return;
     }
     
-
     // 核心修复：在开始加载前，仅设置 loading / errorMsg，避免大列表二次清空闪屏
     this.setData({
       loading: true,
       errorMsg: '' // 清空错误提示
     });
     
-    console.log('【订单列表日志0.5】加载状态设置完成');
-
+    console.log('【售后列表日志0.5】加载状态设置完成');
 
     // 构建查询参数
     const params = {};
-    console.log('【订单列表日志0.6】基础查询参数:', params);
+    console.log('【售后列表日志0.6】基础查询参数:', params);
     
-    // 标签到查询条件的映射（适配字符串类型 statusmax/pay_status）
-    const tabQueryMap = {
-      all: {},
-      unpaid: { statusmax: "1" }, // 待支付：statusmax = "1"
-      pending_delivery: {
-        pay_status: "1", // 已支付
-        statusmax: { $in: ["2", "3"] } // 待接单(2) 或 待配送(3)
-      },
-      delivering: { statusmax: "4" }, // 配送中
-      completed: { statusmax: "5" } // 已完成
-    };
-
-    const query = tabQueryMap[this.data.activeTab];
-    if (query) {
-      Object.assign(params, query);
-      console.log('【订单列表日志0.7】添加状态筛选:', query);
+    // 售后页面默认只显示有售后/退款状态的订单
+    const afterSalesStatuses = ['6', '7', '9'];
+    params.statusmax = { $in: afterSalesStatuses };
+    
+    // 如果不是全部订单，添加状态筛选
+    if (this.data.activeTab !== 'all') {
+      // 映射标签到查询条件
+      const tabToQuery = {
+        'refunding': { statusmax: '7' },       // 退款中
+        'refunded': { statusmax: '9' },        // 退款成功
+        'cancelled': { statusmax: '6' }        // 已取消（退货待审核）
+      };
+      const query = tabToQuery[this.data.activeTab];
+      if (query) {
+        Object.assign(params, query);
+        console.log('【售后列表日志0.7】添加状态筛选:', query);
+      }
     }
-    console.log('【订单列表日志0.8】最终查询参数:', params);
+    console.log('【售后列表日志0.8】最终查询参数:', params);
     
     // 调用获取订单列表云函数
-    console.log('【订单列表日志0.9】准备调用order-list云函数');
+    console.log('【售后列表日志0.9】准备调用order-list云函数');
 
     wx.cloud.callFunction({
       name: 'order-list',
       data: params,
       success: res => {
         console.log('========================================');
-        console.log('【订单列表日志1】获取订单列表成功回调触发');
-        console.log('【订单列表日志2】云函数返回结果:', res);
-        console.log('【订单列表日志3】返回code:', res?.result?.code);
+        console.log('【售后列表日志1】获取订单列表成功回调触发');
+        console.log('【售后列表日志2】云函数返回结果:', res);
+        console.log('【售后列表日志3】返回code:', res?.result?.code);
         
         if (res?.result?.code === 200) {
           const rawOrders = Array.isArray(res.result.data?.orders) ? res.result.data.orders : [];
-          console.log('【订单列表日志4】原始订单数据:', rawOrders);
+          console.log('【售后列表日志4】原始订单数据:', rawOrders);
           const formattedOrders = this.formatOrders(rawOrders);
-          console.log('【订单列表日志5】格式化后的订单数据:', formattedOrders);
+          console.log('【售后列表日志5】格式化后的订单数据:', formattedOrders);
 
           // 退款状态本地覆盖
           const statusMap = wx.getStorageSync('refundStatusMap') || {};
@@ -288,14 +267,14 @@ Page({
 
             // 启动倒计时（仅对待支付或全部订单）
             const activeTab = this.data.activeTab;
-            if (!activeTab || activeTab === 'all' || activeTab === 'unpaid') {
+            if (!activeTab || activeTab === 'all' || activeTab === 'pending') {
               this.countDown();
             } else {
               this.clearCountDownTimer();
             }
 
-            console.log('【订单列表日志6】订单数据加载成功，共', formattedOrders.length, '条订单');
-            console.log('【订单列表日志7】当前errorMsg状态:', this.data.errorMsg); // 打印确认
+            console.log('【售后列表日志6】订单数据加载成功，共', formattedOrders.length, '条订单');
+            console.log('【售后列表日志7】当前errorMsg状态:', this.data.errorMsg); // 打印确认
             console.log('========================================');
             // 如果有回调函数，执行回调（如下拉刷新）
             if (typeof callback === 'function') {
@@ -304,7 +283,7 @@ Page({
           });
         } else {
           // 获取订单失败
-          console.error('【订单列表日志7】获取订单失败:', res?.result?.message || '未知错误');
+          console.error('【售后列表日志7】获取订单失败:', res?.result?.message || '未知错误');
           this.setData({
             errorMsg: '获取订单失败：' + (res?.result?.message || '未知错误')
           });
@@ -313,8 +292,8 @@ Page({
       },
       fail: err => {
         console.error('========================================');
-        console.error('【订单列表日志8】获取订单列表失败回调触发');
-        console.error('【订单列表日志9】错误信息:', err);
+        console.error('【售后列表日志8】获取订单列表失败回调触发');
+        console.error('【售后列表日志9】错误信息:', err);
         this.setData({
           errorMsg: '网络错误，请稍后重试'
         });
@@ -322,8 +301,7 @@ Page({
       },
       complete: () => {
         this.setData({
-          loading: false,
-          isLoading: false // 🔥 解锁，允许下次点击
+          loading: false
         });
       }
     });
@@ -459,8 +437,6 @@ Page({
     });
   },
 
-
-
   // 去购物
   goShopping: function() {
     wx.switchTab({
@@ -517,9 +493,6 @@ Page({
       this.showError('未找到该订单');
     }
   },
-
-
-
 
   // 取消订单
   cancelOrder: function(e) {
@@ -665,8 +638,6 @@ Page({
       }
     });
   },
-
-
 
   // 管理订单
   manageOrder: function(e) {

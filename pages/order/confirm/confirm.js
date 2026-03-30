@@ -26,6 +26,8 @@ Page({
     // 订单备注
     remark: '',
     orderRemark: '', // 与WXML中使用的字段名保持一致
+    // 备注弹窗
+    showRemarkPopup: false,
     // 价格信息
     subtotal: 0, // 商品总价
     subtotalPrice: 0, // 与WXML中使用的字段名保持一致
@@ -684,6 +686,30 @@ Page({
       products: [],
       selectedAddress: null,
       selectedCoupon: null
+    });
+  },
+
+  // 打开备注弹窗
+  openRemarkPopup: function() {
+    this.setData({
+      showRemarkPopup: true
+    });
+  },
+
+  // 取消备注
+  onRemarkCancel: function() {
+    this.setData({
+      showRemarkPopup: false
+    });
+  },
+
+  // 确认备注
+  onRemarkConfirm: function(e) {
+    const remarkText = e.detail.text || '';
+    this.setData({
+      orderRemark: remarkText,
+      remark: remarkText,
+      showRemarkPopup: false
     });
   }
 });
