@@ -68,108 +68,43 @@ Page({
     this.setData({ isSubmitting: true });
 
     try {
-      // 准备云函数参数
+      // 准备参数
       const transactionId = this.data.transaction_id;
-      const maskedTransactionId = transactionId ? transactionId.substring(0, 10) + '...' : '未提供';
       const outRefundNo = `REFUND_${this.data.orderId}_${Date.now()}`;
       const refundFee = this.data.item.price * this.data.item.quantity;
       
-      console.log(`[${new Date().toISOString()}] [前端-退款确认-云函数调用] [订单ID:${orderId}] [退款单号:${outRefundNo}] 准备调用wxpayFunctions`);
-      console.log(`[${new Date().toISOString()}] [前端-退款确认-参数详情] [订单ID:${orderId}] 支付单号:${maskedTransactionId}, 退款金额:${refundFee}, 订单总金额:${this.data.totalAmount}`);
+      console.log(`[${new Date().toISOString()}] [前端-退款确认-创建退款申请] [订单ID:${orderId}] [退款单号:${outRefundNo}] 准备创建待审核记录`);
 
-      // 调用微信支付退款云函数
-      const refundResult = await wx.cloud.callFunction({
-        name: 'wxpayFunctions',
-        data: {
-          type: 'wxpay_refund',
-          orderId: this.data.orderId,
-          transaction_id: this.data.transaction_id,
-          out_refund_no: outRefundNo,
-          refundFee: refundFee,
-          totalFee: this.data.totalAmount,
-          reason: this.data.reasonText
-        }
-      });
+      // 原自动退款代码 👉 全部删除/注释
+      // wx.cloud.callFunction({ name: 'wxpayFunctions', ... })
 
-      console.log(`[${new Date().toISOString()}] [前端-退款确认-云函数返回] [订单ID:${orderId}] wxpayFunctions返回`, refundResult);
+      // 新代码：仅创建退款申请，状态=待审核
+      const db = wx.cloud.database()
+      await db.collection('shop_refund').add({ 
+        data: { 
+          order_id: this.data.orderId,           // 关联订单ID 
+          out_refund_no: outRefundNo,  // 退款单号 
+          transaction_id: this.data.transaction_id, 
+          refund_amount: refundFee,    // 退款金额 
+          total_amount: this.data.totalAmount,      // 订单总金额 
+          reason: this.data.reasonText,              // 退款原因 
+          // 核心：审核状态+退款状态 = 待审核 
+          audit_status: "待审核", 
+          refund_status: "待审核", 
+          refund_result_status: "待退款", 
+          apply_time: new Date(),                // 申请时间 
+          user_openid: wx.getStorageSync('openid')      // 用户ID 
+        } 
+      })
 
-      if (refundResult.result.code !== 200) {
-        throw new Error(refundResult.result.message || '退款申请失败');
-      }
+      console.log(`[${new Date().toISOString()}] [前端-退款确认-提交成功] [订单ID:${orderId}] [退款单号:${outRefundNo}] 退款申请已创建，等待商家审核`);
 
-      console.log(`[${new Date().toISOString()}] [前端-退款确认-退款表写入] [订单ID:${orderId}] [退款单号:${outRefundNo}] 开始写入shop_refund`);
-
-      // 写入退款记录表 shop_refund
-      const db = wx.cloud.database();
-      const refundRecord = {
-        order_id: this.data.orderId,
-        out_refund_no: refundResult.result.out_refund_no || outRefundNo,
-        transaction_id: this.data.transaction_id,
-        user_openid: wx.getStorageSync('openid'),
-        reason: this.data.reasonText,
-        refund_amount: refundFee,
-        refund_way: 'wechat',
-        refund_status: 'refunding',
-        goods_info: this.data.item,
-        apply_time: db.serverDate(),
-        handle_note: '',
-        create_time: db.serverDate(),
-        update_time: db.serverDate()
-      };
-      
-      const addRefundResult = await db.collection('shop_refund').add({ data: refundRecord });
-      console.log(`[${new Date().toISOString()}] [前端-退款确认-退款表写入] [订单ID:${orderId}] shop_refund写入成功,记录ID:`, addRefundResult._id);
-
-      console.log(`[${new Date().toISOString()}] [前端-退款确认-订单状态更新] [订单ID:${orderId}] 准备调用order-update-status`);
-
-      // 更新订单状态为退款中
-      const updateStatusResult = await wx.cloud.callFunction({
-        name: 'order-update-status',
-        data: { orderId: this.data.orderId, statusmax: '7', status: 'refunding' }
-      });
-
-      console.log(`[${new Date().toISOString()}] [前端-退款确认-订单状态更新] [订单ID:${orderId}] order-update-status返回`, updateStatusResult);
-
-      // 更新本地缓存和页面栈状态
-      const statusMap = wx.getStorageSync('refundStatusMap') || {};
-      statusMap[this.data.orderId] = 'refunding';
-      wx.setStorageSync('refundStatusMap', statusMap);
-      console.log(`[${new Date().toISOString()}] [前端-退款确认-缓存更新] [订单ID:${orderId}] 本地缓存refundStatusMap已更新`);
-
-      // 通知所有相关页面更新状态
-      const pages = getCurrentPages();
-      // 更新订单详情页
-      const detailPage = pages[pages.length - 3];
-      if (detailPage && typeof detailPage.setData === 'function') {
-        detailPage.setData({
-          order: { ...(detailPage.data.order || {}), status: 'refunding', statusText: '退款中' },
-          statusText: '退款中'
-        });
-        console.log(`[${new Date().toISOString()}] [前端-退款确认-页面更新] [订单ID:${orderId}] 订单详情页已更新`);
-      }
-      // 更新订单列表页
-      const orderListPage = pages.find(p => p.route === 'pages/order/order');
-      if (orderListPage && Array.isArray(orderListPage.data.orders)) {
-        const updated = orderListPage.data.orders.map(o => {
-          const id = o.orderId || o.order_id || o.orderNo || o.out_trade_no || o._id;
-          if (id === this.data.orderId) {
-            return { ...o, statusmax: '7', statusText: '退款中', statusColor: '#e11' };
-          }
-          return o;
-        });
-        orderListPage.setData({ orders: updated });
-        console.log(`[${new Date().toISOString()}] [前端-退款确认-页面更新] [订单ID:${orderId}] 订单列表页已更新`);
-      }
-
-      console.log(`[${new Date().toISOString()}] [前端-退款确认-提交成功] [订单ID:${orderId}] [退款单号:${outRefundNo}] 退款申请全流程完成`);
-
-      // 退款申请成功提示
-      wx.showToast({ title: '退款申请已提交', icon: 'success' });
-
-      // 延迟返回，确保状态同步完成
+      // 成功提示
+      wx.showToast({ title: '退款申请已提交，等待商家审核', icon: 'success' })
+      // 延迟跳回订单详情页
       setTimeout(() => {
-        wx.navigateBack({ delta: 2 });
-      }, 800);
+        wx.navigateBack()
+      }, 2000)
 
     } catch (error) {
       console.error(`[${new Date().toISOString()}] [前端-退款确认-异常] [订单ID:${orderId}] 退款申请失败`);

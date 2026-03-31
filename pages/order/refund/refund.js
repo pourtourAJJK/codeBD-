@@ -7,9 +7,23 @@ Page({
     selectAll: true
   },
 
-  onLoad(options) {
+  async onLoad(options) {
     const orderId = options.orderId || '';
     this.setData({ orderId });
+    
+    // 查询订单是否已有退款记录
+    const db = wx.cloud.database();
+    const res = await db.collection('shop_refund').where({
+      order_id: orderId,
+      // 只要不是拒绝状态，都禁止重新申请
+      refund_status: db.command.neq("审核拒绝")
+    }).get();
+    if(res.data.length > 0){
+      wx.showToast({ title: '该订单已申请退款', icon: 'none' });
+      setTimeout(() => wx.navigateBack(), 2000);
+      return;
+    }
+    
     this.loadOrder(orderId);
   },
 

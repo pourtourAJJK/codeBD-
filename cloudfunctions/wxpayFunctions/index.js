@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿// 微信支付核心云函数 - 原生API实现
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿// 微信支付核心云函数 - 原生API实现
 // 【修复点：彻底替换wechatpay-node-v3】改用https直接调用微信支付原生API
 // 适配微信支付v3 API，支持小程序支付统一下单
 
@@ -466,6 +466,31 @@ const handler = async (event, context) => {
       }
 
       case 'wxpay_refund': {
+        // ====================== 新增：退款审核校验（必须复制） ======================
+        const db = cloud.database();
+        
+        // 接收Web后台传递的退款单ID
+        const { refundId } = event;
+        if (!refundId) {
+          return { code: 400, msg: "退款单ID不能为空" };
+        }
+        
+        // 查询退款单信息，校验审核状态
+        const refundRes = await db.collection('shop_refund').doc(refundId).get();
+        const refundInfo = refundRes.data;
+        if (!refundInfo) {
+          return { code: 400, msg: "退款单不存在" };
+        }
+        
+        // 核心校验：未审核通过 → 禁止退款
+        if (refundInfo.audit_status !== "通过") {
+          return {
+            code: 400,
+            msg: "未通过商家审核，无法发起微信退款"
+          };
+        }
+        // ======================================================================
+        
         const timestamp = new Date().toISOString();
         const orderId = params.orderId || '未提供';
         const outRefundNo = params.out_refund_no || '未提供';
