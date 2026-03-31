@@ -33,9 +33,9 @@
       </view>
     </view>
 
-    <!-- 审核状态 -->
+    <!-- 状态信息 -->
     <view class="section">
-      <view class="section-title">审核状态</view>
+      <view class="section-title">状态信息</view>
       <view class="status-box">
         <view class="status-item">
           <text class="status-label">审核状态：</text>
@@ -43,11 +43,15 @@
         </view>
         <view class="status-item">
           <text class="status-label">退款状态：</text>
-          <text class="status-value" style="color: {{ refundInfo.refund_status === '待审核' ? '#ff9800' : refundInfo.refund_status === '退款中' ? '#2196f3' : refundInfo.refund_status === '成功' ? '#4caf50' : '#f44336' }}">{{ refundInfo.refund_status }}</text>
+          <text class="status-value" style="color: {{ refundInfo.refund_status === '待审核' ? '#ff9800' : refundInfo.refund_status === '退款中' ? '#2196f3' : refundInfo.refund_status === '退款成功' ? '#4caf50' : '#f44336' }}">{{ refundInfo.refund_status }}</text>
         </view>
         <view class="status-item">
           <text class="status-label">退款结果：</text>
           <text class="status-value">{{ refundInfo.refund_result_status }}</text>
+        </view>
+        <view class="status-item">
+          <text class="status-label">订单状态：</text>
+          <text class="status-value">{{ statusMap[refundInfo.statusmax] || '未知状态' }}</text>
         </view>
       </view>
     </view>

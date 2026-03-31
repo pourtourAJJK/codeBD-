@@ -65,9 +65,28 @@ Page({
     const res = await db.collection('shop_refund').where({
       order_id: this.data.order?._id || this.data.orderId
     }).get();
-    if(res.data.length > 0){
-      this.setData({ refundInfo: res.data[0] });
+
+    if (res.data.length > 0) {
+      const refundInfo = res.data[0];
+      this.setData({ refundInfo });
+
+      // ✅ 审核拒绝 → 弹窗显示原因（体验优化）
+      if (refundInfo.refund_status === "审核拒绝") {
+        wx.showModal({
+          title: '退款被拒绝',
+          content: refundInfo.audit_note,
+          showCancel: false
+        });
+      }
     }
+  },
+
+  // 查看退款进度
+  goRefundDetail: function() {
+    if (!this.data.refundInfo) return;
+    wx.navigateTo({
+      url: `/pages/order/refund-detail/refund-detail?id=${this.data.refundInfo._id}`
+    });
   },
 
 
@@ -230,6 +249,7 @@ Page({
   // 页面隐藏时清除定时器
   onHide: function() {
     clearInterval(this.data.pollTimer);
+    clearInterval(this.timer);
     this.clearCountDownTimer();
   },
 

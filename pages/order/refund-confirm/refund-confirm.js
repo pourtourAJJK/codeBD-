@@ -75,36 +75,40 @@ Page({
       
       console.log(`[${new Date().toISOString()}] [前端-退款确认-创建退款申请] [订单ID:${orderId}] [退款单号:${outRefundNo}] 准备创建待审核记录`);
 
-      // 原自动退款代码 👉 全部删除/注释
-      // wx.cloud.callFunction({ name: 'wxpayFunctions', ... })
-
-      // 新代码：仅创建退款申请，状态=待审核
-      const db = wx.cloud.database()
-      await db.collection('shop_refund').add({ 
-        data: { 
-          order_id: this.data.orderId,           // 关联订单ID 
-          out_refund_no: outRefundNo,  // 退款单号 
-          transaction_id: this.data.transaction_id, 
-          refund_amount: refundFee,    // 退款金额 
-          total_amount: this.data.totalAmount,      // 订单总金额 
-          reason: this.data.reasonText,              // 退款原因 
-          // 核心：审核状态+退款状态 = 待审核 
-          audit_status: "待审核", 
-          refund_status: "待审核", 
-          refund_result_status: "待退款", 
-          apply_time: new Date(),                // 申请时间 
-          user_openid: wx.getStorageSync('openid')      // 用户ID 
-        } 
-      })
+      // ✅ 新代码（调用云函数，安全规范）
+      const res = await wx.cloud.callFunction({
+        name: 'admin-return-update', // 对接Web已改好的云函数
+        data: {
+          type: "create_refund", // 新增：区分创建/更新
+          order_id: this.data.orderId,
+          // 严格按状态文档赋值
+          audit_status: "待审核",
+          refund_status: "待审核",
+          refund_result_status: "待退款",
+          // 其他订单/退款字段
+          out_refund_no: outRefundNo,
+          transaction_id: this.data.transaction_id,
+          refund_amount: refundFee,
+          total_amount: this.data.totalAmount,
+          reason: this.data.reasonText,
+          apply_time: new Date(),
+          user_openid: wx.getStorageSync('openid'),
+          create_time: new Date()
+        }
+      });
 
       console.log(`[${new Date().toISOString()}] [前端-退款确认-提交成功] [订单ID:${orderId}] [退款单号:${outRefundNo}] 退款申请已创建，等待商家审核`);
 
-      // 成功提示
-      wx.showToast({ title: '退款申请已提交，等待商家审核', icon: 'success' })
-      // 延迟跳回订单详情页
+      // 2. 提交成功 → 跳转到订单管理页
+      wx.showToast({
+        title: '退款申请已提交',
+        icon: 'success'
+      });
       setTimeout(() => {
-        wx.navigateBack()
-      }, 2000)
+        wx.switchTab({
+          url: '/pages/order/order'
+        });
+      }, 1500);
 
     } catch (error) {
       console.error(`[${new Date().toISOString()}] [前端-退款确认-异常] [订单ID:${orderId}] 退款申请失败`);

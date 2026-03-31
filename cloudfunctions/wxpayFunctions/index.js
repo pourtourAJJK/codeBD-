@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿// 微信支付核心云函数 - 原生API实现
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿// 微信支付核心云函数 - 原生API实现
 // 【修复点：彻底替换wechatpay-node-v3】改用https直接调用微信支付原生API
 // 适配微信支付v3 API，支持小程序支付统一下单
 
@@ -489,19 +489,37 @@ const handler = async (event, context) => {
             msg: "未通过商家审核，无法发起微信退款"
           };
         }
+        
+        // 校验必填字段（微信退款必须要的）
+        const transaction_id = refundInfo.transaction_id; // 微信支付交易号
+        const refund_fee = refundInfo.refund_amount;     // 退款金额
+        const total_fee = refundInfo.total_amount;        // 订单总金额
+
+        if (!transaction_id) {
+          return { code: 500, message: "缺少微信交易号 transaction_id" };
+        }
+        if (!refund_fee || !total_fee) {
+          return { code: 500, message: "退款金额/订单金额不能为空" };
+        }
         // ======================================================================
         
         const timestamp = new Date().toISOString();
-        const orderId = params.orderId || '未提供';
-        const outRefundNo = params.out_refund_no || '未提供';
-        const maskedTransactionId = params.transaction_id ? params.transaction_id.substring(0, 10) + '...' : '未提供';
+        const orderId = refundInfo.order_id || '未提供';
+        const outRefundNo = `REFUND_${Date.now()}`;
+        const maskedTransactionId = transaction_id.substring(0, 10) + '...';
         
         console.log(`[${timestamp}] [wxpayFunctions-wxpay_refund-开始] [订单ID:${orderId}] [退款单号:${outRefundNo}] 接收退款请求`);
-        console.log(`[${timestamp}] [wxpayFunctions-wxpay_refund-参数] [订单ID:${orderId}] 支付单号:${maskedTransactionId}, 退款金额:${params.refundFee}, 订单总金额:${params.totalFee}`);
+        console.log(`[${timestamp}] [wxpayFunctions-wxpay_refund-参数] [订单ID:${orderId}] 支付单号:${maskedTransactionId}, 退款金额:${refund_fee}, 订单总金额:${total_fee}`);
         
         try {
-          // ✅ 修复：直接调用 createWxpayRefund 函数，而不是调用子云函数
-          const result = await createWxpayRefund(params);
+          // ✅ 修复：使用从数据库查询到的退款信息调用 createWxpayRefund 函数
+          const result = await createWxpayRefund({
+            transaction_id,
+            out_refund_no: outRefundNo,
+            refundFee: refund_fee,
+            totalFee: total_fee,
+            reason: refundInfo.reason
+          });
           
           console.log(`[${timestamp}] [wxpayFunctions-wxpay_refund-返回] [订单ID:${orderId}] [退款单号:${outRefundNo}] 退款处理完成`);
           

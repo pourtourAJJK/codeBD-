@@ -102,12 +102,21 @@
   </view>
   
   <!-- 底部操作按钮 -->
-  <!-- 除去已取消的订单外，都显示修改地址和取消订单按钮 -->
+  <!-- 除去已取消的订单外，都显示修改地址和申请退款按钮 -->
   <view class="action-buttons" wx:if="{{(showModifyAddress || showCancelAction) && order && order.statusmax !== '6'}}">
     <view class="pill-group">
       <button class="pill-btn" bindtap="modifyAddress" wx:if="{{showModifyAddress}}">修改地址</button>
       <button class="pill-btn pill-danger" bindtap="onCancelAction">
-        取消订单
+        申请退款/售后
+      </button>
+    </view>
+  </view>
+  
+  <!-- 有退款记录 → 显示查看进度 -->
+  <view class="action-buttons" wx:if="{{refundInfo && order && order.statusmax !== '6'}}">
+    <view class="pill-group">
+      <button class="pill-btn" bindtap="goRefundDetail">
+        查看退款进度
       </button>
     </view>
   </view>
