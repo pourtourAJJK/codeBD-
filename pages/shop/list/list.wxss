@@ -59,7 +59,7 @@
 }
 .category-item.active {
   background-color: #ffffff;
-  color: #ff4757;
+  color: #2F8FC7;
   font-weight: 600;
   position: relative;
 }
@@ -71,7 +71,7 @@
   transform: translateY(-50%);
   width: 8rpx;
   height: 40rpx;
-  background-color: #ff4757;
+  background-color: #2F8FC7;
   border-radius: 0 4rpx 4rpx 0;
 }
 
@@ -127,7 +127,7 @@
   box-sizing: border-box;
 }
 .sort-item.active {
-  color: #ff4757;
+  color: #2F8FC7;
 }
 .sort-icon {
   width: 20rpx;

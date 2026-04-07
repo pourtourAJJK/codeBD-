@@ -468,12 +468,12 @@
 }
 
 .add-cart-btn {
-  background-color: #ff6b81;
+  background-color: #6BB3E3;
   color: #ffffff;
 }
 
 .buy-now-btn {
-  background-color: #ff4757;
+  background-color: #2F8FC7;
   color: #ffffff;
 }
 
@@ -628,12 +628,12 @@
 }
 
 .modal-add-cart-btn {
-  background-color: #ff6b81;
+  background-color: #6BB3E3;
   color: #ffffff;
 }
 
 .modal-buy-now-btn {
-  background-color: #ff4757;
+  background-color: #2F8FC7;
   color: #ffffff;
 }
 

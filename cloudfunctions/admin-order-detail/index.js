@@ -14,15 +14,25 @@ const db = cloud.database();
  * @returns {Object} - 订单详情结果
  */
 const handler = async (event, context) => {
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type"
+  };
+  if(event.httpMethod === "OPTIONS") return { statusCode:204, headers };
   try {
     const { order_id } = event;
     
     // 参数验证
     if (!order_id) {
-      return {
-        code: 400,
-        message: '订单ID不能为空',
-        data: null
+      return { 
+        statusCode:400, 
+        headers, 
+        body:JSON.stringify({
+          code: 400,
+          message: '订单ID不能为空',
+          data: null
+        })
       };
     }
     
@@ -33,10 +43,14 @@ const handler = async (event, context) => {
       .get();
     
     if (orderRes.data.length === 0) {
-      return {
-        code: 404,
-        message: '订单不存在',
-        data: null
+      return { 
+        statusCode:404, 
+        headers, 
+        body:JSON.stringify({
+          code: 404,
+          message: '订单不存在',
+          data: null
+        })
       };
     }
     
@@ -128,16 +142,24 @@ const handler = async (event, context) => {
     } catch (e) {}
     
     return {
-      code: 200,
-      message: '获取订单详情成功',
-      data: orderDetail
+      statusCode:200, 
+      headers, 
+      body:JSON.stringify({
+        code: 200,
+        message: '获取订单详情成功',
+        data: orderDetail
+      })
     };
   } catch (error) {
     console.error('获取订单详情失败:', error);
-    return {
-      code: 500,
-      message: '获取订单详情失败，请稍后重试',
-      data: null
+    return { 
+      statusCode:500, 
+      headers, 
+      body:JSON.stringify({
+        code: 500,
+        message: '获取订单详情失败，请稍后重试',
+        data: null
+      })
     };
   }
 };

@@ -19,15 +19,15 @@
 .manage-btn {
   padding: 8px 16px;
   font-size: 14px;
-  color: #007aff;
-  border: 1px solid #007aff;
+  color: #2F8FC7;
+  border: 1px solid #2F8FC7;
   border-radius: 20px;
   background-color: #fff;
   transition: all 0.3s ease;
 }
 
 .manage-btn-hover {
-  background-color: #007aff;
+  background-color: #2F8FC7;
   color: #fff;
   transform: scale(0.95);
 }
@@ -435,7 +435,7 @@
   width: 120px;
   height: 70rpx;
   line-height: 70rpx;
-  background-color: #E53935;
+  background-color: #2F8FC7;
   color: #fff;
   border: none;
   border-radius: 24rpx;
@@ -716,4 +716,26 @@
   border-left: none;
   border-right: none;
   background-color: #fff;
+}
+
+/* 仅美化勾选框（你觉得丑的绿色部分）—— 蓝色/按钮完全不动 */
+checkbox {
+  transform: scale(0.9);
+  margin-right: 8rpx;
+  accent-color: #07c160 !important;
+}
+
+/* 仅优化订单明细排版 —— 不碰蓝色区域、不碰按钮 */
+/* 明细文字间距优化 */
+.order-item text {
+  line-height: 1.4 !important;
+}
+/* 明细间隔优化 */
+.order-item {
+  padding: 24rpx 0 !important;
+  border-bottom: 1rpx solid #f5f5f5 !important;
+}
+/* 最后一条明细去掉下划线 */
+.order-item:last-child {
+  border-bottom: none !important;
 }

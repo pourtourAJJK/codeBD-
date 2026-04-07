@@ -18,6 +18,12 @@ const _ = db.command;
  * @returns {Object} - 商品列表结果
  */
 const handler = async (event, context) => {
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type"
+  };
+  if(event.httpMethod === "OPTIONS") return { statusCode:204, headers };
   try {
     const { page = 1, limit = 10, status, keyword } = event;
     
@@ -68,21 +74,29 @@ const handler = async (event, context) => {
     }));
     
     return {
-      code: 200,
-      message: '获取商品列表成功',
-      data: {
-        records: products,
-        total,
-        page,
-        limit
-      }
+      statusCode:200,
+      headers,
+      body:JSON.stringify({
+        code: 200,
+        message: '获取商品列表成功',
+        data: {
+          records: products,
+          total,
+          page,
+          limit
+        }
+      })
     };
   } catch (error) {
     console.error('获取商品列表失败:', error);
     return {
-      code: 500,
-      message: '获取商品列表失败，请稍后重试',
-      data: null
+      statusCode:500,
+      headers,
+      body:JSON.stringify({
+        code: 500,
+        message: '获取商品列表失败，请稍后重试',
+        data: null
+      })
     };
   }
 };

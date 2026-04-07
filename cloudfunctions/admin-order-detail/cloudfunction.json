@@ -1,0 +1,14 @@
+{
+  "triggers": [
+    {
+      "name": "httpTrigger",
+      "type": "http",
+      "config": {
+        "path": "/api",
+        "method": ["GET", "POST", "OPTIONS"],
+        "auth": "false",
+        "passthrough": true
+      }
+    }
+  ]
+}

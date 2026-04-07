@@ -13,6 +13,12 @@ const _ = db.command;
  * 支持：精准查询订单、分页、支付状态筛选、订单状态筛选、订单号搜索
  */
 const handler = async (event, context) => {
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type"
+  };
+  if(event.httpMethod === "OPTIONS") return { statusCode:204, headers };
   try {
     // 1. 接收入参（保留你原有所有参数）
     const { 
@@ -100,22 +106,30 @@ const handler = async (event, context) => {
 
     // 9. 返回结果
     return {
-      code: 200,
-      message: '获取订单列表成功',
-      data: {
-        list: orders,
-        total,
-        page,
-        limit
-      }
+      statusCode:200, 
+      headers, 
+      body:JSON.stringify({
+        code: 200,
+        message: '获取订单列表成功',
+        data: {
+          list: orders,
+          total,
+          page,
+          limit
+        }
+      })
     };
 
   } catch (error) {
     console.error('【云函数】获取订单列表失败：', error);
-    return {
-      code: 500,
-      message: '获取订单列表失败，请稍后重试',
-      data: null
+    return { 
+      statusCode:500, 
+      headers, 
+      body:JSON.stringify({
+        code: 500,
+        message: '获取订单列表失败，请稍后重试',
+        data: null
+      })
     };
   }
 };

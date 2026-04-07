@@ -2,7 +2,13 @@ const cloud = require('wx-server-sdk');
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
 
-exports.main = async (event) => {
+exports.main = async (event, context) => {
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type"
+  };
+  if(event.httpMethod === "OPTIONS") return { statusCode:204, headers };
   // 接收前端参数（完全不变）
   const { orderId, operateType } = event;
 
@@ -23,7 +29,11 @@ exports.main = async (event) => {
         statusmax = "5"; // 完成订单 → 已完成
         break;
       default:
-        return { code: 400, msg: "无效的操作类型" };
+        return { 
+          statusCode:400, 
+          headers, 
+          body:JSON.stringify({ code: 400, msg: "无效的操作类型" })
+        };
     }
     
     // 原有更新字段逻辑（不变）
@@ -44,10 +54,18 @@ exports.main = async (event) => {
       });
     
     // 原有返回格式（完全不变）
-    return { code: 0, msg: "操作成功" };
+    return { 
+      statusCode:200, 
+      headers, 
+      body:JSON.stringify({ code: 0, msg: "操作成功" })
+    };
 
   } catch (err) {
     console.error("更新失败：", err);
-    return { code: -1, msg: err.message };
+    return { 
+      statusCode:500, 
+      headers, 
+      body:JSON.stringify({ code: -1, msg: err.message })
+    };
   }
 };

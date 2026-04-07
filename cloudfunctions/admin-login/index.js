@@ -18,15 +18,25 @@ const _ = db.command;
  * @returns {Object} - 登录结果
  */
 const handler = async (event, context) => {
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type"
+  };
+  if(event.httpMethod === "OPTIONS") return { statusCode:204, headers };
   try {
     const { username, password } = event;
     
     // 参数验证
     if (!username || !password) {
-      return {
-        code: 400,
-        message: '账号和密码不能为空',
-        data: null
+      return { 
+        statusCode:400, 
+        headers, 
+        body:JSON.stringify({
+          code: 400,
+          message: '账号和密码不能为空',
+          data: null
+        })
       };
     }
     
@@ -36,10 +46,14 @@ const handler = async (event, context) => {
     }).get();
     
     if (adminRes.data.length === 0) {
-      return {
-        code: 401,
-        message: '账号不存在',
-        data: null
+      return { 
+        statusCode:401, 
+        headers, 
+        body:JSON.stringify({
+          code: 401,
+          message: '账号不存在',
+          data: null
+        })
       };
     }
     
@@ -47,10 +61,14 @@ const handler = async (event, context) => {
     
     // 验证密码（注意：实际项目应使用密码加密存储）
     if (admin.password !== password) {
-      return {
-        code: 401,
-        message: '密码错误',
-        data: null
+      return { 
+        statusCode:401, 
+        headers, 
+        body:JSON.stringify({
+          code: 401,
+          message: '密码错误',
+          data: null
+        })
       };
     }
     
@@ -77,24 +95,32 @@ const handler = async (event, context) => {
     });
     
     return {
-      code: 200,
-      message: '登录成功',
-      data: {
-        adminId: admin._id,
-        username: admin.username,
-        nickname: admin.nickname,
-        token: token,
-        role: admin.role
-      }
+      statusCode:200, 
+      headers, 
+      body:JSON.stringify({
+        code: 200,
+        message: '登录成功',
+        data: {
+          adminId: admin._id,
+          username: admin.username,
+          nickname: admin.nickname,
+          token: token,
+          role: admin.role
+        }
+      })
     };
   } catch (error) {
     console.error('管理员登录失败', error);
-    return {
-      code: 500,
-      message: '登录失败，请稍后重试',
-      data: null
+    return { 
+      statusCode:500, 
+      headers, 
+      body:JSON.stringify({
+        code: 500,
+        message: '登录失败，请稍后重试',
+        data: null
+      })
     };
   }
 };
 
-exports.main = withResponse(handler);
+exports.main = handler;

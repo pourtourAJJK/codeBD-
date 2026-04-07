@@ -1,18 +1,47 @@
 // pages/login/auth/auth.js
 Page({
-  /**
-   * 页面的初始数据
-   */
   data: {},
+
+  onLoad() {
+    // 页面加载时，检查隐私授权状态（兜底逻辑）
+    wx.getPrivacySetting({
+      success: (res) => {
+        console.log('隐私授权状态:', res);
+        if (!res.needAuthorization) {
+          console.log('用户已同意隐私协议，可直接登录');
+        }
+      }
+    });
+  },
 
   /**
    * 授权登录
    * 流程：wx.login -> get-openid-new -> user-login-v2 -> 跳转手机号绑定页
    */
-  // 隐私授权同意后才能调用登录接口
-  handleAgreePrivacy() {
-    console.log('用户已同意隐私协议，开始登录流程');
-    this.doLogin(); // 真正的登录逻辑移到这里
+  // 官方隐私授权成功回调（用户同意隐私后才会触发）
+  handleAgreePrivacy(res) {
+    console.log('隐私授权回调:', res.detail.event);
+    
+    // 👇 环境判断：仅开发/体验版（灰度期）临时放开，正式版强制走合规逻辑
+    const accountInfo = wx.getAccountInfoSync();
+    const envVersion = accountInfo.miniProgram.envVersion; // 取值：develop(开发版)/trial(体验版)/release(正式版)
+
+    // 正式版：严格走隐私授权判断（完全合规）
+    if (envVersion === 'release') {
+      if (res.detail.event === 'agree') {
+        // 用户同意隐私：执行登录逻辑
+        console.log('用户已同意隐私协议，开始登录流程');
+        this.doLogin();
+      } else {
+        // 用户拒绝隐私：提示并停留在当前页
+        wx.showToast({ title: '请同意隐私协议后登录', icon: 'none' });
+      }
+      return;
+    }
+
+    // 开发/体验版（灰度期）：临时放开，直接登录，不影响测试
+    console.log('开发/体验版：临时放开隐私授权，直接登录');
+    this.doLogin();
   },
 
   // 登录核心逻辑（必须在隐私授权后执行）

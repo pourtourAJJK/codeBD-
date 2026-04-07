@@ -4,6 +4,12 @@ const db = cloud.database()
 
 // 统一返回格式：{code,msg,data}
 exports.main = async (event, context) => {
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type"
+  };
+  if(event.httpMethod === "OPTIONS") return { statusCode:204, headers };
   try {
     // type=active：小程序获取启用的广告；type=all：React获取全部广告
     const { type = 'active' } = event
@@ -14,8 +20,8 @@ exports.main = async (event, context) => {
     }
     
     const res = await query.orderBy('create_time', 'desc').get()
-    return { code: 0, msg: '获取成功', data: res.data }
+    return { statusCode:200, headers, body:JSON.stringify({ code: 0, msg: '获取成功', data: res.data }) }
   } catch (err) {
-    return { code: -1, msg: err.message, data: [] }
+    return { statusCode:500, headers, body:JSON.stringify({ code: -1, msg: err.message, data: [] }) }
   }
 }

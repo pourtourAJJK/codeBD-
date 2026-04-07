@@ -11,6 +11,7 @@
   <!-- 地址选择区域 -->
   <view class="address-section" bindtap="selectAddress" hover-class="address-section-hover">
     <view class="address-icon">
+      <image src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/定位.png" mode="aspectFit"></image>
     </view>
     <view class="address-info" wx:if="{{selectedAddress}}">
       <view class="consignee">
@@ -25,7 +26,6 @@
       <text>请选择收货地址</text>
     </view>
     <view class="address-arrow">
-      <image src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/定位.png" mode="aspectFit"></image>
     </view>
   </view>
 
@@ -58,7 +58,7 @@
     <view class="delivery-options">
       <radio-group bindchange="onDeliveryChange" data-type="express">
         <label class="delivery-option" wx:for="{{deliveryOptions}}" wx:key="id" hover-class="delivery-option-hover">
-          <radio value="{{item.id}}" checked="{{item.id === selectedDelivery.id}}" color="#ff4d4f"></radio>
+          <radio value="{{item.id}}" checked="{{item.id === selectedDelivery.id}}" color="#2F8FC7"></radio>
           <text class="option-name">{{item.name}}</text>
           <text class="option-fee" wx:if="{{item.fee > 0}}">+¥{{item.fee}}</text>
           <text class="option-fee free" wx:else>免费</text>
@@ -87,7 +87,7 @@
     <view class="payment-options">
       <radio-group bindchange="onPaymentChange" data-type="payment">
         <label class="payment-option" wx:for="{{paymentOptions}}" wx:key="id" hover-class="payment-option-hover">
-          <radio value="{{item.id}}" checked="{{item.id === selectedPayment.id}}" color="#ff4d4f"></radio>
+          <radio value="{{item.id}}" checked="{{item.id === selectedPayment.id}}" color="#2F8FC7"></radio>
           <image class="payment-icon" src="{{item.icon}}" mode="aspectFit"></image>
           <text class="option-name">{{item.name}}</text>
         </label>

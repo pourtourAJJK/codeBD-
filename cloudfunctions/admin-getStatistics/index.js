@@ -36,6 +36,12 @@ async function ensureCollectionExists(collectionName) {
  * @returns {Object} - 统计数据结果
  */
 const handler = async (event, context) => {
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type"
+  };
+  if(event.httpMethod === "OPTIONS") return { statusCode:204, headers };
   try {
     // 确保所有需要的集合存在
     await Promise.all([
@@ -171,13 +177,17 @@ const handler = async (event, context) => {
       }
     };
     
-    return result;
+    return { statusCode:200, headers, body:JSON.stringify(result) };
   } catch (error) {
     console.error('获取统计数据失败:', error);
-    return {
-      code: 500,
-      message: '获取统计数据失败，请稍后重试',
-      data: null
+    return { 
+      statusCode:500, 
+      headers, 
+      body:JSON.stringify({
+        code: 500,
+        message: '获取统计数据失败，请稍后重试',
+        data: null
+      })
     };
   }
 };
@@ -200,4 +210,4 @@ function getOrderStatusText(status) {
   return statusMap[status] || '未知状态';
 }
 
-exports.main = withResponse(handler);
+exports.main = handler;

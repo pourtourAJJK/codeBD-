@@ -13,6 +13,12 @@ const db = cloud.database();
  * @returns {Object} - 创建结果
  */
 exports.main = async (event, context) => {
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type"
+  };
+  if(event.httpMethod === "OPTIONS") return { statusCode:204, headers };
   console.log('=== 云函数开始执行 ===');
   console.log('接收到的 event:', JSON.stringify(event));
   
@@ -26,10 +32,14 @@ exports.main = async (event, context) => {
     // 2. 基础校验
     if (!productData || typeof productData !== 'object') {
       return {
-        code: 400,
-        success: false,
-        message: '商品数据不能为空',
-        debug: { receivedEvent: event }
+        statusCode:400,
+        headers,
+        body:JSON.stringify({
+          code: 400,
+          success: false,
+          message: '商品数据不能为空',
+          debug: { receivedEvent: event }
+        })
       };
     }
     
@@ -38,9 +48,13 @@ exports.main = async (event, context) => {
     for (const field of requiredFields) {
       if (!productData[field] && productData[field] !== 0) {
         return {
-          code: 400,
-          success: false,
-          message: `缺少必填字段: ${field}`
+          statusCode:400,
+          headers,
+          body:JSON.stringify({
+            code: 400,
+            success: false,
+            message: `缺少必填字段: ${field}`
+          })
         };
       }
     }
@@ -48,9 +62,13 @@ exports.main = async (event, context) => {
     // 商品名称不能为空
     if (!productData.name || productData.name.trim() === '') {
       return {
-        code: 400,
-        success: false,
-        message: '商品名称不能为空'
+        statusCode:400,
+        headers,
+        body:JSON.stringify({
+          code: 400,
+          success: false,
+          message: '商品名称不能为空'
+        })
       };
     }
     
@@ -143,36 +161,48 @@ exports.main = async (event, context) => {
     
     if (createResult._id) {
       return {
-        code: 200,
-        success: true,
-        message: '商品添加成功',
-        data: {
-          _id: createResult._id,
-          productId: createResult._id,
-          name: createData.name,
-          price: createData.price,
-          stock: createData.stock,
-          spec: createData.spec,
-          category: createData.category,
-          pay_status: createData.pay_status,
-          status: createData.status === '1' ? '上架' : '下架'
-        }
+        statusCode:200,
+        headers,
+        body:JSON.stringify({
+          code: 200,
+          success: true,
+          message: '商品添加成功',
+          data: {
+            _id: createResult._id,
+            productId: createResult._id,
+            name: createData.name,
+            price: createData.price,
+            stock: createData.stock,
+            spec: createData.spec,
+            category: createData.category,
+            pay_status: createData.pay_status,
+            status: createData.status === '1' ? '上架' : '下架'
+          }
+        })
       };
     } else {
       return {
-        code: 500,
-        success: false,
-        message: '数据库插入失败',
-        data: null
+        statusCode:500,
+        headers,
+        body:JSON.stringify({
+          code: 500,
+          success: false,
+          message: '数据库插入失败',
+          data: null
+        })
       };
     }
   } catch (error) {
     console.error('云函数执行错误:', error);
     return {
-      code: 500,
-      success: false,
-      message: `服务器错误: ${error.message}`,
-      error: error.stack
+      statusCode:500,
+      headers,
+      body:JSON.stringify({
+        code: 500,
+        success: false,
+        message: `服务器错误: ${error.message}`,
+        error: error.stack
+      })
     };
   }
 };

@@ -15,6 +15,19 @@ const _ = db.command;
  * @returns {Object} - 分类列表结果
  */
 const handler = async (event, context) => {
+  // 必须加的跨域配置
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Content-Type": "application/json"
+  };
+
+  // OPTIONS 预检请求直接返回成功
+  if (event.httpMethod === "OPTIONS") {
+    return { statusCode: 204, headers };
+  }
+
   try {
     const { pageSize = 100 } = event;
     
@@ -31,19 +44,27 @@ const handler = async (event, context) => {
     }));
     
     return {
-      code: 200,
-      message: '获取分类列表成功',
-      data: {
-        records: categories,
-        total: categories.length
-      }
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        code: 200,
+        message: '获取分类列表成功',
+        data: {
+          records: categories,
+          total: categories.length
+        }
+      })
     };
   } catch (error) {
     console.error('获取分类列表失败:', error);
     return {
-      code: 500,
-      message: '获取分类列表失败，请稍后重试',
-      data: null
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({
+        code: 500,
+        message: '获取分类列表失败，请稍后重试',
+        data: null
+      })
     };
   }
 };

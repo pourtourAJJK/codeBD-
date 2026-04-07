@@ -13,6 +13,12 @@ const _ = db.command;
  * 支持：分页、状态筛选、搜索
  */
 const handler = async (event, context) => {
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type"
+  };
+  if(event.httpMethod === "OPTIONS") return { statusCode:204, headers };
   try {
     // 1. 接收入参
     const { 
@@ -47,22 +53,30 @@ const handler = async (event, context) => {
 
     // 6. 数据返回
     return {
-      code: 200,
-      message: '获取退款列表成功',
-      data: {
-        list: ordersRes.data,
-        total,
-        page,
-        limit
-      }
+      statusCode:200,
+      headers,
+      body:JSON.stringify({
+        code: 200,
+        message: '获取退款列表成功',
+        data: {
+          list: ordersRes.data,
+          total,
+          page,
+          limit
+        }
+      })
     };
 
   } catch (error) {
     console.error('【云函数】获取退款列表失败：', error);
     return {
-      code: 500,
-      message: '获取退款列表失败，请稍后重试',
-      data: null
+      statusCode:500,
+      headers,
+      body:JSON.stringify({
+        code: 500,
+        message: '获取退款列表失败，请稍后重试',
+        data: null
+      })
     };
   }
 };

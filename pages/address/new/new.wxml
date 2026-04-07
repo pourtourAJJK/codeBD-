@@ -6,7 +6,7 @@
     <view class="form-container">
       <!-- 获取微信地址 -->
       <view class="wechat-address-btn" bindtap="getWechatAddress">
-        <image class="wechat-icon" src="../../images/wechat.png"></image>
+        <image class="wechat-icon" src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/定位.png"></image>
         <text class="wechat-text">获取微信地址</text>
         <image class="arrow-icon" src="../../images/arrow-right.png"></image>
       </view>

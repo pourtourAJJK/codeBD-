@@ -4,6 +4,12 @@ const db = cloud.database()
 const _ = db.command
 
 exports.main = async (event, context) => {
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type"
+  };
+  if(event.httpMethod === "OPTIONS") return { statusCode:204, headers };
   try {
     const { _id, ...data } = event.adData
     data.create_time = db.serverDate()
@@ -15,8 +21,8 @@ exports.main = async (event, context) => {
       // 新增
       await db.collection('ad_config').add({ data })
     }
-    return { code: 0, msg: '保存成功', data: null }
+    return { statusCode:200, headers, body:JSON.stringify({ code: 0, msg: '保存成功', data: null }) }
   } catch (err) {
-    return { code: -1, msg: err.message, data: null }
+    return { statusCode:500, headers, body:JSON.stringify({ code: -1, msg: err.message, data: null }) }
   }
 }

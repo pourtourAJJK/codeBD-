@@ -49,7 +49,7 @@
       <view class="cart-item">
         <!-- 1. 勾选按钮区 -->
         <view class="cart-item-check">
-          <checkbox checked="{{item.checked}}" bindtap="toggleItemCheck" data-index="{{index}}" color="#ff4757" />
+          <checkbox checked="{{item.checked}}" bindtap="toggleItemCheck" data-index="{{index}}" color="#2F8FC7" />
         </view>
 
         <!-- 2. 商品图文信息区（添加点击跳转） -->
@@ -81,7 +81,7 @@
   <!-- 底部结算栏 -->
   <view class="cart-footer" wx:if="{{cartItems && cartItems.length > 0}}">
     <view class="select-all">
-      <checkbox checked="{{isAllSelected}}" bindtap="toggleSelectAll"></checkbox>
+      <checkbox checked="{{isAllSelected}}" bindtap="toggleSelectAll" color="#2F8FC7"></checkbox>
       <text class="select-all-text">全选</text>
     </view>
 

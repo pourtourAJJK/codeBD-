@@ -13,6 +13,12 @@ const db = cloud.database();
  * @returns {Object} - 更新结果
  */
 exports.main = async (event, context) => {
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type"
+  };
+  if(event.httpMethod === "OPTIONS") return { statusCode:204, headers };
   console.log('=== 云函数开始执行 ===');
   console.log('接收到的 event:', JSON.stringify(event));
   
@@ -27,19 +33,27 @@ exports.main = async (event, context) => {
     // 2. 基础校验
     if (!productId) {
       return {
-        code: 400,
-        success: false,
-        message: '商品ID不能为空',
-        debug: { receivedEvent: event }
+        statusCode:400,
+        headers,
+        body:JSON.stringify({
+          code: 400,
+          success: false,
+          message: '商品ID不能为空',
+          debug: { receivedEvent: event }
+        })
       };
     }
     
     if (!productData || typeof productData !== 'object') {
       return {
-        code: 400,
-        success: false,
-        message: '商品数据不能为空',
-        debug: { receivedEvent: event }
+        statusCode:400,
+        headers,
+        body:JSON.stringify({
+          code: 400,
+          success: false,
+          message: '商品数据不能为空',
+          debug: { receivedEvent: event }
+        })
       };
     }
     
@@ -47,9 +61,13 @@ exports.main = async (event, context) => {
     const productRes = await db.collection('shop_spu').doc(productId).get();
     if (!productRes.data) {
       return {
-        code: 404,
-        success: false,
-        message: '商品不存在'
+        statusCode:404,
+        headers,
+        body:JSON.stringify({
+          code: 404,
+          success: false,
+          message: '商品不存在'
+        })
       };
     }
     
@@ -130,32 +148,44 @@ exports.main = async (event, context) => {
     
     if (updateResult.stats && updateResult.stats.updated > 0) {
       return {
-        code: 200,
-        success: true,
-        message: '更新商品成功',
-        data: {
-          productId: productId,
-          updatedFields: Object.keys(updateData)
-        }
+        statusCode:200,
+        headers,
+        body:JSON.stringify({
+          code: 200,
+          success: true,
+          message: '更新商品成功',
+          data: {
+            productId: productId,
+            updatedFields: Object.keys(updateData)
+          }
+        })
       };
     } else {
       return {
-        code: 200,
-        success: true,
-        message: '商品数据未变更',
-        data: {
-          productId: productId,
-          message: '商品数据未发生变更'
-        }
+        statusCode:200,
+        headers,
+        body:JSON.stringify({
+          code: 200,
+          success: true,
+          message: '商品数据未变更',
+          data: {
+            productId: productId,
+            message: '商品数据未发生变更'
+          }
+        })
       };
     }
   } catch (error) {
     console.error('云函数执行错误:', error);
     return {
-      code: 500,
-      success: false,
-      message: `服务器错误: ${error.message}`,
-      error: error.stack
+      statusCode:500,
+      headers,
+      body:JSON.stringify({
+        code: 500,
+        success: false,
+        message: `服务器错误: ${error.message}`,
+        error: error.stack
+      })
     };
   }
 };

@@ -13,6 +13,12 @@ const db = cloud.database();
  * @returns {Object} - 商品详情结果
  */
 exports.main = async (event, context) => {
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type"
+  };
+  if(event.httpMethod === "OPTIONS") return { statusCode:204, headers };
   console.log('=== 云函数开始执行 ===');
   console.log('接收到的 event:', JSON.stringify(event));
   
@@ -25,10 +31,14 @@ exports.main = async (event, context) => {
     // 2. 基础校验
     if (!productId) {
       return {
-        code: 400,
-        success: false,
-        message: '商品ID不能为空',
-        debug: { receivedEvent: event }
+        statusCode:400,
+        headers,
+        body:JSON.stringify({
+          code: 400,
+          success: false,
+          message: '商品ID不能为空',
+          debug: { receivedEvent: event }
+        })
       };
     }
     
@@ -38,9 +48,13 @@ exports.main = async (event, context) => {
     
     if (!product) {
       return {
-        code: 404,
-        success: false,
-        message: '商品不存在'
+        statusCode:404,
+        headers,
+        body:JSON.stringify({
+          code: 404,
+          success: false,
+          message: '商品不存在'
+        })
       };
     }
     
@@ -114,18 +128,26 @@ exports.main = async (event, context) => {
     console.log('返回的商品数据:', JSON.stringify(resultProduct));
     
     return {
-      code: 200,
-      success: true,
-      message: '获取商品详情成功',
-      data: resultProduct
+      statusCode:200,
+      headers,
+      body:JSON.stringify({
+        code: 200,
+        success: true,
+        message: '获取商品详情成功',
+        data: resultProduct
+      })
     };
   } catch (error) {
     console.error('云函数执行错误:', error);
     return {
-      code: 500,
-      success: false,
-      message: `服务器错误: ${error.message}`,
-      error: error.stack
+      statusCode:500,
+      headers,
+      body:JSON.stringify({
+        code: 500,
+        success: false,
+        message: `服务器错误: ${error.message}`,
+        error: error.stack
+      })
     };
   }
 };
