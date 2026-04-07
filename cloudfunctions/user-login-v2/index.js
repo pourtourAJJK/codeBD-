@@ -74,7 +74,6 @@ exports.main = async (event, context) => {
       if (birthday) updateData.birthday = birthday;
       if (region) updateData.region = region;
       if (phoneNumber) updateData.phoneNumber = phoneNumber;
-      if (session_key) updateData.session_key = session_key;  // 保存 session_key
       
       await db.collection('shop_user').doc(userRes.data[0]._id).update({ 
         data: updateData 
@@ -96,7 +95,6 @@ exports.main = async (event, context) => {
         phoneNumber: phoneNumber || '',
         birthday: birthday || '',
         region: region || '',
-        session_key: session_key || '',  // 保存 session_key
         createTime: db.serverDate(),
         updateTime: db.serverDate()
       };

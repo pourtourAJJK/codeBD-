@@ -37,6 +37,13 @@
     >
       已完成
     </view>
+    <view 
+      class="tab-item {{activeTab === 'after_sales' ? 'active' : ''}}" 
+      data-tab="after_sales" 
+      bindtap="switchTab"
+    >
+      售后
+    </view>
   </view>
 
   <!-- 加载状态 -->

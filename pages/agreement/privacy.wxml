@@ -1,0 +1,31 @@
+<view class="container">
+  <view class="title">小程序用户隐私保护指引</view>
+  
+  <view class="section">
+    <view class="section-title">一、我们收集的信息</view>
+    <view class="content">
+      1. 微信昵称、头像：用于账号登录识别和个人中心展示<br/>
+      2. 手机号：用于接收订单通知和配送联系<br/>
+      3. 地址信息：用于提供送水上门服务<br/>
+      4. 订单信息：用于订单管理和售后服务
+    </view>
+  </view>
+  
+  <view class="section">
+    <view class="section-title">二、信息使用规则</view>
+    <view class="content">
+      1. 仅用于提供送水服务所需的必要功能<br/>
+      2. 不会向第三方共享您的个人信息<br/>
+      3. 您可随时在个人中心修改或删除您的信息
+    </view>
+  </view>
+  
+  <view class="section">
+    <view class="section-title">三、用户权利</view>
+    <view class="content">
+      1. 您可以随时查看、修改、删除您的个人信息<br/>
+      2. 您可以随时退出登录，清除本地缓存<br/>
+      3. 您可以通过客服热线反馈隐私相关问题
+    </view>
+  </view>
+</view>

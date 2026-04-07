@@ -43,14 +43,14 @@
 
 .search-placeholder {
   font-size: 28rpx;
-  color: #999999;
+  color: #666666;
 }
 
 .search-button {
   width: 120rpx;
-  height: 64rpx;
+  height: 70rpx;
   background-color: #2F8FC7;
-  border-radius: 40rpx;
+  border-radius: 24rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -59,7 +59,7 @@
 .search-button-text {
   font-size: 28rpx;
   color: #ffffff;
-  font-weight: bold;
+  font-weight: 500;
 }
 
 .cart-icon {
@@ -254,13 +254,15 @@
   align-self: flex-start;
   background-color: #2F8FC7;
   color: white;
-  padding: 8rpx 24rpx;
-  border-radius: 16rpx;
-  font-size: 20rpx;
+  padding: 0 30rpx;
+  border-radius: 24rpx;
+  font-size: 28rpx;
   font-weight: 500;
   white-space: nowrap;
   min-width: 100rpx;
   text-align: center;
+  height: 70rpx;
+  line-height: 70rpx;
 }
 
 .feature-image {
@@ -416,7 +418,7 @@
 .product-price {
   font-size: 32rpx;
   font-weight: bold;
-  color: #ff4757;
+  color: #E53935;
 }
 
 /* 通用区域样式 */

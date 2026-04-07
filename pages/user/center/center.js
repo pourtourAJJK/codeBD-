@@ -43,9 +43,7 @@ Page({
    */
   checkLoginAndLoadData: function () {
     console.log("检查登录状态...");
-    const openid = wx.getStorageSync("openid");
-
-    if (!openid) {
+    if (!app.checkLoginStatus()) {
       console.log("用户未登录，跳转到授权页");
       wx.setStorageSync("targetPage", {
         url: "/pages/user/center/center",
@@ -94,12 +92,13 @@ Page({
   // 读取数据库中的最新用户信息
   async getUserInfoFromDB() {
     try {
-      const openid = wx.getStorageSync("openid");
-      if (!openid) {
+      const encryptedOpenid = wx.getStorageSync("openid");
+      if (!encryptedOpenid) {
         console.error("[我的页面] getUserInfoFromDB被调用，但openid为空");
         wx.showToast({ title: "登录状态异常", icon: "none" });
         return {};
       }
+      const openid = decodeURIComponent(encryptedOpenid);
 
       // 调用云函数读取用户信息
       const res = await wx.cloud.callFunction({

@@ -17,6 +17,11 @@
     value="{{nickName}}"
   />
 
+  <!-- 信息完善页提示（补充说明） -->
+  <view class="info-tip">
+    您提供的昵称和头像将仅用于账号展示和个人中心页面，不会用于其他用途
+  </view>
+
   <!-- 保存信息按钮（写入数据库） -->
   <button class="save-btn" bindtap="saveUserInfo">保存信息</button>
 </view>

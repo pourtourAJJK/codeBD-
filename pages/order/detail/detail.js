@@ -43,42 +43,62 @@ Page({
 
   // 页面显示时刷新订单信息
   onShow: function () {
-    // 页面显示时刷新订单信息
-    this.loadOrderDetail();
-    // 同步最新的退款状态
-    this.syncRefundStatus();
-    // 开启轮询（实时同步状态）
-    this.pollTimer = setInterval(() => {
-      this.syncRefundStatus();
-    }, 5000);
+    // 页面显示 → 启动轮询（5秒一次）
+    this.syncRefundStatus(); // 🔥 修复点4：一进页面立刻执行一次，不等待定时器
+    this.setData({
+      timer: setInterval(() => {
+        this.syncRefundStatus();
+      }, 5000)
+    });
+  },
+
+  // 页面隐藏 → 清除定时器（防止内存泄漏）
+  onHide: function() {
+    clearInterval(this.data.timer);
   },
 
   // 关闭页面清除定时器
   onUnload: function() {
-    clearInterval(this.data.pollTimer);
+    clearInterval(this.data.timer);
     this.clearCountDownTimer();
   },
 
-  // 查询退款状态
-  async syncRefundStatus() {
-    const db = wx.cloud.database();
-    const res = await db.collection('shop_refund').where({
-      order_id: this.data.order?._id || this.data.orderId
-    }).get();
+  // 同步退款状态 + 强制刷新订单数据（修复状态不更新）
+  syncRefundStatus() {
+    const orderId = this.data.orderId;
+    if (!orderId) return;
 
-    if (res.data.length > 0) {
-      const refundInfo = res.data[0];
-      this.setData({ refundInfo });
+    // 🔥 修复点2：每次轮询都重新拉取订单详情（强制刷新前端状态）
+    this.loadOrderDetail();
 
-      // ✅ 审核拒绝 → 弹窗显示原因（体验优化）
-      if (refundInfo.refund_status === "审核拒绝") {
-        wx.showModal({
-          title: '退款被拒绝',
-          content: refundInfo.audit_note,
-          showCancel: false
-        });
+    // 查询退款状态
+    wx.cloud.callFunction({
+      name: 'admin-return-list',
+      data: { order_id: orderId },
+      success: res => {
+        const list = res.result.data.list || [];
+        if (list.length > 0) {
+          const refund = list[0];
+          this.setData({ refundInfo: refund });
+
+          // 🔥 修复点3：审核拒绝 → 弹窗提示
+          if (refund.audit_status === "拒绝") {
+            wx.showModal({
+              title: '退款被拒绝',
+              content: refund.audit_note || '原因未填写',
+              showCancel: false
+            });
+            // 停止轮询
+            clearInterval(this.data.timer);
+          }
+
+          // 退款成功/失败 → 停止轮询
+          if (refund.refund_status === "退款成功" || refund.refund_status === "退款失败") {
+            clearInterval(this.data.timer);
+          }
+        }
       }
-    }
+    });
   },
 
   // 查看退款进度
@@ -237,25 +257,20 @@ Page({
     return statusMap[statusmax] || '未知状态';
   },
 
-  // 开启轮询：5秒请求一次
+  // 开启轮询：5秒请求一次（保留兼容，实际使用新的轮询逻辑）
   startPoll: function(orderId) {
-    const timer = setInterval(() => {
-      this.loadOrderDetail();
-    }, 5000);
-
-    this.setData({ pollTimer: timer });
+    // 已迁移到onShow中的新轮询逻辑
   },
 
   // 页面隐藏时清除定时器
   onHide: function() {
-    clearInterval(this.data.pollTimer);
-    clearInterval(this.timer);
+    clearInterval(this.data.timer);
     this.clearCountDownTimer();
   },
 
   // 页面卸载时清除定时器
   onUnload: function() {
-    clearInterval(this.data.pollTimer);
+    clearInterval(this.data.timer);
     this.clearCountDownTimer();
   },
 

@@ -216,6 +216,28 @@ const handler = async (event = {}) => {
       }).get();
       console.log('✅ 事务提交后立即查询结果：', checkRes.data);
 
+      // 适配你的配置：查询状态为已绑定(1)的管理员
+      const adminRes = await db.collection('admin_wechat').where({ adminstatus: "1" }).get();
+      const openids = adminRes.data.map(item => item.openid);
+
+      for(let openid of openids){
+        try {
+          await cloud.openapi.subscribeMessage.send({
+            touser: openid,
+            template_id: "你的微信订阅消息模板ID",
+            page: "pages/order/order",
+            data: {
+              thing1: { value: "新订单待处理" },
+              thing2: { value: totalPrice + "元" },
+              time3: { value: new Date().toLocaleString() }
+            }
+          });
+          console.log('向管理员', openid, '发送订阅消息成功');
+        } catch (msgError) {
+          console.error('向管理员', openid, '发送订阅消息失败:', msgError);
+        }
+      }
+
       return {
         code: 200,
         message: '订单创建成功',

@@ -108,11 +108,10 @@ const handler = async (event, context) => {
   } catch (error) {
     console.error('数据库初始化过程中出错', error);
     return {
-      code: 500,
+      code : 500,
       message: '数据库初始化失败',
-      data: { error: error.message }
+      data: { error :error.message}
     };
   }
 };
-
 exports.main = withResponse(handler);

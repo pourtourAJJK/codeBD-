@@ -263,14 +263,14 @@
 
 .price-symbol {
   font-size: 12px;
-  color: #ff4d4f;
+  color: #E53935;
   margin-right: 2px;
 }
 
 .price-value {
   font-size: 16px;
   font-weight: 600;
-  color: #ff4d4f;
+  color: #E53935;
 }
 
 .original-price {
@@ -407,7 +407,7 @@
 .price-number {
   font-size: 20px;
   font-weight: 600;
-  color: #ff4d4f;
+  color: #E53935;
 }
 
 .action-buttons {
@@ -433,13 +433,14 @@
 
 .checkout-btn {
   width: 120px;
-  height: 36px;
-  line-height: 36px;
-  background-color: #ff4d4f;
+  height: 70rpx;
+  line-height: 70rpx;
+  background-color: #E53935;
   color: #fff;
   border: none;
-  border-radius: 4px;
-  font-size: 14px;
+  border-radius: 24rpx;
+  font-size: 28rpx;
+  font-weight: 500;
 }
 
 .checkout-btn[disabled] {
@@ -554,19 +555,19 @@
   right: 20rpx;
   width: 60rpx;
   height: 60rpx;
-  background-color: #ff6b81;
+  background-color: #E53935;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2rpx 8rpx rgba(255, 107, 129, 0.3);
+  box-shadow: 0 2rpx 8rpx rgba(229, 57, 53, 0.3);
   transition: all 0.2s ease;
   z-index: 10;
 }
 
 .add-cart-btn-hover {
   transform: scale(1.1);
-  background-color: #ff4757;
+  background-color: #E53935;
 }
 
 
@@ -605,7 +606,7 @@
 .product-price {
   font-size: 36rpx;
   font-weight: bold;
-  color: #ff4757;
+  color: #E53935;
 }
 
 /* 解决输入框在iOS上的样式问题 */

@@ -77,7 +77,7 @@
         <view class="order-icon">
           <image src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/售后.png" mode="widthFix"></image>
         </view>
-        <text class="order-text">售后/退桶</text>
+        <text class="order-text">退单/售后</text>
       </view>
     </view>
   </view>

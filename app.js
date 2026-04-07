@@ -5,11 +5,11 @@ const { config } = require('./config/env');
 const loading = require('./utils/loading');
 
 App({
-  // 全局数据对象，可以在多个页面间共享
   globalData: {
-    userInfo: null,           // 用户信息
-    isLogin: false,           // 登录状态
-    openid: "", // 存储全局openid
+    isLogin: false,
+    userInfo: null,
+    openid: '',
+    token: '',
     loginReady: false,        // 标记登录态是否就绪
     cloudEnv: config.CLOUD_ENV_ID,    // 云环境ID（从环境配置获取）
     baseUrl: config.API_BASE_URL,     // 基础API地址
@@ -19,11 +19,10 @@ App({
     cloudEnvInfo: null        // 云环境详细信息
   },
 
-  /**
-   * 小程序初始化时执行
-   * 初始化云开发环境、获取系统信息等
-   */
-  onLaunch: function() {
+  onLaunch() {
+    // 微信官方要求：无需在启动页强制弹窗，只需在调用隐私接口前授权
+    // 因此移除原有的强制隐私弹窗，改为在登录页统一处理
+    
     console.log('小程序启动中...');
     
     // 1. 检查基础库版本
@@ -88,17 +87,11 @@ App({
       console.error('获取系统信息失败:', e);
     }
 
-    // 3. 等待登录态获取完成后，再执行后续逻辑
-    this.getWXContext().then(() => {
-      this.globalData.loginReady = true;
-      console.log("[App-日志] 登录态已完全就绪，openid：", this.globalData.openid);
-      
-      // 4. 检查登录状态（包含token验证）
-      this.checkLoginStatus();
+    // 3. 直接校验登录状态
+    this.checkLoginStatus();
 
-      // 5. 获取云开发环境信息（恢复功能）
-      this.getCloudEnvInfo();
-    });
+    // 4. 30秒自动校验登录状态
+    setInterval(() => this.checkLoginStatus(), 30000);
   },
 
   /**
@@ -146,24 +139,50 @@ App({
     });
   },
 
-  /**
-   * 检查登录状态（简化版，移除云函数验证）
-   */
-  checkLoginStatus: function() {
+  // 统一登录校验（所有页面可调用）
+  checkLoginStatus() {
     try {
-      const userInfo = wx.getStorageSync('userInfo');
-      const token = wx.getStorageSync('token');
-      
-      if (userInfo && token) {
-        this.globalData.userInfo = userInfo;
-        this.globalData.isLogin = true;
+      const encryptedUserInfo = wx.getStorageSync('userInfo');
+      const encryptedToken = wx.getStorageSync('token');
+      const encryptedOpenid = wx.getStorageSync('openid');
+
+      if (encryptedUserInfo && encryptedToken && encryptedOpenid) {
+        // 解密数据
+        const userInfo = JSON.parse(decodeURIComponent(encryptedUserInfo));
+        const token = decodeURIComponent(encryptedToken);
+        const openid = decodeURIComponent(encryptedOpenid);
+
+        this.globalData = { 
+          ...this.globalData,
+          isLogin: true, 
+          userInfo: userInfo,
+          token: token, 
+          openid: openid 
+        };
         console.log('登录状态有效');
+        return true;
       } else {
+        this.clearLoginInfo();
         console.log('未登录或登录状态已过期');
+        return false;
       }
-    } catch (error) {
-      console.error('检查登录状态失败:', error);
+    } catch (e) {
+      console.error('检查登录状态失败:', e);
+      this.clearLoginInfo();
+      return false;
     }
+  },
+
+  // 统一退出登录
+  clearLoginInfo() {
+    wx.clearStorageSync();
+    this.globalData = {
+      ...this.globalData,
+      isLogin: false, 
+      userInfo: null, 
+      openid: '', 
+      token: ''
+    };
   },
 
   /**
@@ -197,7 +216,6 @@ App({
       const openid = res.result?.data?.openid;
       if (openid) {
         this.globalData.openid = openid;
-        this.globalData.isLogin = true;
         console.log('获取到的openid：', openid);
         return Promise.resolve(); // 成功获取，结束函数
       } else {

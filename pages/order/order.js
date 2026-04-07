@@ -266,7 +266,8 @@ Page({
         statusmax: { $in: ["2", "3"] } // 待接单(2) 或 待配送(3)
       },
       delivering: { statusmax: "4" }, // 配送中
-      completed: { statusmax: "5" } // 已完成
+      completed: { statusmax: "5" }, // 已完成
+      after_sales: { statusmax: { $in: ["7", "9"] } } // 售后：退款中(7) 或 退款成功(9)
     };
 
     const query = tabQueryMap[this.data.activeTab];

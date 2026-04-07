@@ -28,6 +28,15 @@
   margin-bottom: 40rpx;
 }
 
+.info-tip {
+  margin: 30rpx 0;
+  font-size: 24rpx;
+  color: #666;
+  text-align: center;
+  padding: 0 40rpx;
+  line-height: 36rpx;
+}
+
 .save-btn {
   width: 80%;
   height: 80rpx;

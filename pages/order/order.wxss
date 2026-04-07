@@ -27,7 +27,7 @@
   position: relative;
 }
 .tab-item.active {
-  color: #ff6b6b;
+  color: #2F8FC7;
   font-weight: bold;
 }
 .tab-item.active::after {
@@ -38,7 +38,7 @@
   transform: translateX(-50%);
   width: 40rpx;
   height: 4rpx;
-  background-color: #ff6b6b;
+  background-color: #2F8FC7;
   border-radius: 2rpx;
 }
 
@@ -54,7 +54,7 @@
   height: 40rpx;
   margin: 0 auto 20rpx;
   border: 4rpx solid #eee;
-  border-top-color: #ff6b6b;
+  border-top-color: #2F8FC7;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -90,11 +90,14 @@
   margin-bottom: 40rpx;
 }
 .empty-btn {
-  background-color: #ff6b6b;
+  background-color: #2F8FC7;
   color: #fff;
-  padding: 15rpx 40rpx;
-  border-radius: 50rpx;
+  padding: 0 30rpx;
+  border-radius: 24rpx;
   font-size: 28rpx;
+  font-weight: 500;
+  height: 70rpx;
+  line-height: 70rpx;
 }
 
 /* 订单列表 */
@@ -208,7 +211,7 @@
   align-items: center;
 }
 .product-price {
-  color: #ff6b6b;
+  color: #E53935;
   font-weight: bold;
   font-size: 28rpx;
 }
@@ -255,7 +258,7 @@
   font-size: 28rpx;
 }
 .total-value {
-  color: #ff6b6b;
+  color: #E53935;
   font-weight: bold;
   font-size: 30rpx;
 }
@@ -272,17 +275,20 @@
 .btn-secondary {
   background-color: #ffffff;
   color: #666;
-  border: 1rpx solid #ddd;
-  padding: 12rpx 30rpx;
-  border-radius: 6rpx;
-  font-size: 26rpx;
-  line-height: 1.2;
+  border: 1rpx solid #E5E7EB;
+  padding: 0 30rpx;
+  border-radius: 24rpx;
+  font-size: 28rpx;
+  height: 70rpx;
+  line-height: 70rpx;
 }
 .btn-primary {
-  background-color: #ff6b6b;
+  background-color: #2F8FC7;
   color: #ffffff;
-  padding: 12rpx 30rpx;
-  border-radius: 6rpx;
-  font-size: 26rpx;
-  line-height: 1.2;
+  padding: 0 30rpx;
+  border-radius: 24rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+  height: 70rpx;
+  line-height: 70rpx;
 }

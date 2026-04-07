@@ -7,7 +7,22 @@
   </view>
 
   <view class="bottom-section">
-    <button class="auth-btn" bindtap="handleAuthorize">授权登录</button>
-    <view class="tips">授权登录后我们将为您提供更好的服务</view>
+    <!-- 微信官方隐私授权按钮，必须使用此组件 -->
+    <button 
+      class="login-btn" 
+      open-type="agreePrivacyAuthorization" 
+      bindagreeprivacyauthorization="handleAgreePrivacy"
+    >
+      微信授权登录
+    </button>
+
+    <!-- 隐私协议提示，必须包含可点击链接 -->
+    <view class="privacy-tip">
+      登录即表示您已阅读并同意
+      <navigator url="/pages/agreement/privacy" class="link">
+        《小程序用户隐私保护指引》
+      </navigator>
+      我们将收集您的微信昵称、头像用于账号登录识别
+    </view>
   </view>
 </view>

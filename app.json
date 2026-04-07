@@ -28,7 +28,8 @@
     "pages/service/service",
     "pages/cart/cart",
     "pages/login/auth/auth",
-    "pages/login/phone/phone"
+    "pages/login/phone/phone",
+    "pages/agreement/privacy"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -122,5 +123,12 @@
   
   "requiredPrivateInfos": [
     "chooseAddress"
-  ]
+  ],
+  "permission": {
+    "scope.userInfo": {
+      "desc": "用于获取您的微信昵称、头像，完成账号登录识别和个人中心展示"
+    }
+  },
+  "__usePrivacyCheck__": true,
+  "__privacyPolicyRedirectPath__": "/pages/agreement/privacy"
 }

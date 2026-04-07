@@ -238,23 +238,23 @@
 }
 
 .pill-btn {
-  padding: 8rpx 18rpx;
-  font-size: 24rpx;
-  color: #3b4252;
-  background-color: #fff;
-  border: 1rpx solid #d0d5dd;
-  border-radius: 999rpx;
-  min-width: 118rpx;
+  padding: 0 30rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #333333;
+  background-color: #ffffff;
+  border: 1rpx solid #E5E7EB;
+  border-radius: 24rpx;
+  min-width: 150rpx;
   text-align: center;
-  line-height: 1.45;
-  box-shadow: 0 4rpx 10rpx rgba(0, 0, 0, 0.05);
+  height: 70rpx;
+  line-height: 70rpx;
 }
 
 .pill-danger {
-  background-color: #fff7eb;
-  border-color: #f59e0b;
-  color: #b45309;
-  box-shadow: 0 4rpx 12rpx rgba(245, 158, 11, 0.18);
+  background-color: #E53935;
+  border-color: #E53935;
+  color: #ffffff;
 }
 
 .pill-btn::after {

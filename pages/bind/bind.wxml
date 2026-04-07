@@ -1,0 +1,9 @@
+<view class="container">
+  <view class="loading-container">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">正在绑定管理员账号...</text>
+  </view>
+  <view class="tips">
+    <text>请稍候，系统正在处理绑定请求</text>
+  </view>
+</view>

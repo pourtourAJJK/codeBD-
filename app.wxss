@@ -3,31 +3,31 @@
 /* === 全局CSS变量定义 === */
 :root {
   /* 主色调 */
-  --color-primary: #1296db;      /* 主色 - 蓝色 */
-  --color-primary-dark: #0e77b3; /* 主色-深 */
-  --color-primary-light: #4dabf5; /* 主色-浅 */
+  --color-primary: #2F8FC7;      /* 主色 - 深蓝色 */
+  --color-primary-dark: #1e6a9c; /* 主色-深 */
+  --color-primary-light: #4aa9d8; /* 主色-浅 */
   
   /* 辅助色 */
   --color-success: #52c41a;      /* 成功 - 绿色 */
   --color-warning: #faad14;      /* 警告 - 橙色 */
-  --color-error: #ff4d4f;        /* 错误 - 红色 */
-  --color-info: #1890ff;         /* 信息 - 蓝色 */
+  --color-error: #E53935;        /* 错误 - 深红色 */
+  --color-info: #2F8FC7;         /* 信息 - 蓝色 */
   
   /* 中性色 */
   --color-text-primary: #333333; /* 主要文字 */
   --color-text-secondary: #666666; /* 次要文字 */
   --color-text-disabled: #999999; /* 禁用文字 */
-  --color-text-placeholder: #cccccc; /* 占位文字 */
+  --color-text-placeholder: #666666; /* 占位文字 */
   
   /* 背景色 */
   --color-bg-primary: #ffffff;   /* 主背景色 */
-  --color-bg-secondary: #f5f5f5; /* 次要背景色 */
-  --color-bg-disabled: #f5f5f5;  /* 禁用背景色 */
+  --color-bg-secondary: #F5F7FA; /* 次要背景色 */
+  --color-bg-disabled: #F5F7FA;  /* 禁用背景色 */
   --color-bg-hover: #f0f0f0;     /* 悬停背景色 */
   
   /* 边框色 */
-  --color-border: #e0e0e0;       /* 边框色 */
-  --color-border-light: #f0f0f0; /* 轻边框色 */
+  --color-border: #E5E7EB;       /* 边框色 */
+  --color-border-light: #F5F7FA; /* 轻边框色 */
   --color-border-dark: #d0d0d0;  /* 深边框色 */
   
   /* 阴影 */
@@ -444,4 +444,53 @@ page {
 .empty-state__text {
   margin-top: var(--spacing-md);
   font-size: 14px;
+}
+
+/* 全局主按钮（蓝色，对应搜索、立即抢购等） */
+.btn-primary {
+  background-color: #2F8FC7 !important;
+  color: #FFFFFF !important;
+  font-size: 28rpx;
+  font-weight: 500;
+  border-radius: 24rpx;
+  border: none;
+  padding: 0 30rpx;
+  height: 70rpx;
+  line-height: 70rpx;
+}
+
+/* 全局次按钮（红色，对应立即购买、提交订单等） */
+.btn-red {
+  background-color: #E53935 !important;
+  color: #FFFFFF !important;
+  font-size: 28rpx;
+  font-weight: 500;
+  border-radius: 24rpx;
+  border: none;
+  padding: 0 30rpx;
+  height: 70rpx;
+  line-height: 70rpx;
+}
+
+/* 全局输入框样式（解决所有输入框占位符问题） */
+.input-base {
+  background-color: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 12rpx;
+  padding: 0 20rpx;
+  height: 70rpx;
+  font-size: 28rpx;
+  color: #333333;
+}
+.input-base::placeholder {
+  color: #666666 !important;
+  opacity: 1;
+}
+
+/* 全局文字样式（统一所有正文/次要文字） */
+.text-primary {
+  color: #333333;
+}
+.text-secondary {
+  color: #666666;
 }
