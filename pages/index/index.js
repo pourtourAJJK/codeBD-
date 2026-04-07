@@ -81,7 +81,10 @@ Page({
     // 搜索相关状态
     searchValue: '', // 搜索框输入内容
     isSearching: false, // 是否正在搜索
-    searchResults: [] // 搜索结果
+    searchResults: [], // 搜索结果
+    // 广告相关
+    showModal: false,
+    adData: {} // 存储云数据库广告数据
   },
 
   /**
@@ -90,6 +93,8 @@ Page({
   onLoad: function (options) {
     // 检查登录状态
     this.checkLogin();
+    // 获取广告数据
+    this.getAdData();
   },
   
   /**
@@ -349,5 +354,51 @@ Page({
     wx.navigateTo({
       url: '/pages/search/search'
     });
-  }
+  },
+
+  // 从TCB云函数获取广告
+  getAdData: function() {
+    wx.cloud.callFunction({
+      name: 'ad-get-list',
+      data: { type: 'active' }
+    }).then(res => {
+      const { code, data } = res.result
+      if (code === 0 && data.length > 0) {
+        const ad = data[0]
+        this.setData({ adData: ad })
+        this.checkAdTime(ad) // 校验广告时间
+      }
+    })
+  },
+
+  // 校验广告时间+本地存储
+  checkAdTime: function(ad) {
+    const now = new Date().getTime()
+    const start = new Date(ad.start_time).getTime()
+    const end = new Date(ad.end_time).getTime()
+    
+    // 不在时间范围内
+    if (now < start || now > end) return
+    // 用户已关闭过
+    if (wx.getStorageSync('adClosed')) return
+    
+    this.setData({ showModal: true })
+  },
+
+  // 关闭广告
+  closeModal: function() {
+    this.setData({ showModal: false })
+    wx.setStorageSync('adClosed', true)
+  },
+
+  // 点击图片跳转
+  goAdLink: function() {
+    const url = this.data.adData.jump_url
+    if (!url) return
+    // 小程序内跳转
+    wx.navigateTo({ url })
+    this.closeModal()
+  },
+
+  noop: function() {}
 });

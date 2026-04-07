@@ -34,41 +34,23 @@ Page({
       
       console.log('[auth] 获取 code 成功:', loginRes.code);
       
-      // 2. 调用 get-openid-new 获取 openid
-      const openidRes = await wx.cloud.callFunction({
-        name: "get-openid-new",
-        data: { code: loginRes.code }
-      });
-      
-      console.log('[auth] get-openid-new 返回:', openidRes);
-      
-      if (openidRes.result.errCode !== 0) {
-        throw new Error(openidRes.result.errMsg || "获取openid失败");
-      }
-      
-      const openid = openidRes.result.data.openid;
-      const session_key = openidRes.result.data.session_key;
-      // 加密存储
-      wx.setStorageSync("openid", encodeURIComponent(openid));
-      console.log('[auth] openid 已保存:', openid);
-      console.log('[auth] session_key 已获取:', session_key ? '是' : '否');
-      
-      // 3. 调用 user-login-v2 完成登录/注册
+      // 2. 直接调用 user-login-v2 完成登录/注册
       const loginResult = await wx.cloud.callFunction({
         name: "user-login-v2",
         data: { 
-          session_key: session_key  // ✅ 传递 session_key
+          code: loginRes.code
         }
       });
       
       console.log('[auth] user-login-v2 返回:', loginResult);
       
       if (loginResult.result && loginResult.result.code === 0) {
-        const { userInfo, token, isNewUser } = loginResult.result.data;
+        const { userInfo, token, openid, isNewUser } = loginResult.result.data;
         
         // 加密存储
         wx.setStorageSync("userInfo", encodeURIComponent(JSON.stringify(userInfo)));
         wx.setStorageSync("token", encodeURIComponent(token));
+        wx.setStorageSync("openid", encodeURIComponent(openid));
         
         console.log('[auth] 登录成功，isNewUser:', isNewUser);
         

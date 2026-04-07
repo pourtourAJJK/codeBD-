@@ -1,0 +1,9 @@
+{
+  "name": "ad-save",
+  "version": "1.0.0",
+  "description": "新增/编辑广告",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

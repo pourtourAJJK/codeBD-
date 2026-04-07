@@ -16,13 +16,22 @@
 }
 
 .back-btn, .right-btn {
+  width: 60rpx;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-btn image, .right-btn image {
   width: 24px;
   height: 24px;
 }
 
-.back-btn image, .right-btn image {
-  width: 100%;
-  height: 100%;
+.back-text, .add-text {
+  font-size: 28rpx;
+  color: #2F8FC7;
+  font-weight: 500;
 }
 
 .page-title {

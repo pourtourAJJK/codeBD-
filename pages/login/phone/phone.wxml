@@ -1,14 +1,9 @@
-<!--pages/login/phone/phone.wxml-->
-<view class="container">
-  <view class="content">
-    <image class="phone-icon" src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/logo圆形.png" mode="aspectFit"></image>
-    <view class="title">绑定手机号</view>
-    <view class="description">为了方便我们与您联系，请授权绑定手机号</view>
-
-    <button class="phone-btn" open-type="getPhoneNumber" bindgetphonenumber="handleGetPhoneNumber">
-      手机号快捷登录
-    </button>
-
-    <view class="skip-btn" bindtap="handleSkip">暂不绑定</view>
-  </view>
-</view>
+<!-- 触发微信官方原生手机号弹窗（唯一合规写法） -->
+<button 
+  open-type="getPhoneNumber" 
+  bindgetphonenumber="handleGetPhoneNumber"
+  class="phone-btn"
+>
+  微信授权绑定手机号
+</button>
+<view class="skip-btn" bindtap="skipBind">暂不绑定</view>

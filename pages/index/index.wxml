@@ -84,3 +84,17 @@
   <text class="image-text">汲天然之山泉，蕴生命之微元</text>
   <text class="image-text">粤ICP备2026014843号-1X</text>
 </view>
+
+<!-- 广告弹窗 -->
+<view class="modal-mask" wx:if="{{showModal}}" bindtap="closeModal">
+  <view class="modal-content" catchtap="noop">
+    <!-- 云存储广告图片 + 点击跳转 -->
+    <image 
+      class="modal-banner" 
+      src="{{adData.image_url}}" 
+      mode="widthFix" 
+      bindtap="goAdLink"
+    ></image>
+    <view class="modal-close" bindtap="closeModal">×</view>
+  </view>
+</view>
