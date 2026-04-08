@@ -32,12 +32,12 @@
       <view 
         class="order-item" 
         bindtap="toOrder"
-        data-type="pending"
+        data-type="all"
       >
         <view class="order-icon">
-          <image src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/待付款.png" mode="widthFix"></image>
+          <image src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/全部订单BLUE.png" mode="widthFix"></image>
         </view>
-        <text class="order-text">待付款</text>
+        <text class="order-text">全部订单</text>
       </view>
       <view 
         class="order-item" 
@@ -45,9 +45,9 @@
         data-type="pending_delivery"
       >
         <view class="order-icon">
-          <image src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/待配送.png" mode="widthFix"></image>
+          <image src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/待配送blue.png" mode="widthFix"></image>
         </view>
-        <text class="order-text">待配送</text>
+        <text class="order-text">待支付</text>
       </view>
       <view 
         class="order-item" 
@@ -57,7 +57,7 @@
         <view class="order-icon">
           <image src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/待签收.png" mode="widthFix"></image>
         </view>
-        <text class="order-text">待签收</text>
+        <text class="order-text">待配送</text>
       </view>
       <view 
         class="order-item" 
@@ -67,7 +67,17 @@
         <view class="order-icon">
           <image src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/待评价.png" mode="widthFix"></image>
         </view>
-        <text class="order-text">待评价</text>
+        <text class="order-text">配送中</text>
+      </view>
+      <view 
+        class="order-item" 
+        bindtap="toOrder"
+        data-type="completed"
+      >
+        <view class="order-icon">
+          <image src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/待评价.png" mode="widthFix"></image>
+        </view>
+        <text class="order-text">已完成</text>
       </view>
       <view 
         class="order-item" 
@@ -87,29 +97,13 @@
     <view class="service-module">
       <text class="service-title">我的服务</text>
       <view class="service-grid">
-        <view class="service-item" bindtap="toService" data-type="activity">
-          <image class="service-icon" src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/热门活动.png"></image>
-          <text class="service-text">热门活动</text>
-        </view>
-        <view class="service-item" bindtap="toService" data-type="customer">
-          <image class="service-icon" src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/联系客服.png"></image>
-          <text class="service-text">联系客服</text>
-        </view>
         <view class="service-item" bindtap="toService" data-type="address">
           <image class="service-icon" src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/地址管理.png"></image>
           <text class="service-text">地址管理</text>
         </view>
-        <view class="service-item" bindtap="toService" data-type="invoice">
-          <image class="service-icon" src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/发票2.png"></image>
-          <text class="service-text">发票说明</text>
-        </view>
         <view class="service-item" bindtap="toService" data-type="about">
-          <image class="service-icon" src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/关于.png"></image>
-          <text class="service-text">关于</text>
-        </view>
-        <view class="service-item" bindtap="toService" data-type="enterprise">
-          <image class="service-icon" src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/企业内购.png"></image>
-          <text class="service-text">企业内购</text>
+          <image class="service-icon" src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/设置blue.png"></image>
+          <text class="service-text">设置</text>
         </view>
       </view>
     </view>

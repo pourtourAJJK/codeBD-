@@ -17,4 +17,4 @@
 .desc-block textarea { width: 100%; min-height: 180rpx; background: #f8f8f8; border-radius: 10rpx; padding: 14rpx; font-size: 26rpx; color: #333; box-sizing: border-box; }
 .count { text-align: right; color: #999; font-size: 24rpx; margin-top: 6rpx; }
 .footer { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; padding: 12rpx 24rpx env(safe-area-inset-bottom); box-shadow: 0 -2rpx 10rpx rgba(0,0,0,0.08); }
-.confirm-btn { width: 100%; background: #e11; color: #fff; border: none; border-radius: 999rpx; padding: 22rpx 0; font-size: 32rpx; }
+.confirm-btn { width: 100%; background: #2F8FC7; color: #fff; border: none; border-radius: 999rpx; padding: 22rpx 0; font-size: 32rpx; }

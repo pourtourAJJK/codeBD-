@@ -13,4 +13,4 @@
 .bottom-bar { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; display: flex; align-items: center; justify-content: space-between; padding: 10rpx 20rpx env(safe-area-inset-bottom); box-shadow: 0 -2rpx 10rpx rgba(0,0,0,0.08); }
 .select-all { display: flex; align-items: center; gap: 10rpx; color: #333; font-size: 28rpx; }
 .small-checkbox { transform: scale(0.8); }
-.submit-btn { background: #E53935; color: #fff; border: none; border-radius: 24rpx; padding: 0 30rpx; font-size: 28rpx; font-weight: 500; height: 70rpx; line-height: 70rpx; }
+.submit-btn { background: #2F8FC7; color: #fff; border: none; border-radius: 24rpx; padding: 0 30rpx; font-size: 28rpx; font-weight: 500; height: 70rpx; line-height: 70rpx; }

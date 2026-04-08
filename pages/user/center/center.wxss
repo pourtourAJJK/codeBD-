@@ -107,12 +107,12 @@
   flex-direction: column;
   align-items: center;
   width: 33.33%;
-  margin-bottom: 20rpx;
+  margin-bottom: 30rpx;
 }
 .order-icon {
   width: 80rpx;
   height: 80rpx;
-  margin-bottom: 15rpx;
+  margin-bottom: 20rpx;
   display: flex;
   align-items: center;
   justify-content: center;

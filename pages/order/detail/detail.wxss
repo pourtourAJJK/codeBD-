@@ -46,18 +46,22 @@
 }
 
 .address-content {
-  padding-left: 40rpx;
+  padding-left: 60rpx;
   position: relative;
 }
 
 .address-content::before {
-  content: "\e647";
-  font-family: "iconfont";
+  content: "";
   position: absolute;
   left: 0;
   top: 10rpx;
-  font-size: 36rpx;
-  color: #ff6b6b;
+  width: 40rpx;
+  height: 40rpx;
+  background-image: url('cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/定位.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  z-index: 1;
 }
 
 .user-info {
@@ -251,9 +255,15 @@
   line-height: 70rpx;
 }
 
+.pill-btn.modify-address {
+  background-color: #2F8FC7;
+  border-color: #2F8FC7;
+  color: #ffffff;
+}
+
 .pill-danger {
-  background-color: #E53935;
-  border-color: #E53935;
+  background-color: #1A6DA0;
+  border-color: #1A6DA0;
   color: #ffffff;
 }
 

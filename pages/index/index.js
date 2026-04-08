@@ -163,8 +163,8 @@ Page({
         const originalData = result.result.data || {};
         const products = Array.isArray(originalData) ? originalData : (originalData.products || []);
         
-        // 随机选择2件商品
-        const randomProducts = this.getRandomItems(products, 2);
+        // 随机选择4件商品
+        const randomProducts = this.getRandomItems(products, 4);
         
         this.setData({
           hotProducts: randomProducts,

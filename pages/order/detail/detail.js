@@ -28,9 +28,10 @@ Page({
     const that = this;
     wx.getSystemInfo({
       success: function (res) {
-        that.setData({
-          platform: res.platform
-        });
+        // 移除未绑定变量的 setData 调用
+        // that.setData({
+        //   platform: res.platform
+        // });
       }
     });
     
@@ -76,7 +77,8 @@ Page({
       name: 'admin-return-list',
       data: { order_id: orderId },
       success: res => {
-        const list = res.result.data.list || [];
+        // 修复：添加对 res.result.data 的空值检查，避免 TypeError: Cannot read property 'list' of undefined
+        const list = res.result?.data?.list || [];
         if (list.length > 0) {
           const refund = list[0];
           this.setData({ refundInfo: refund });
@@ -197,21 +199,22 @@ Page({
         // 已取消的订单不显示任何操作按钮
         const isCancelled = currentStatusmax === '6';
         // 待支付状态显示操作栏
-        const showActionBar = currentStatusmax === '1';
+        // const showActionBar = currentStatusmax === '1';
         // 除去已取消的订单外，都显示取消订单按钮
-        const showCancelAction = !isCancelled;
+        // const showCancelAction = !isCancelled;
         // 除去已取消的订单外，都显示修改地址按钮
-        const showModifyAddress = !isCancelled;
+        // const showModifyAddress = !isCancelled;
 
         this.setData({
           order: {
             ...order,
             payAmount
           },
-          statusText: this.getStatusText(currentStatusmax),
-          showActionBar,
-          showCancelAction,
-          showModifyAddress
+          statusText: this.getStatusText(currentStatusmax)
+          // 移除未绑定变量的 setData 调用
+          // showActionBar,
+          // showCancelAction,
+          // showModifyAddress
         });
 
         // 启动倒计时（仅对待支付订单）
