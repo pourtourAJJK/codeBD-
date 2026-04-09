@@ -16,7 +16,6 @@ Page({
     // 卡券信息
     cardInfo: {
       couponCount: 0,
-      exchangeCount: 0,
     },
     // 加载状态
     isLoading: true,
@@ -71,7 +70,6 @@ Page({
       // 模拟卡券数据
       const cardInfo = {
         couponCount: wx.getStorageSync("couponCount") || 4,
-        exchangeCount: wx.getStorageSync("exchangeCount") || 0,
       };
 
       this.setData({
@@ -179,13 +177,7 @@ Page({
     wx.showToast({ title: "优惠券功能暂未开放", icon: "none" });
   },
 
-  // 跳转到兑换卡页面
-  toExchange() {
-    wx.navigateTo({
-      url: "/pages/exchange/exchange",
-      fail: () => wx.showToast({ title: "兑换卡页面未配置", icon: "none" }),
-    });
-  },
+
 
   // 跳转到服务页面
   toService(e) {

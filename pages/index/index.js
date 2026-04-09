@@ -57,21 +57,7 @@ Page({
         iconUrl: 'cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xishan_photo-ap/米的png.png'
       }
     ],
-    // 特色功能数据（兑换卡和限时特价）
-    featureList: [
-      {
-        type: 'exchange',
-        name: '兑换卡',
-        subtitle: '购卡随水分批提货',
-        imageUrl: 'cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xishan_photo-ap/大瓶扎堆.png'
-      },
-      {
-        type: 'limited',
-        name: '限时特价',
-        subtitle: '好水低价秒杀',
-        imageUrl: 'cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xishan_photo-ap/米的png.png'
-      }
-    ],
+
     // 热门商品数据，从cloudbase获取
     hotProducts: [],
     // 保存原始商品数据，用于清空搜索时恢复
@@ -310,17 +296,7 @@ Page({
     });
   },
 
-  /**
-   * 特色功能点击事件
-   */
-  onFeatureClick: function(e) {
-    wx.showModal({
-      title: '提示',
-      content: '内容正在开发中，敬请期待！',
-      showCancel: false,
-      confirmText: '确定'
-    });
-  },
+
 
   /**
    * 热门商品点击事件

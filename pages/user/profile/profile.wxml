@@ -69,7 +69,7 @@
         class="wechat-phone-btn"
         open-type="getPhoneNumber"
         bindgetphonenumber="onGetPhoneNumber"
-        style="width: 200rpx; padding: 10rpx 0; font-size: 24rpx; border-radius: 8rpx; background: #07c160; color: #fff;"
+        style="width: 200rpx; padding: 10rpx 0; font-size: 24rpx; border-radius: 8rpx; background: #2F8FC7; color: #fff;"
       >
         微信手机号授权
       </button>

@@ -9,19 +9,15 @@
     "pages/address/new/new",
     "pages/order/order",
     "pages/after-sales/after-sales",
-
     "pages/order/detail/detail",
     "pages/order/refund/refund",
     "pages/order/refund-confirm/refund-confirm",
     "pages/order/confirm/confirm",
-
     "pages/pay/pay",
     "pages/search/search",
-
     "pages/shop/list/list",
     "pages/shop/detail/detail",
     "pages/setting/setting",
-    "pages/exchange/exchange",
     "pages/service/service",
     "pages/cart/cart",
     "pages/login/auth/auth",
@@ -92,7 +88,6 @@
         "setting/setting",
         "service/service",
         "search/search",
-        "exchange/exchange",
         "coupon/coupon"
       ]
     },

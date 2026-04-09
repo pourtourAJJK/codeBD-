@@ -7,7 +7,7 @@
     <!-- 背景图 -->
     <image class="banner-bg" src="{{userInfo.bannerBg || ''}}" mode="widthFix"></image>
     <!-- 新增叠加图片 -->
-    <image class="overlay-image" src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xishan_photo-ap/我的.png" mode="widthFix"></image>
+    <image class="overlay-image" src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/5313351.png" mode="widthFix"></image>
     <!-- 用户信息（点击跳转个人信息页） -->
     <view class="user-info">
       <image class="avatar" src="{{userInfo.avatar || ''}}" mode="widthFix"></image>
@@ -16,8 +16,7 @@
         <text class="user-name">{{userInfo.nickName || '暂未登录'}}</text>
         <text class="user-phone">{{userInfo.nickName ? '' : '请点击头像进行登录'}}</text>
       </view>
-      <!-- 设置按钮 -->
-      <image class="setting-icon" src="/assets/images/settings.svg" mode="widthFix" bindtap="toSetting"></image>
+
     </view>
   </view>
 
