@@ -1,6 +1,8 @@
 {
   "pages": [
     "pages/index/index",
+    "pages/shop/list/list",
+    "pages/shop/detail/detail",
     "pages/user/index",
     "pages/user/center/center",
     "pages/user/profile/profile",
@@ -15,8 +17,6 @@
     "pages/order/confirm/confirm",
     "pages/pay/pay",
     "pages/search/search",
-    "pages/shop/list/list",
-    "pages/shop/detail/detail",
     "pages/setting/setting",
     "pages/service/service",
     "pages/cart/cart",

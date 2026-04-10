@@ -35,7 +35,7 @@
     "ignoreDevUnusedFiles": true,
     "bigPackageSizeSupport": false
   },
-  "libVersion": "3.14.1",
+  "libVersion": "3.15.1",
   "appid": "wxf6ebbdde5f6b75bc",
   "projectname": "硒养山泉送水到家",
   "simulatorType": "wechat",

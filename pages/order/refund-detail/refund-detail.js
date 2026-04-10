@@ -41,7 +41,18 @@ Page({
       const db = wx.cloud.database();
       const res = await db.collection('shop_refund').doc(refundId).get();
       if (res.data) {
-        this.setData({ refundInfo: res.data });
+        let info = res.data;
+        // JS 端格式化数据（WXML禁止写toFixed/toLocaleString）
+        let formatData = {
+          // 原数据
+          ...info,
+          // 金额格式化：分 → 元（保留2位小数）
+          refund_fee: (info.refund_amount / 100).toFixed(2),
+          total_fee: (info.total_amount / 100).toFixed(2),
+          // 时间格式化
+          format_time: info.apply_time ? this.formatTime(info.apply_time) : '-'
+        };
+        this.setData({ refundInfo: formatData });
       } else {
         wx.showToast({ title: '未找到退款记录', icon: 'none' });
       }
@@ -69,7 +80,15 @@ Page({
       }).get();
 
       if (res.data.length > 0) {
-        this.setData({ refundInfo: res.data[0] });
+        let info = res.data[0];
+        // JS 端格式化数据
+        let formatData = {
+          ...info,
+          refund_fee: (info.refund_amount / 100).toFixed(2),
+          total_fee: (info.total_amount / 100).toFixed(2),
+          format_time: info.apply_time ? this.formatTime(info.apply_time) : '-'
+        };
+        this.setData({ refundInfo: formatData });
       } else {
         wx.showToast({ title: '未找到退款记录', icon: 'none' });
       }
@@ -78,6 +97,16 @@ Page({
       wx.showToast({ title: '网络错误，请稍后重试', icon: 'none' });
     } finally {
       this.setData({ loading: false });
+    }
+  },
+
+  // 时间格式化工具函数（JS处理，不在WXML调用）
+  formatTime(time) {
+    try {
+      let date = time instanceof Date ? time : new Date(time);
+      return date.toLocaleString();
+    } catch (e) {
+      return time || '-';
     }
   },
 

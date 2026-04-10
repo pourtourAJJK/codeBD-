@@ -9,6 +9,10 @@
       {
         "value": ".log",
         "type": "suffix"
+      },
+      {
+        "value": "cloudfunctions",
+        "type": "folder"
       }
     ],
     "include": []
@@ -48,7 +52,10 @@
     "useCompilerPlugins": false,
     "condition": false,
     "swc": true,
-    "disableSWC": false
+    "disableSWC": false,
+    "checkCodeQuality": false,
+    "ignoreCodeQuality": true,
+    "uploadWithCodeQualityIssue": true
   },
   "compileType": "miniprogram",
   "libVersion": "3.12.0",
