@@ -47,8 +47,8 @@
     "disableUseStrict": false,
     "useCompilerPlugins": false,
     "condition": false,
-    "swc": false,
-    "disableSWC": true
+    "swc": true,
+    "disableSWC": false
   },
   "compileType": "miniprogram",
   "libVersion": "3.12.0",

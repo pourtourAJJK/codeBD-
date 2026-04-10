@@ -1,8 +1,15 @@
 // pages/login/auth/auth.js
 Page({
-  data: {},
+  data: {
+    fromPage: '/pages/index/index' // 记录登录来源页面，登录后跳回
+  },
 
-  onLoad() {
+  onLoad(options) {
+    // 保存来源页面（比如购物车/我的，登录后直接跳回）
+    if (options.from) {
+      this.setData({ fromPage: decodeURIComponent(options.from) })
+    }
+    
     // 页面加载时，检查隐私授权状态（兜底逻辑）
     wx.getPrivacySetting({
       success: (res) => {
@@ -83,9 +90,9 @@ Page({
         
         console.log('[auth] 登录成功，isNewUser:', isNewUser);
         
-        // 跳转到手机号绑定页
+        // 跳转到手机号绑定页，并传递来源页面参数
         wx.redirectTo({
-          url: "/pages/login/phone/phone",
+          url: `/pages/login/phone/phone?from=${encodeURIComponent(this.data.fromPage)}`,
         });
       } else {
         throw new Error(loginResult.result?.message || "登录失败");

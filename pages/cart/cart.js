@@ -47,9 +47,8 @@ Page({
 
     if (!openid) {
       console.log('用户未登录，跳转到授权页');
-      wx.setStorageSync('targetPage', { url: '/pages/cart/cart', type: 'switchTab' });
       wx.navigateTo({
-        url: '/pages/login/auth/auth'
+        url: `/pages/login/auth/auth?from=/pages/cart/cart`
       });
       return;
     }

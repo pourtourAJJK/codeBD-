@@ -1,9 +1,29 @@
-<!-- 触发微信官方原生手机号弹窗（唯一合规写法） -->
-<button 
-  open-type="getPhoneNumber" 
-  bindgetphonenumber="handleGetPhoneNumber"
-  class="phone-btn"
->
-  微信授权绑定手机号
-</button>
-<view class="skip-btn" bindtap="skipBind">暂不绑定</view>
+<view class="container">
+  <!-- 顶部品牌区（对标鼎湖山泉，统一品牌调性） -->
+  <view class="brand-block">
+    <image class="brand-logo" src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/logo圆形.png" mode="aspectFit"></image>
+    <text class="brand-name">硒养山泉</text>
+    <text class="brand-slogan">好水直送，服务到家</text>
+  </view>
+
+  <!-- 引导文案区（给用户明确的授权理由，符合送水业务） -->
+  <view class="guide-block">
+    <text class="guide-title">为保障订单配送与售后联系</text>
+    <text class="guide-subtitle">请授权您的常用手机号完成登录</text>
+  </view>
+
+  <!-- 核心操作区：微信官方手机号快捷登录按钮 -->
+  <button
+    class="phone-auth-btn"
+    open-type="getPhoneNumber"
+    bindgetphonenumber="handleGetPhoneNumber"
+    bindtap="checkPrivacyBeforeAuth"
+  >
+    微信手机号快捷登录
+  </button>
+
+  <!-- 辅助操作区：暂不绑定（弱化处理，可选保留/删除） -->
+  <view class="skip-block" bindtap="skipBind">
+    <text class="skip-text">暂不绑定，稍后完善</text>
+  </view>
+</view>

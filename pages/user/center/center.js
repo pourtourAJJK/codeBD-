@@ -44,12 +44,8 @@ Page({
     console.log("检查登录状态...");
     if (!app.checkLoginStatus()) {
       console.log("用户未登录，跳转到授权页");
-      wx.setStorageSync("targetPage", {
-        url: "/pages/user/center/center",
-        type: "switchTab",
-      });
       wx.navigateTo({
-        url: "/pages/login/auth/auth",
+        url: `/pages/login/auth/auth?from=/pages/user/center/center`
       });
       return;
     }
