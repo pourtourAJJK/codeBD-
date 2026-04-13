@@ -1,0 +1,144 @@
+// 登录页 JS
+Page({
+  data: {
+    userInfo: {}, // 原始用户信息（不可编辑）
+    editInfo: {}, // 编辑中的用户信息
+  },
+
+  // 页面加载
+  onLoad() {
+    // 获取本地存储的用户信息
+    const wxUserInfo = wx.getStorageSync('userInfo') || {};
+    const app = getApp();
+    const appUserInfo = app.globalData.userInfo || {};
+    
+    // 合并用户信息（优先级：本地存储 > 全局数据）
+    const userInfo = { ...appUserInfo, ...wxUserInfo };
+    
+    // 初始化编辑信息
+    this.setData({
+      userInfo: userInfo,
+      editInfo: {
+        nickname: userInfo.nickName || '',
+        phoneNumber: userInfo.phoneNumber || '',
+      }
+    });
+  },
+
+  // 头像选择（官方规范）
+  onChooseAvatar(e) {
+    const { avatarUrl } = e.detail;
+    this.setData({
+      'userInfo.avatarUrl': avatarUrl,
+      'editInfo.avatarUrl': avatarUrl
+    });
+  },
+
+  // 昵称输入变化
+  onNickNameChange(e) {
+    this.setData({
+      'editInfo.nickname': e.detail.value
+    });
+  },
+
+  // 保存用户信息到数据库
+  async saveUserInfoToDB(updates) {
+    try {
+      const db = wx.cloud.database();
+      const collection = db.collection('users');
+      
+      // 获取用户 openid
+      const app = getApp();
+      const openid = app.globalData.openid || (await this.getOpenid());
+      
+      if (!openid) {
+        throw new Error('无法获取用户 openid');
+      }
+      
+      // 查找或创建用户记录
+      const userRecord = await collection.where({ openid }).get();
+      
+      if (userRecord.data.length > 0) {
+        // 更新现有记录
+        await collection.doc(userRecord.data[0]._id).update({
+          data: updates
+        });
+      } else {
+        // 创建新记录
+        await collection.add({
+          data: {
+            openid,
+            ...updates,
+            createdAt: db.serverDate(),
+            updatedAt: db.serverDate()
+          }
+        });
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('保存用户信息到数据库失败:', error);
+      return false;
+    }
+  },
+
+  // 获取用户 openid
+  async getOpenid() {
+    try {
+      const res = await wx.cloud.callFunction({
+        name: 'login'
+      });
+      return res.result?.openid || '';
+    } catch (error) {
+      console.error('获取 openid 失败:', error);
+      return '';
+    }
+  },
+
+  // 保存并登录
+  async saveAndLogin() {
+    const { editInfo, userInfo } = this.data;
+    
+    // 验证必填项
+    if (!editInfo.nickname) {
+      wx.showToast({ title: '请输入昵称', icon: 'none' });
+      return;
+    }
+    
+    if (!editInfo.phoneNumber) {
+      wx.showToast({ title: '请获取手机号', icon: 'none' });
+      return;
+    }
+    
+    // 准备要保存的数据
+    const userData = {
+      nickName: editInfo.nickname,
+      phoneNumber: editInfo.phoneNumber,
+      avatarUrl: userInfo.avatarUrl || '',
+      updatedAt: new Date()
+    };
+    
+    // 保存到本地存储
+    wx.setStorageSync('userInfo', userData);
+    
+    // 保存到全局数据
+    const app = getApp();
+    app.globalData.userInfo = userData;
+    
+    // 保存到数据库
+    const saveResult = await this.saveUserInfoToDB(userData);
+    
+    if (saveResult) {
+      wx.showToast({ title: '登录成功' });
+      // 跳转到首页
+      wx.switchTab({ url: '/pages/index/index' });
+    } else {
+      wx.showToast({ title: '登录失败，请重试', icon: 'error' });
+    }
+  },
+
+  // 返回上一页
+  navigateBack() {
+    wx.navigateBack();
+  },
+});

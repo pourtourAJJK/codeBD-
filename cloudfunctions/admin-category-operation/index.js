@@ -19,9 +19,24 @@ exports.main = async (event, context) => {
     return { statusCode: 204, headers };
   }
 
-  const { action, data, _id } = event
+  // 1. 接收前端传的 token
+  const { adminToken, action, data, _id } = event
+
+  // 2. 没有 token → 直接返回空（权限拦截）
+  if (!adminToken) {
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        code: 401,
+        message: '未登录',
+        data: null
+      })
+    };
+  }
 
   try {
+    // 3. 有权限 → 操作数据库
     let result;
     switch (action) {
       // 添加分类

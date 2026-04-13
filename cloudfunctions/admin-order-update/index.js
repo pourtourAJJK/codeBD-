@@ -9,10 +9,30 @@ exports.main = async (event, context) => {
     "Access-Control-Allow-Headers": "Content-Type"
   };
   if(event.httpMethod === "OPTIONS") return { statusCode:204, headers };
-  // 接收前端参数（完全不变）
-  const { orderId, operateType } = event;
-
+  
   try {
+    // 1. 接收前端传的 token
+    const { adminToken, orderId, operateType } = event;
+
+    // 2. 没有 token → 直接返回空（权限拦截）
+    if (!adminToken) {
+      return {
+        statusCode:200,
+        headers,
+        body:JSON.stringify({ code: 401, msg: "未登录" })
+      };
+    }
+
+    // 3. 基础校验
+    if (!orderId || !operateType) {
+      return {
+        statusCode:400,
+        headers,
+        body:JSON.stringify({ code: 400, msg: "订单ID和操作类型不能为空" })
+      };
+    }
+
+    // 4. 有权限 → 操作数据库
     // ===================== 原有逻辑 100% 保留 =====================
     let statusmax;
     let delivery_time;

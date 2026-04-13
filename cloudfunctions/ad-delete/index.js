@@ -10,7 +10,15 @@ exports.main = async (event, context) => {
   };
   if(event.httpMethod === "OPTIONS") return { statusCode:204, headers };
   try {
-    const { _id } = event
+    // 1. 接收前端传的 token
+    const { adminToken, _id } = event
+
+    // 2. 没有 token → 直接返回空（权限拦截）
+    if (!adminToken) {
+      return { statusCode:200, headers, body:JSON.stringify({ code: -1, msg: '未登录', data: null }) }
+    }
+
+    // 3. 有权限 → 操作数据库
     await db.collection('ad_config').doc(_id).remove()
     return { statusCode:200, headers, body:JSON.stringify({ code: 0, msg: '删除成功', data: null }) }
   } catch (err) {

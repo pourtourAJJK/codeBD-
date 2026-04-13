@@ -11,8 +11,15 @@ exports.main = async (event, context) => {
   };
   if(event.httpMethod === "OPTIONS") return { statusCode:204, headers };
   try {
-    // type=active：小程序获取启用的广告；type=all：React获取全部广告
-    const { type = 'active' } = event
+    // 1. 接收前端传的 token
+    const { adminToken, type = 'active' } = event
+
+    // 2. 没有 token → 直接返回空（权限拦截）
+    if (!adminToken && type === 'all') {
+      return { statusCode:200, headers, body:JSON.stringify({ code: -1, msg: '未登录', data: [] }) }
+    }
+
+    // 3. 有权限 → 查询数据库
     let query = db.collection('ad_config')
     
     if (type === 'active') {

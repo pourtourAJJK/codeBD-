@@ -16,6 +16,10 @@
   position: sticky;
   top: 0;
   z-index: 10;
+  /* 适配顶部安全区 */
+  padding-top: calc(12px + env(safe-area-inset-top));
+  padding-top: calc(12px + constant(safe-area-inset-top));
+  min-height: 44px;
 }
 
 .header-left, .header-right {

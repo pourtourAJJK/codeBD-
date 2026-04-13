@@ -9,7 +9,15 @@ exports.main = async (event, context) => {
   console.log("[退款管理-云函数] 导出条件：", event);
   
   try {
-    const { audit_status, startDate, endDate } = event;
+    // 1. 接收前端传的 token
+    const { adminToken, audit_status, startDate, endDate } = event;
+
+    // 2. 没有 token → 直接返回空（权限拦截）
+    if (!adminToken) {
+      return { code: 401, message: "未登录", data: null };
+    }
+
+    // 3. 有权限 → 查询数据库
     // 核心修改：shop_return → shop_refund
     let query = db.collection('shop_refund');
 

@@ -23,14 +23,23 @@ exports.main = async (event, context) => {
   console.log('接收到的 event:', JSON.stringify(event));
   
   try {
-    // 1. 获取参数（兼容多种传参方式）
-    const productId = event.productId || event.id;
-    const productData = event.productData || event.data || event;
-    
-    console.log('解析后的 productId:', productId);
-    console.log('解析后的 productData:', JSON.stringify(productData));
-    
-    // 2. 基础校验
+    // 1. 接收前端传的 token
+    const { adminToken, productId = event.id, productData = event.data || event } = event;
+
+    // 2. 没有 token → 直接返回空（权限拦截）
+    if (!adminToken) {
+      return {
+        statusCode:200,
+        headers,
+        body:JSON.stringify({
+          code: 401,
+          success: false,
+          message: '未登录'
+        })
+      };
+    }
+
+    // 3. 基础校验
     if (!productId) {
       return {
         statusCode:400,
@@ -57,7 +66,8 @@ exports.main = async (event, context) => {
       };
     }
     
-    // 3. 验证商品是否存在
+    // 4. 有权限 → 操作数据库
+    // 验证商品是否存在
     const productRes = await db.collection('shop_spu').doc(productId).get();
     if (!productRes.data) {
       return {
@@ -71,7 +81,7 @@ exports.main = async (event, context) => {
       };
     }
     
-    // 4. 构建更新数据
+    // 构建更新数据
     const updateData = {
       updateTime: db.serverDate(),
       updatedAt: new Date() // 更新时间：当前时间
@@ -139,7 +149,7 @@ exports.main = async (event, context) => {
     
     console.log('准备更新的数据:', JSON.stringify(updateData));
     
-    // 5. 执行更新
+    // 执行更新
     const updateResult = await db.collection('shop_spu').doc(productId).update({
       data: updateData
     });

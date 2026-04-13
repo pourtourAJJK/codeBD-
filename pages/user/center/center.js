@@ -54,14 +54,28 @@ Page({
     this.loadUserData();
   },
 
-  // 加载用户数据（从云数据库读取）
+  // 加载用户数据（从云数据库读取，本地存储作为兜底）
   async loadUserData() {
     // 显示加载动画
     this.setData({ isLoading: true });
 
     try {
       // 调用云函数读取用户信息
-      const res = await this.getUserInfoFromDB();
+      let res = await this.getUserInfoFromDB();
+
+      // 无论数据库读取是否成功，都从本地存储读取最新数据，确保显示最新修改
+      console.log("[我的页面] 从本地存储读取用户信息");
+      try {
+        const encryptedUserInfo = wx.getStorageSync('userInfo');
+        if (encryptedUserInfo) {
+          const localRes = JSON.parse(decodeURIComponent(encryptedUserInfo));
+          // 优先使用本地存储的最新数据
+          res = localRes;
+          console.log("[我的页面] 使用本地存储的最新数据:", localRes);
+        }
+      } catch (error) {
+        console.error("[我的页面] 读取本地存储失败:", error);
+      }
 
       // 模拟卡券数据
       const cardInfo = {
@@ -71,12 +85,14 @@ Page({
       this.setData({
         userInfo: {
           avatar: res.avatarUrl || "",
-          nickName: res.nickname || res.nickName || "微信用户",
+          nickName: res.nickName || "微信用户",
+          phone: res.phoneNumber || "", // 使用phoneNumber字段，与profile页保持一致
           bannerBg: "",
         },
         cardInfo,
         isLoading: false,
       });
+      console.log("[我的页面] 更新用户信息:", this.data.userInfo);
     } catch (err) {
       console.error("[我的页面] 加载用户数据失败：", err);
       this.setData({ isLoading: false });

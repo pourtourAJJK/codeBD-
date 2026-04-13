@@ -7,14 +7,9 @@
       <text class="setting-text">隐私政策简要版</text>
     </view>
     
-    <!-- 个人信息收集清单 -->
-    <view class="setting-item" bindtap="navigateToInfoList">
-      <text class="setting-text">个人信息收集清单</text>
-    </view>
-    
-    <!-- 关于 -->
-    <view class="setting-item" bindtap="navigateToAbout">
-      <text class="setting-text">关于</text>
+    <!-- 退出登录 -->
+    <view class="setting-item" bindtap="logout">
+      <text class="setting-text">退出登录</text>
     </view>
   </view>
 </view>

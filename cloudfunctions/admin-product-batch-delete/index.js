@@ -10,7 +10,23 @@ exports.main = async (event, context) => {
     "Access-Control-Allow-Headers": "Content-Type"
   };
   if(event.httpMethod === "OPTIONS") return { statusCode:204, headers };
-  const { productIds } = event // 接收前端传入的商品ID数组
+  // 1. 接收前端传的 token
+  const { adminToken, productIds } = event // 接收前端传入的商品ID数组
+
+  // 2. 没有 token → 直接返回空（权限拦截）
+  if (!adminToken) {
+    return {
+      statusCode:200,
+      headers,
+      body:JSON.stringify({
+        code: 401,
+        message: '未登录',
+        data: null
+      })
+    };
+  }
+
+  // 3. 有权限 → 操作数据库
   try {
     const deleteResults = await Promise.all(
       productIds.map(productId =>
@@ -21,6 +37,7 @@ exports.main = async (event, context) => {
       statusCode:200,
       headers,
       body:JSON.stringify({
+        code: 200,
         success: true,
         message: `成功删除 ${deleteResults.length} 个商品`,
         data: deleteResults
@@ -31,7 +48,7 @@ exports.main = async (event, context) => {
     return { 
       statusCode:500,
       headers,
-      body:JSON.stringify({ success: false, message: err.message })
+      body:JSON.stringify({ code: 500, success: false, message: err.message })
     }
   }
 }

@@ -25,8 +25,23 @@ const handler = async (event, context) => {
   };
   if(event.httpMethod === "OPTIONS") return { statusCode:204, headers };
   try {
-    const { page = 1, limit = 10, status, keyword } = event;
-    
+    // 1. 接收前端传的 token
+    const { adminToken, page = 1, limit = 10, status, keyword } = event;
+
+    // 2. 没有 token → 直接返回空（权限拦截）
+    if (!adminToken) {
+      return {
+        statusCode:200,
+        headers,
+        body:JSON.stringify({
+          code: 401,
+          message: '未登录',
+          data: null
+        })
+      };
+    }
+
+    // 3. 有权限 → 查询数据库
     // 构建查询条件
     let query = db.collection('shop_spu');
     

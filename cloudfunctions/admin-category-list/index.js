@@ -29,8 +29,23 @@ const handler = async (event, context) => {
   }
 
   try {
-    const { pageSize = 100 } = event;
-    
+    // 1. 接收前端传的 token
+    const { adminToken, pageSize = 100 } = event;
+
+    // 2. 没有 token → 直接返回空（权限拦截）
+    if (!adminToken) {
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          code: 401,
+          message: '未登录',
+          data: null
+        })
+      };
+    }
+
+    // 3. 有权限 → 查询数据库
     // 查询所有分类
     const categoriesRes = await db.collection('shop_category')
       .limit(pageSize)

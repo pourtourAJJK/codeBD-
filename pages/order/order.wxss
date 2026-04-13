@@ -17,6 +17,10 @@
   white-space: nowrap;
   padding: 0 20rpx;
   -webkit-overflow-scrolling: touch;
+  /* 适配顶部安全区 */
+  padding-top: env(safe-area-inset-top);
+  padding-top: constant(safe-area-inset-top);
+  min-height: 90rpx;
 }
 .tab-item {
   padding: 0 30rpx;
@@ -42,12 +46,18 @@
   border-radius: 2rpx;
 }
 
-/* 加载状态 */
+/* 加载状态 - 优化居中效果 */
 .loading {
   padding: 80rpx 0;
   text-align: center;
   color: #888;
   background-color: #ffffff;
+  width: 100%; /* 明确宽度 */
+  display: flex; /* 使用 flex 布局确保居中 */
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 20rpx 0; /* 添加适当的 margin */
 }
 .loading-spinner {
   width: 40rpx;
@@ -62,8 +72,8 @@
   to { transform: rotate(360deg); }
 }
 
-/* 错误提示 */
-.error {
+/* 错误提示 - 修复类名 */
+.error-tip {
   padding: 30rpx;
   text-align: center;
   color: #f43f30;

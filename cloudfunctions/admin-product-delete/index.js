@@ -16,9 +16,19 @@ const _ = db.command;
  */
 const handler = async (event, context) => {
   try {
-    const { productId } = event;
-    
-    // 参数验证
+    // 1. 接收前端传的 token
+    const { adminToken, productId } = event;
+
+    // 2. 没有 token → 直接返回空（权限拦截）
+    if (!adminToken) {
+      return {
+        code: 401,
+        message: '未登录',
+        data: null
+      };
+    }
+
+    // 3. 参数验证
     if (!productId) {
       return {
         code: 400,
@@ -27,6 +37,7 @@ const handler = async (event, context) => {
       };
     }
     
+    // 4. 有权限 → 操作数据库
     // 删除商品
     const deleteResult = await db.collection('shop_spu').doc(productId).remove();
     

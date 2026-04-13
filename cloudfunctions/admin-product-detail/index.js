@@ -23,12 +23,23 @@ exports.main = async (event, context) => {
   console.log('接收到的 event:', JSON.stringify(event));
   
   try {
-    // 1. 获取参数（兼容多种传参方式）
-    const productId = event.productId || event.id || event._id;
-    
-    console.log('解析后的 productId:', productId);
-    
-    // 2. 基础校验
+    // 1. 接收前端传的 token
+    const { adminToken, productId = event.id || event._id } = event;
+
+    // 2. 没有 token → 直接返回空（权限拦截）
+    if (!adminToken) {
+      return {
+        statusCode:200,
+        headers,
+        body:JSON.stringify({
+          code: 401,
+          success: false,
+          message: '未登录'
+        })
+      };
+    }
+
+    // 3. 基础校验
     if (!productId) {
       return {
         statusCode:400,
@@ -42,7 +53,8 @@ exports.main = async (event, context) => {
       };
     }
     
-    // 3. 查询商品详情
+    // 4. 有权限 → 查询数据库
+    // 查询商品详情
     const productRes = await db.collection('shop_spu').doc(productId).get();
     const product = productRes.data;
     
@@ -60,7 +72,7 @@ exports.main = async (event, context) => {
     
     console.log('查询到的商品数据:', JSON.stringify(product));
     
-    // 4. 转换封面图为临时URL
+    // 转换封面图为临时URL
     let coverImage = product.cover_image || '';
     if (coverImage && coverImage.startsWith('cloud://')) {
       try {
@@ -71,7 +83,7 @@ exports.main = async (event, context) => {
       }
     }
     
-    // 5. 转换富文本中的云存储图片URL
+    // 转换富文本中的云存储图片URL
     let detail = product.detail || '';
     let tuwenDetail = product.tuwen_detail || '';
     
@@ -96,11 +108,11 @@ exports.main = async (event, context) => {
       }
     }
     
-    // 6. 转换状态（'1'=上架，'2'=下架）
+    // 转换状态（'1'=上架，'2'=下架）
     const status = product.status === 1 || product.status === '1' || product.status === 'active' ? '上架' : '下架';
     const statusValue = product.status === 1 || product.status === '1' || product.status === 'active' ? '1' : '2';
     
-    // 7. 组装返回数据
+    // 组装返回数据
     const resultProduct = {
       _id: product._id,
       productId: product._id,

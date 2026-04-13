@@ -19,10 +19,15 @@
     <!-- 隐私协议提示，必须包含可点击链接 -->
     <view class="privacy-tip">
       登录即表示您已阅读并同意
-      <navigator url="/pages/agreement/privacy" class="link">
+      <text class="link" bindtap="openPrivacyContract">
         《小程序用户隐私保护指引》
-      </navigator>
+      </text>
       我们将收集您的微信昵称、头像用于账号登录识别
     </view>
+
+    <!-- 退出按钮 -->
+    <button class="exit-btn" bindtap="exitLogin">
+      暂不登录，返回首页
+    </button>
   </view>
 </view>

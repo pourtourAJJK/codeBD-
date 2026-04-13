@@ -23,13 +23,23 @@ exports.main = async (event, context) => {
   console.log('接收到的 event:', JSON.stringify(event));
   
   try {
-    // 1. 获取参数（兼容多种传参方式）
-    // 从 event 中拆分出「商品数据」和「上下文信息（tcbContext）」
-    const { tcbContext, ...productData } = event;
-    
-    console.log('解析后的 productData:', JSON.stringify(productData));
-    
-    // 2. 基础校验
+    // 1. 接收前端传的 token
+    const { adminToken, tcbContext, ...productData } = event;
+
+    // 2. 没有 token → 直接返回空（权限拦截）
+    if (!adminToken) {
+      return {
+        statusCode:200,
+        headers,
+        body:JSON.stringify({
+          code: 401,
+          success: false,
+          message: '未登录'
+        })
+      };
+    }
+
+    // 3. 基础校验
     if (!productData || typeof productData !== 'object') {
       return {
         statusCode:400,
@@ -43,7 +53,7 @@ exports.main = async (event, context) => {
       };
     }
     
-    // 3. 必填字段校验
+    // 4. 必填字段校验
     const requiredFields = ['name'];
     for (const field of requiredFields) {
       if (!productData[field] && productData[field] !== 0) {
@@ -72,7 +82,8 @@ exports.main = async (event, context) => {
       };
     }
     
-    // 4. 构建创建数据
+    // 5. 有权限 → 操作数据库
+    // 构建创建数据
     const createData = {
       name: productData.name.trim(),
       // 补充 3 个字段：createdAt、updatedAt、_openid
@@ -152,7 +163,7 @@ exports.main = async (event, context) => {
     
     console.log('准备插入的数据:', JSON.stringify(createData));
     
-    // 5. 保存到数据库
+    // 保存到数据库
     const createResult = await db.collection('shop_spu').add({
       data: createData
     });

@@ -20,22 +20,37 @@ const handler = async (event, context) => {
   };
   if(event.httpMethod === "OPTIONS") return { statusCode:204, headers };
   try {
-    // 1. 接收入参（保留你原有所有参数）
+    // 1. 接收前端传的 token
     const { 
+      adminToken,
       page = 1, 
       limit = 10, 
       pay_status, 
       keyword 
     } = event;
 
-    // 2.  核心修复：优先获取订单ID（精准查询，最高优先级）
+    // 2. 没有 token → 直接返回空（权限拦截）
+    if (!adminToken) {
+      return {
+        statusCode:200,
+        headers,
+        body:JSON.stringify({
+          code: 401,
+          message: '未登录',
+          data: null
+        })
+      };
+    }
+
+    // 3.  核心修复：优先获取订单ID（精准查询，最高优先级）
     const orderId = event.order_id; 
     console.log("【云函数】接收前端传递的订单ID：", orderId);
 
-    // 3. 初始化查询
+    // 4. 有权限 → 查询数据库
+    // 初始化查询
     let query = db.collection('shop_order');
 
-    // 4. 强制精准查询（有订单ID则只查这一个，解决订单错乱）
+    // 强制精准查询（有订单ID则只查这一个，解决订单错乱）
     if (orderId) {
       console.log("【云函数】执行精准查询：", orderId);
       query = query.where({
@@ -43,7 +58,7 @@ const handler = async (event, context) => {
       });
     }
 
-    // 5. 原有筛选逻辑（保留不动）
+    // 原有筛选逻辑（保留不动）
     // 支付状态筛选
     if (pay_status !== undefined) {
       const payStatusValue = typeof pay_status === 'string' ? pay_status : String(pay_status);
@@ -65,12 +80,12 @@ const handler = async (event, context) => {
       });
     }
     
-    // 6. 查询总数
+    // 查询总数
     const totalRes = await query.count();
     const total = totalRes.total;
     console.log("【云函数】符合条件的订单总数：", total);
 
-    // 7. 分页查询（按创建时间倒序）
+    // 分页查询（按创建时间倒序）
     const ordersRes = await query
       .orderBy('createTime', 'desc')
       .skip((page - 1) * limit)
@@ -79,7 +94,7 @@ const handler = async (event, context) => {
 
     console.log("【云函数】查询到的订单数据：", ordersRes.data);
 
-    // 8. 数据格式化（完全保留你原有字段映射，无任何修改）
+    // 数据格式化（完全保留你原有字段映射，无任何修改）
     const orders = ordersRes.data.map(order => {
       const statusmax = order.statusmax || order.status || 0;
 
@@ -104,7 +119,7 @@ const handler = async (event, context) => {
       };
     });
 
-    // 9. 返回结果
+    // 返回结果
     return {
       statusCode:200, 
       headers, 

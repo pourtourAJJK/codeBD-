@@ -105,10 +105,10 @@ Page({
         icon: 'success'
       });
       setTimeout(() => {
-        wx.switchTab({
+        wx.redirectTo({
           url: '/pages/order/order'
         });
-      }, 1500);
+      }, 1000);
 
     } catch (error) {
       console.error(`[${new Date().toISOString()}] [前端-退款确认-异常] [订单ID:${orderId}] 退款申请失败`);

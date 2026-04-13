@@ -3,10 +3,8 @@
     "pages/index/index",
     "pages/shop/list/list",
     "pages/shop/detail/detail",
-    "pages/user/index",
     "pages/user/center/center",
     "pages/user/profile/profile",
-    "pages/user/info/info",
     "pages/address/address",
     "pages/address/new/new",
     "pages/order/order",
@@ -21,8 +19,7 @@
     "pages/service/service",
     "pages/cart/cart",
     "pages/login/auth/auth",
-    "pages/login/phone/phone",
-    "pages/agreement/privacy"
+    "pages/login/phone/phone"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -105,11 +102,5 @@
   "requiredPrivateInfos": [
     "chooseAddress"
   ],
-  "permission": {
-    "scope.userInfo": {
-      "desc": "用于获取您的微信昵称、头像，完成账号登录识别和个人中心展示"
-    }
-  },
-  "__usePrivacyCheck__": true,
-  "__privacyPolicyRedirectPath__": "/pages/agreement/privacy"
+  "__usePrivacyCheck__": true
 }

@@ -1,0 +1,17 @@
+{
+  "triggers": [
+    {
+      "name": "admin-analytics",
+      "type": "http",
+      "config": {
+        "url": "admin-analytics",
+        "methods": ["GET", "POST", "OPTIONS"],
+        "isIntegratedResponse": true
+      }
+    }
+  ],
+  "concurrency": 10,
+  "timeout": 60,
+  "runtime": "Node.js 16.0",
+  "memory": 128
+}

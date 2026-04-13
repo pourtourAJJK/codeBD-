@@ -6,11 +6,11 @@ Page({
     currentCategoryName: '全部',
     categories: [
       { id: 'all', name: '全部' },
-      { id: 'fuxi_dami', name: '富硒大米' },
+      { id: 'fuxidami', name: '富硒大米' },
       { id: 'bucket_water', name: '桶装水' },
       { id: 'bottled_water', name: '瓶装水' },
       { id: 'shiyongyou', name: '食用油' },
-      { id: 'qita', name: '其他' }
+      { id: 'other', name: '其他' }
     ],
     products: [], // 直接存储商品列表，无需分组
     isLoading: false,
@@ -66,7 +66,7 @@ Page({
 
   loadProducts(isLoadMore = false) {
     if (this.data.isLoading || (!isLoadMore && !this.data.hasMore)) {
-      return;
+      return Promise.resolve();
     }
 
     console.log(`开始加载商品 ${isLoadMore ? '更多' : ''}...`);
@@ -78,7 +78,7 @@ Page({
 
     this.setData({ isLoading: true, emptyText: '' });
 
-    callCloudFunction('product-list', params, { loading: false })
+    return callCloudFunction('product-list', params, { loading: false })
       .then(result => {
         console.log('云函数调用成功，结果:', result);
         if (result.code === 200) {
@@ -144,5 +144,20 @@ Page({
     if (!this.data.isLoading && this.data.hasMore) {
       this.loadProducts(true);
     }
+  },
+
+  onPullDownRefresh() {
+    console.log('下拉刷新开始...');
+    // 重置分页参数
+    this.setData({
+      hasMore: true,
+      page: 1
+    });
+    // 重新加载商品
+    this.loadProducts().finally(() => {
+      // 停止下拉刷新
+      wx.stopPullDownRefresh();
+      console.log('下拉刷新结束');
+    });
   }
 });

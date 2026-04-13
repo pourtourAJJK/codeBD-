@@ -20,17 +20,32 @@ const handler = async (event, context) => {
   };
   if(event.httpMethod === "OPTIONS") return { statusCode:204, headers };
   try {
-    // 1. 接收入参
+    // 1. 接收前端传的 token
     const { 
+      adminToken,
       page = 1, 
       limit = 10,
       keyword 
     } = event;
 
-    // 2. 初始化查询（查询退款表，核心修改）
+    // 2. 没有 token → 直接返回空（权限拦截）
+    if (!adminToken) {
+      return {
+        statusCode:200,
+        headers,
+        body:JSON.stringify({
+          code: 401,
+          message: '未登录',
+          data: null
+        })
+      };
+    }
+
+    // 3. 有权限 → 查询数据库
+    // 初始化查询（查询退款表，核心修改）
     let query = db.collection('shop_refund');
 
-    // 3. 搜索筛选
+    // 搜索筛选
     if (keyword) {
       query = query.where({
         $or: [
@@ -40,18 +55,18 @@ const handler = async (event, context) => {
       });
     }
     
-    // 4. 查询总数
+    // 查询总数
     const totalRes = await query.count();
     const total = totalRes.total;
 
-    // 5. 分页查询（按申请时间倒序）
+    // 分页查询（按申请时间倒序）
     const ordersRes = await query
       .orderBy('apply_time', 'desc')
       .skip((page - 1) * limit)
       .limit(limit)
       .get();
 
-    // 6. 数据返回
+    // 数据返回
     return {
       statusCode:200,
       headers,

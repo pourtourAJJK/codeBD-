@@ -11,7 +11,16 @@ exports.main = async (event, context) => {
   };
   if(event.httpMethod === "OPTIONS") return { statusCode:204, headers };
   try {
-    const { _id, ...data } = event.adData
+    // 1. 接收前端传的 token
+    const { adminToken, adData } = event
+
+    // 2. 没有 token → 直接返回空（权限拦截）
+    if (!adminToken) {
+      return { statusCode:200, headers, body:JSON.stringify({ code: -1, msg: '未登录', data: null }) }
+    }
+
+    // 3. 有权限 → 操作数据库
+    const { _id, ...data } = adData
     data.create_time = db.serverDate()
 
     if (_id) {

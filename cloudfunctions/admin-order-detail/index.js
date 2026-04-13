@@ -21,9 +21,23 @@ const handler = async (event, context) => {
   };
   if(event.httpMethod === "OPTIONS") return { statusCode:204, headers };
   try {
-    const { order_id } = event;
-    
-    // 参数验证
+    // 1. 接收前端传的 token
+    const { adminToken, order_id } = event;
+
+    // 2. 没有 token → 直接返回空（权限拦截）
+    if (!adminToken) {
+      return {
+        statusCode:200,
+        headers,
+        body:JSON.stringify({
+          code: 401,
+          message: '未登录',
+          data: null
+        })
+      };
+    }
+
+    // 3. 参数验证
     if (!order_id) {
       return { 
         statusCode:400, 
@@ -36,6 +50,7 @@ const handler = async (event, context) => {
       };
     }
     
+    // 4. 有权限 → 查询数据库
     // 查询订单基本信息
     const orderRes = await db.collection('shop_order')
       .where({ order_id })

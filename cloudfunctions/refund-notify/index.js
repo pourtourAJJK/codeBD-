@@ -24,23 +24,26 @@ exports.main = async (event, context) => {
     const order_id = refundInfo.order_id
 
     // 3. 根据退款结果更新状态
-    let refund_status_text, refund_result_text, orderStatus
+    let refund_status_text, refund_result_text, orderStatus, refund_status_code
     if (refund_status === "SUCCESS") {
       // 退款成功
       refund_status_text = "退款成功"
       refund_result_text = "退款成功"
       orderStatus = "9" // 订单状态：已退款
+      refund_status_code = "4" // 退款状态码：已退款
     } else {
       // 退款失败
       refund_status_text = "退款失败"
       refund_result_text = "退款失败"
       orderStatus = "8" // 订单状态：退款失败
+      refund_status_code = "3" // 退款状态码：退款失败
     }
 
     // 4. 更新 shop_refund 退款表状态
     await db.collection('shop_refund').doc(refundInfo._id).update({
       data: {
-        refund_status: refund_status_text,
+        refund_status: refund_status_code, // 添加退款状态码
+        refund_status_text: refund_status_text, // 保留文本状态
         refund_result_status: refund_result_text,
         refund_time: new Date(),
         update_time: new Date().toISOString()

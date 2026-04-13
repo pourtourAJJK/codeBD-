@@ -104,5 +104,22 @@ Page({
       wx.hideLoading();
     }
   },
+
+  // 打开微信官方隐私协议页面
+  openPrivacyContract() {
+    wx.openPrivacyContract({
+      success: function(res) {
+        console.log('打开隐私协议成功', res)
+      },
+      fail: function(err) {
+        console.error('打开隐私协议失败', err)
+      }
+    })
+  },
+
+  // 退出登录页面，回到首页
+  exitLogin() {
+    wx.switchTab({ url: '/pages/index/index' })
+  }
 });
 

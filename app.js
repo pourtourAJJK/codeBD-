@@ -26,8 +26,8 @@ App({
     console.log('小程序启动中...');
     
     // 1. 检查基础库版本
-    const systemInfo = wx.getSystemInfoSync();
-    const SDKVersion = systemInfo.SDKVersion;
+    const appBaseInfo = wx.getAppBaseInfo();
+    const SDKVersion = appBaseInfo.SDKVersion;
     console.log('当前基础库版本:', SDKVersion);
     
     // 版本号比较函数

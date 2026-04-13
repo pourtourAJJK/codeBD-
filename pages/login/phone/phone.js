@@ -47,15 +47,16 @@ Page({
       return
     }
 
+    // 👇 全部注释，开发版也能正常获取手机号
     // 3. 环境区分（完全保留你现有逻辑）
-    const accountInfo = wx.getAccountInfoSync();
-    const envVersion = accountInfo.miniProgram.envVersion; // 取值：develop(开发版)/trial(体验版)/release(正式版)
-    if (envVersion !== 'release') {
-      console.log('开发/体验版：临时放开手机号授权，直接进入首页');
-      wx.showToast({ title: "开发环境，跳过绑定", icon: "none" })
-      setTimeout(() => this.goBackToPage(), 1500)
-      return
-    }
+    // const accountInfo = wx.getAccountInfoSync();
+    // const envVersion = accountInfo.miniProgram.envVersion; // 取值：develop(开发版)/trial(体验版)/release(正式版)
+    // if (envVersion !== 'release') {
+    //   console.log('开发/体验版：临时放开手机号授权，直接进入首页');
+    //   wx.showToast({ title: "开发环境，跳过绑定", icon: "none" })
+    //   setTimeout(() => this.goBackToPage(), 1500)
+    //   return
+    // }
 
     // 4. 正式版：调用你现有云函数解密手机号（100%无修改）
     wx.showLoading({ title: "绑定中..." })
@@ -67,10 +68,11 @@ Page({
       }
     }).then(res => {
       wx.hideLoading()
-      if (res.result.code === 0) {
+      if (res.result.code === 200) {
         // 解密成功：存储手机号
         const phone = res.result.data.phoneNumber;
         wx.setStorageSync('userPhone', phone)
+        console.log("登录页已存储手机号：", phone);
         
         wx.showToast({ title: "绑定成功", icon: "success" })
         // 登录后跳回来源页面（购物车/我的/首页）
@@ -92,7 +94,8 @@ Page({
       content: "暂不绑定手机号将无法正常使用订单配送、售后联系等核心服务，是否继续？",
       success: res => {
         if (res.confirm) {
-          this.goBackToPage()
+          // 直接跳转到首页
+          wx.switchTab({ url: '/pages/index/index' })
         }
       }
     })
@@ -107,5 +110,17 @@ Page({
     } else {
       wx.navigateTo({ url: fromPage })
     }
+  },
+
+  // 打开微信官方隐私协议页面
+  openPrivacyContract() {
+    wx.openPrivacyContract({
+      success: function(res) {
+        console.log('打开隐私协议成功', res)
+      },
+      fail: function(err) {
+        console.error('打开隐私协议失败', err)
+      }
+    })
   }
 })

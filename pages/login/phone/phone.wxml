@@ -2,8 +2,8 @@
   <!-- 顶部品牌区（对标鼎湖山泉，统一品牌调性） -->
   <view class="brand-block">
     <image class="brand-logo" src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/logo圆形.png" mode="aspectFit"></image>
-    <text class="brand-name">硒养山泉</text>
-    <text class="brand-slogan">好水直送，服务到家</text>
+    <text class="brand-name">富硒地带</text>
+    <text class="brand-slogan">富硒臻选 好物直达家门</text>
   </view>
 
   <!-- 引导文案区（给用户明确的授权理由，符合送水业务） -->
@@ -25,5 +25,14 @@
   <!-- 辅助操作区：暂不绑定（弱化处理，可选保留/删除） -->
   <view class="skip-block" bindtap="skipBind">
     <text class="skip-text">暂不绑定，稍后完善</text>
+  </view>
+
+  <!-- 隐私协议提示区 -->
+  <view class="privacy-tip">
+    登录即表示您已阅读并同意
+    <text class="link" bindtap="openPrivacyContract">
+      《小程序用户隐私保护指引》
+    </text>
+    我们将收集您的微信昵称、头像用于账号登录识别
   </view>
 </view>
