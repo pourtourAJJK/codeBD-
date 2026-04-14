@@ -1,17 +1,8 @@
-// 管理员订单列表云函数（最终修复版）
 const cloud = require('wx-server-sdk');
-
-// 初始化云环境
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
-
-// 获取数据库实例
 const db = cloud.database();
 const _ = db.command;
 
-/**
- * 管理员查询订单列表
- * 支持：精准查询订单、分页、支付状态筛选、订单状态筛选、订单号搜索
- */
 const handler = async (event, context) => {
   const headers = {
     "Access-Control-Allow-Origin": "*",
@@ -20,7 +11,7 @@ const handler = async (event, context) => {
   };
   if(event.httpMethod === "OPTIONS") return { statusCode:204, headers };
   try {
-    // 1. 接收前端传的 token
+    //接收前端传的 token
     const { 
       adminToken,
       page = 1, 
@@ -29,7 +20,7 @@ const handler = async (event, context) => {
       keyword 
     } = event;
 
-    // 2. 没有 token → 直接返回空（权限拦截）
+    // 没有 token → 直接返回空（权限拦截）
     if (!adminToken) {
       return {
         statusCode:200,
@@ -42,15 +33,20 @@ const handler = async (event, context) => {
       };
     }
 
-    // 3.  核心修复：优先获取订单ID（精准查询，最高优先级）
+    // 核心修复：优先获取订单ID（精准查询，最高优先级）
     const orderId = event.order_id; 
     console.log("【云函数】接收前端传递的订单ID：", orderId);
 
-    // 4. 有权限 → 查询数据库
-    // 初始化查询
+    // 有权限 → 查询数据库
     let query = db.collection('shop_order');
 
-    // 强制精准查询（有订单ID则只查这一个，解决订单错乱）
+    // 强制过滤规则：排除未支付、已取消订单
+    query = query.where({
+      pay_status: _.neq('0'),
+      statusmax: _.neq('6')
+    });
+
+    // 强制精准查询
     if (orderId) {
       console.log("【云函数】执行精准查询：", orderId);
       query = query.where({
@@ -58,20 +54,29 @@ const handler = async (event, context) => {
       });
     }
 
-    // 原有筛选逻辑（保留不动）
     // 支付状态筛选
-    if (pay_status !== undefined) {
+    if (pay_status !== undefined && pay_status !== '' && pay_status !== null) {
       const payStatusValue = typeof pay_status === 'string' ? pay_status : String(pay_status);
       query = query.where({ pay_status: payStatusValue });
     }
     
-    // 订单状态筛选
-    if (event.statusmax !== undefined) {
-      query = query.where({ statusmax: event.statusmax });
+    // 核心修复：支持前端逗号分隔的多状态筛选 2,3,4,5
+    if (event.statusmax !== undefined && event.statusmax !== '' && event.statusmax !== null) {
+      let statusValue = event.statusmax;
+      // 如果是逗号分隔的字符串，转换为数组，执行 IN 查询
+      if (typeof statusValue === 'string' && statusValue.includes(',')) {
+        const statusArray = statusValue.split(',').map(item => item.trim());
+        query = query.where({
+          statusmax: _.in(statusArray)
+        });
+      } else {
+        // 单个状态，正常筛选
+        query = query.where({ statusmax: statusValue });
+      }
     }
     
     // 订单号模糊搜索
-    if (keyword && !orderId) { // 精准查询时不触发搜索
+    if (keyword && !orderId) {
       query = query.where({
         $or: [
           { orderNo: _.regex({ regex: keyword, options: 'i' }) },
@@ -94,7 +99,7 @@ const handler = async (event, context) => {
 
     console.log("【云函数】查询到的订单数据：", ordersRes.data);
 
-    // 数据格式化（完全保留你原有字段映射，无任何修改）
+    // 数据格式化
     const orders = ordersRes.data.map(order => {
       const statusmax = order.statusmax || order.status || 0;
 
@@ -107,6 +112,7 @@ const handler = async (event, context) => {
         total_price: order.totalPrice || 0,
         create_time: order.createTime,
         out_trade_no: order.out_trade_no || order.outTradeNo || '',
+        // 🔥 修复：修正笔误，这里是导致500的唯一原因
         transaction_id: order.transaction_id || order.transactionId || '',
         payment_time: order.paymentTime || order.success_time || null,
         paymentTime: order.paymentTime ? new Date(order.paymentTime).getTime() : (order.success_time ? new Date(order.success_time).getTime() : null),
@@ -119,6 +125,15 @@ const handler = async (event, context) => {
       };
     });
 
+    const ordersWithRefund = [];
+    for (let item of orders) {
+      const refundRes = await db.collection('shop_refund').where({ order_id: item.order_id }).limit(1).get();
+      ordersWithRefund.push({
+        ...item,
+        refundInfo: refundRes.data[0] || null
+      });
+    }
+
     // 返回结果
     return {
       statusCode:200, 
@@ -127,7 +142,7 @@ const handler = async (event, context) => {
         code: 200,
         message: '获取订单列表成功',
         data: {
-          list: orders,
+          list: ordersWithRefund, 
           total,
           page,
           limit
@@ -150,3 +165,4 @@ const handler = async (event, context) => {
 };
 
 exports.main = handler;
+exports

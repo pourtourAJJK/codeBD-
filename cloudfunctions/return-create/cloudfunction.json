@@ -1,5 +1,5 @@
 {
-  "name": "admin-analytics",
+  "name": "return-create",
   "timeout": 60,
   "memory": 128,
   "envId": "",
@@ -8,6 +8,6 @@
   "installDependency": true,
   "async": true,
   "parameters": {
-    "methods": ["GET", "POST", "OPTIONS"]
+    "methods": ["POST", "GET", "OPTIONS"]
   }
 }

@@ -58,14 +58,9 @@ Page({
   // 页面显示
   onShow: function() {
     console.log('【订单列表】页面显示');
-    // 同步最新的退款状态（从数据库获取）
-    this.syncRefundStatus();
-    // 🔥 修复：只有【第一次进入页面】才加载订单
-    // 标签切换/操作后，禁止onShow自动加载！！！
-    if (!this.data.orders || this.data.orders.length === 0) {
-      console.log('【订单列表】首次加载，执行 loadOrders');
-      this.loadOrders();
-    }
+    // 修复：页面显示时总是重新加载订单列表，确保状态更新
+    console.log('【订单列表】页面显示，执行 loadOrders');
+    this.loadOrders();
 
     // 清理旧倒计时（防止干扰）
     this.clearCountDownTimer();
@@ -162,49 +157,7 @@ Page({
     });
   },
 
-  applyRefundingStatus: function() {
-    const statusMap = wx.getStorageSync('refundStatusMap') || {};
-    if (!statusMap || Object.keys(statusMap).length === 0) return;
-    const updated = (this.data.orders || []).map(o => {
-      const id = o.orderId || o.order_id || o.orderNo || o.out_trade_no || o._id;
-      if (statusMap[id] === 'refunding') {
-        return { ...o, statusmax: 7, statusText: '退款中', statusColor: '#e11' };
-      }
-      if (statusMap[id] === 'refunded') {
-        return { ...o, statusmax: 9, statusText: '退款成功', statusColor: '#27ae60' };
-      }
-      return o;
-    });
-    this.setData({ orders: updated });
-  },
 
-  // 新增：从数据库同步最新退款状态
-  async syncRefundStatus() {
-    const statusMap = wx.getStorageSync('refundStatusMap') || {};
-    const orderIds = Object.keys(statusMap);
-    
-    if (orderIds.length === 0) return;
-    
-    try {
-      // 从数据库获取最新退款状态（防止缓存与数据库不一致）
-      const db = wx.cloud.database();
-      const _ = db.command;
-      const refundRecords = await db.collection('shop_refund')
-        .where({ order_id: _.in(orderIds) })
-        .get();
-      
-      // 更新缓存
-      refundRecords.data.forEach(record => {
-        statusMap[record.order_id] = record.refund_status === 'refunded' ? 'refunded' : 'refunding';
-      });
-      wx.setStorageSync('refundStatusMap', statusMap);
-      
-      // 应用状态更新
-      this.applyRefundingStatus();
-    } catch (error) {
-      console.error('同步退款状态失败:', error);
-    }
-  },
 
   // 渲染分片定时器
   clearChunkTimer: function() {
@@ -295,18 +248,7 @@ Page({
           const formattedOrders = this.formatOrders(rawOrders);
           console.log('【订单列表日志5】格式化后的订单数据:', formattedOrders);
 
-          // 退款状态本地覆盖
-          const statusMap = wx.getStorageSync('refundStatusMap') || {};
-          const mergedOrders = formattedOrders.map(o => {
-            const id = o.orderId || o.order_id || o.orderNo || o.out_trade_no || o._id;
-            if (statusMap[id] === 'refunding') {
-              return { ...o, statusmax: 7, statusText: '退款中', statusColor: '#e11' };
-            }
-            if (statusMap[id] === 'refunded') {
-              return { ...o, statusmax: 9, statusText: '退款成功', statusColor: '#27ae60' };
-            }
-            return o;
-          });
+          const mergedOrders = formattedOrders;
           
           // 终极修复：强制清空错误信息，确保万无一失
           this.setData({

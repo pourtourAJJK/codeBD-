@@ -12,7 +12,8 @@ exports.main = async (event, context) => {
   
   try {
     // 1. 接收前端传的 token
-    const { adminToken, orderId, operateType } = event;
+    // 🔥 最小修改1：把 orderId 改为 order_id（和前端传参一致）
+    const { adminToken, order_id, operateType } = event;
 
     // 2. 没有 token → 直接返回空（权限拦截）
     if (!adminToken) {
@@ -24,7 +25,8 @@ exports.main = async (event, context) => {
     }
 
     // 3. 基础校验
-    if (!orderId || !operateType) {
+    // 🔥 同步修改校验参数
+    if (!order_id || !operateType) {
       return {
         statusCode:400,
         headers,
@@ -33,20 +35,18 @@ exports.main = async (event, context) => {
     }
 
     // 4. 有权限 → 操作数据库
-    // ===================== 原有逻辑 100% 保留 =====================
+
     let statusmax;
     let delivery_time;
     
+    // 🔥 最小修改2：适配你的流程（删除无用状态，直接2→4→5）
     switch (operateType) {
-      case "confirmDelivery":
-        statusmax = "3"; // 安排发货 → 待配送
+      case "startShipping":
+        statusmax = "4"; // 待配送 → 配送中
         delivery_time = new Date();
         break;
-      case "startShipping":
-        statusmax = "4"; // 开始配送 → 配送中
-        break;
       case "completeOrder":
-        statusmax = "5"; // 完成订单 → 已完成
+        statusmax = "5"; // 配送中 → 已完成
         break;
       default:
         return { 
@@ -56,24 +56,23 @@ exports.main = async (event, context) => {
         };
     }
     
-    // 原有更新字段逻辑（不变）
-    const updateData = { statusmax };
+    const updateData = { 
+      statusmax,
+      updateTime: new Date().toISOString()
+    };
     if (delivery_time) {
       updateData.delivery_time = delivery_time;
     }
     
-    // ===================== 🔥 唯一修复：替换错误的查询方式 =====================
-    // 错误写法：.doc(orderId) → 用文档ID查询（你传的是业务订单号，报错）
-    // 正确写法：.where({ order_id: orderId }) → 用你的业务订单号字段查询
+    // 🔥 最小修改3：同步改为 order_id
     await db.collection('shop_order')
       .where({
-        order_id: orderId  // 匹配你数据库的 order_id 字段
+        order_id: order_id
       })
       .update({
         data: updateData
       });
     
-    // 原有返回格式（完全不变）
     return { 
       statusCode:200, 
       headers, 

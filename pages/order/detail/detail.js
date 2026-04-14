@@ -37,71 +37,25 @@ Page({
     
     // 加载订单详情
     this.loadOrderDetail();
-    
-    // 开启轮询
-    this.startPoll(orderId);
   },
 
   // 页面显示时刷新订单信息
   onShow: function () {
-    // 页面显示 → 启动轮询（5秒一次）
-    this.syncRefundStatus(); // 🔥 修复点4：一进页面立刻执行一次，不等待定时器
-    this.setData({
-      timer: setInterval(() => {
-        this.syncRefundStatus();
-      }, 5000)
-    });
+    // 直接加载订单详情，不再使用轮询
+    this.loadOrderDetail();
   },
 
-  // 页面隐藏 → 清除定时器（防止内存泄漏）
+  // 页面隐藏
   onHide: function() {
-    clearInterval(this.data.timer);
-  },
-
-  // 关闭页面清除定时器
-  onUnload: function() {
-    clearInterval(this.data.timer);
     this.clearCountDownTimer();
   },
 
-  // 同步退款状态 + 强制刷新订单数据（修复状态不更新）
-  syncRefundStatus() {
-    const orderId = this.data.orderId;
-    if (!orderId) return;
-
-    // 🔥 修复点2：每次轮询都重新拉取订单详情（强制刷新前端状态）
-    this.loadOrderDetail();
-
-    // 查询退款状态
-    wx.cloud.callFunction({
-      name: 'admin-return-list',
-      data: { order_id: orderId },
-      success: res => {
-        // 修复：添加对 res.result.data 的空值检查，避免 TypeError: Cannot read property 'list' of undefined
-        const list = res.result?.data?.list || [];
-        if (list.length > 0) {
-          const refund = list[0];
-          this.setData({ refundInfo: refund });
-
-          // 🔥 修复点3：审核拒绝 → 弹窗提示
-          if (refund.audit_status === "拒绝") {
-            wx.showModal({
-              title: '退款被拒绝',
-              content: refund.audit_note || '原因未填写',
-              showCancel: false
-            });
-            // 停止轮询
-            clearInterval(this.data.timer);
-          }
-
-          // 退款成功/失败 → 停止轮询
-          if (refund.refund_status === "退款成功" || refund.refund_status === "退款失败") {
-            clearInterval(this.data.timer);
-          }
-        }
-      }
-    });
+  // 关闭页面
+  onUnload: function() {
+    this.clearCountDownTimer();
   },
+
+
 
   // 查看退款进度
   goRefundDetail: function() {
@@ -263,22 +217,9 @@ Page({
     return statusMap[statusmax] || '未知状态';
   },
 
-  // 开启轮询：5秒请求一次（保留兼容，实际使用新的轮询逻辑）
-  startPoll: function(orderId) {
-    // 已迁移到onShow中的新轮询逻辑
-  },
 
-  // 页面隐藏时清除定时器
-  onHide: function() {
-    clearInterval(this.data.timer);
-    this.clearCountDownTimer();
-  },
 
-  // 页面卸载时清除定时器
-  onUnload: function() {
-    clearInterval(this.data.timer);
-    this.clearCountDownTimer();
-  },
+
 
   // 清除倒计时定时器
   clearCountDownTimer() {
@@ -629,8 +570,8 @@ Page({
 
     // 订单状态校验 - 只用 statusmax
     const statusmax = this.data.order.statusmax;
-    // 仅待支付、待接单、待配送可退款，配送中/已完成不允许退款
-    if (statusmax !== '1' && statusmax !== '2' && statusmax !== '3') {
+    // 仅待支付、待接单、待配送可退款，配送中/已完成不允许退款，同时兼容退款状态
+    if (statusmax !== '1' && statusmax !== '2' && statusmax !== '3' && statusmax !== '7' && statusmax !== '8' && statusmax !== '9') {
       wx.showToast({
         title: '当前订单状态不允许退款',
         icon: 'none'

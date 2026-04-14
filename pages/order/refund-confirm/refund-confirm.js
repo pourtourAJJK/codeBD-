@@ -77,23 +77,14 @@ Page({
 
       // ✅ 新代码（调用云函数，安全规范）
       const res = await wx.cloud.callFunction({
-        name: 'admin-return-update', // 对接Web已改好的云函数
+        name: 'return-create', // 小程序专用退款申请接口
         data: {
-          type: "create_refund", // 新增：区分创建/更新
           order_id: this.data.orderId,
-          // 严格按状态文档赋值
-          audit_status: "待审核",
-          refund_status: "待审核",
-          refund_result_status: "待退款",
-          // 其他订单/退款字段
-          out_refund_no: outRefundNo,
+          reason: this.data.reasonText,
           transaction_id: this.data.transaction_id,
           refund_amount: refundFee,
           total_amount: this.data.totalAmount,
-          reason: this.data.reasonText,
-          apply_time: new Date(),
-          user_openid: wx.getStorageSync('openid'),
-          create_time: new Date()
+          user_openid: wx.getStorageSync('openid')
         }
       });
 

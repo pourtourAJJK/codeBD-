@@ -1,51 +1,19 @@
-// 管理员退款审核列表云函数（最终修复版）
 const cloud = require('wx-server-sdk');
-
-// 初始化云环境
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
-
-// 获取数据库实例
 const db = cloud.database();
 const _ = db.command;
 
-/**
- * 管理员查询退款审核列表
- * 支持：分页、状态筛选、搜索
- */
-const handler = async (event, context) => {
-  const headers = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type"
-  };
-  if(event.httpMethod === "OPTIONS") return { statusCode:204, headers };
+exports.main = async (event) => {
   try {
-    // 1. 接收前端传的 token
-    const { 
-      adminToken,
-      page = 1, 
-      limit = 10,
-      keyword 
-    } = event;
+    const { adminToken, page = 1, limit = 10, keyword } = event;
 
-    // 2. 没有 token → 直接返回空（权限拦截）
+    // 权限拦截
     if (!adminToken) {
-      return {
-        statusCode:200,
-        headers,
-        body:JSON.stringify({
-          code: 401,
-          message: '未登录',
-          data: null
-        })
-      };
+      return { code: 401, message: '未登录', data: null };
     }
 
-    // 3. 有权限 → 查询数据库
-    // 初始化查询（查询退款表，核心修改）
     let query = db.collection('shop_refund');
-
-    // 搜索筛选
+    // 搜索
     if (keyword) {
       query = query.where({
         $or: [
@@ -54,46 +22,23 @@ const handler = async (event, context) => {
         ]
       });
     }
-    
-    // 查询总数
+
     const totalRes = await query.count();
     const total = totalRes.total;
-
-    // 分页查询（按申请时间倒序）
     const ordersRes = await query
       .orderBy('apply_time', 'desc')
       .skip((page - 1) * limit)
       .limit(limit)
       .get();
 
-    // 数据返回
     return {
-      statusCode:200,
-      headers,
-      body:JSON.stringify({
-        code: 200,
-        message: '获取退款列表成功',
-        data: {
-          list: ordersRes.data,
-          total,
-          page,
-          limit
-        }
-      })
+      code: 200,
+      message: '获取退款列表成功',
+      data: { list: ordersRes.data, total, page, limit }
     };
 
   } catch (error) {
-    console.error('【云函数】获取退款列表失败：', error);
-    return {
-      statusCode:500,
-      headers,
-      body:JSON.stringify({
-        code: 500,
-        message: '获取退款列表失败，请稍后重试',
-        data: null
-      })
-    };
+    console.error('获取退款列表失败：', error);
+    return { code: 500, message: '获取退款列表失败', data: null };
   }
 };
-
-exports.main = handler;

@@ -1,10 +1,5 @@
-// 管理员订单详情云函数（只用 statusmax 管理订单状态）
 const cloud = require('wx-server-sdk');
-
-// 初始化云环境
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
-
-// 获取数据库实例
 const db = cloud.database();
 
 /**
@@ -84,7 +79,7 @@ const handler = async (event, context) => {
         .get();
     } catch (e) {}
 
-    // 状态映射表（只用 statusmax）
+    // 状态映射表（只用 statusmax）【仅新增3个退款状态，无原有删除】
     const statusMap = {
       "1": { text: "待支付", color: "#ff9800" },
       "2": { text: "待发货", color: "#2196f3" },
@@ -92,13 +87,19 @@ const handler = async (event, context) => {
       "4": { text: "配送中", color: "#673ab7" },
       "5": { text: "已完成", color: "#4caf50" },
       "6": { text: "已取消", color: "#f44336" },
+      "7": { text: "待退款", color: "#ff9800" },    // 新增
+      "8": { text: "退款失败", color: "#f44336" },  // 新增
+      "9": { text: "已退款", color: "#4caf50" },    // 新增
       "80": { text: "退货中", color: "#ff5722" },
       "90": { text: "已退款", color: "#795548" }
     };
     
     const statusInfo = statusMap[statusmax] || { text: "未知", color: "#999" };
     
-    // 构建订单详情（删除 delivery_status，只用 statusmax）
+    const refundRes = await db.collection('shop_refund').where({ order_id }).limit(1).get();
+    const refundInfo = refundRes.data[0] || null;
+
+    // 构建订单详情
     const orderDetail = {
       // 基础字段
       order_id: order.order_id,
@@ -127,6 +128,7 @@ const handler = async (event, context) => {
       totalPrice: order.totalPrice,
       paymentAmount: order.paymentAmount,
       remark: order.remark || '',
+      refundInfo: refundInfo, // 【仅新增：附加退款信息】
 
       // 商品列表
       items: localGoods.length > 0 ? localGoods : orderItemsRes.data.map(item => ({

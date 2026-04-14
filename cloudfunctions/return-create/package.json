@@ -1,0 +1,19 @@
+{
+  "name": "return-create",
+  "version": "1.0.0",
+  "description": "小程序用户提交退款申请",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "cloudfunction",
+    "refund",
+    "wechat"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

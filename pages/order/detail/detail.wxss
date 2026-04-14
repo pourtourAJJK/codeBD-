@@ -267,6 +267,13 @@
   color: #ffffff;
 }
 
+/* 已完成状态的售后按钮，占据整个宽度 */
+.pill-btn.full-width {
+  width: 100%;
+  max-width: 600rpx;
+  min-width: 400rpx;
+}
+
 .pill-btn::after {
   border: none;
 }

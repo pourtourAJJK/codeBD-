@@ -18,9 +18,26 @@ const getTimeRange = (type) => {
   }
 };
 
-exports.main = async (event) => {
+exports.main = async (event, context) => {
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type"
+  };
+  if(event.httpMethod === "OPTIONS") return { statusCode: 204, headers };
+
   try {
-    const { dateRange } = event;
+    const { dateRange, adminToken } = event;
+    
+    // 管理员权限验证
+    if (!adminToken) {
+      return {
+        statusCode: 401,
+        headers,
+        body: JSON.stringify({ code: 401, message: "未登录" })
+      };
+    }
+
     const [startTime] = getTimeRange(dateRange);
 
     const orderRes = await db.collection('shop_order')
@@ -64,7 +81,7 @@ exports.main = async (event) => {
       name, value: parseFloat(value.toFixed(2))
     }));
 
-    return {
+    const responseData = {
       code: 200,
       data: {
         totalSales: parseFloat(totalSales.toFixed(2)),
@@ -77,7 +94,18 @@ exports.main = async (event) => {
         month: { sales: parseFloat(totalSales.toFixed(2)), orders: totalOrders }
       }
     };
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify(responseData)
+    };
   } catch (err) {
-    return { code: 500, message: err.message };
+    console.error("[admin-analytics] 失败：", err);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ code: 500, message: err.message })
+    };
   }
 };

@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "openapi": [
+      "wx.cloud.callFunction"
+    ],
+    "db": {
+      "shop_refund": {
+        "permissions": ["read", "update"]
+      }
+    }
+  },
+  "timeout": 5,
+  "memorySize": 128
+}
