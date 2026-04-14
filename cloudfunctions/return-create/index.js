@@ -32,8 +32,11 @@ exports.main = async (event, context) => {
       };
     }
 
+    // 统一数字时间戳（彻底修复字段格式错误）
+    const timestamp = Date.now();
+    
     // 退款状态枚举：1=待审核 2=已同意 3=已拒绝 4=已退款
-    const out_refund_no = `REFUND_${order_id}_${Date.now()}`;
+    const out_refund_no = `REFUND_${order_id}_${timestamp}`;
     const refundData = {
       order_id,
       reason,
@@ -42,12 +45,21 @@ exports.main = async (event, context) => {
       transaction_id,
       user_openid: user_openid || event.userInfo.openId,
       audit_status: "待审核",
-      refund_status: 1, // 严格枚举
+      refund_status: "1", // 严格枚举，改为字符串类型
       refund_result_status: "待退款",
-      apply_time: new Date().toISOString(),
-      create_time: new Date().toISOString(),
-      update_time: new Date().toISOString(),
-      out_refund_no
+      // 已修复：纯数字时间戳，无报错
+      apply_time: timestamp,
+      create_time: timestamp,
+      update_time: timestamp,
+      out_refund_no,
+      
+      // 👇 你要求的操作记录 已添加
+      operation_records: [{
+        time: timestamp,
+        operator: "用户",
+        content: "提交退款申请",
+        status: "待审核"
+      }]
     };
 
     // 写入退款表
@@ -56,9 +68,9 @@ exports.main = async (event, context) => {
     // 更新订单状态为退款中
     await db.collection('shop_order').where({ order_id }).update({
       data: {
-        statusmax: 7,
-        refund_status: 1,
-        updateTime: new Date().toISOString()
+        statusmax: "7",
+        refund_status: "1",
+        updateTime: timestamp
       }
     });
 
@@ -76,7 +88,7 @@ exports.main = async (event, context) => {
         data: {
           order_id,
           out_refund_no,
-          refund_status: 1,        // 前端需要的字段
+          refund_status: "1",        // 前端需要的字段，改为字符串类型
           refund_status_text: "待审核"
         }
       })

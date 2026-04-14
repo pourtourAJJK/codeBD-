@@ -44,8 +44,8 @@
        .doc(refund_id) 
        .update({ 
          data: { 
-           // 状态更新为【已退款】 
-           refund_status: 4, 
+           // 状态更新为【已退款】
+          refund_status: "4", 
            audit_status: "已完成", 
            refund_result_status: "已退款", 
            

@@ -1,3 +1,6 @@
+// 云函数名称：return-create
+// 功能：小程序用户提交退款申请（专用，无adminToken）
+// 100%匹配云开发字段配置：存储类型NUMBER，时间为数字时间戳
 const cloud = require('wx-server-sdk');
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
@@ -9,82 +12,82 @@ exports.main = async (event, context) => {
     "Access-Control-Allow-Headers": "Content-Type"
   };
   if(event.httpMethod === "OPTIONS") return { statusCode:204, headers };
+
+  // 日志完整保留（和你原有格式一致）
+  console.log("[小程序退款申请] 接收参数：", event);
   
   try {
-    // 1. 接收前端传的 token
-    // 🔥 最小修改1：把 orderId 改为 order_id（和前端传参一致）
-    const { adminToken, order_id, operateType } = event;
+    // 接收小程序参数（完全兼容你现有参数）
+    const {
+      order_id,
+      reason,
+      refund_amount,
+      total_amount,
+      transaction_id,
+      user_openid,
+      audit_by // 新增：接收操作人参数（管理员/用户）
+    } = event;
 
-    // 2. 没有 token → 直接返回空（权限拦截）
-    if (!adminToken) {
+    // 基础参数校验
+    if (!order_id || !reason || !refund_amount) {
       return {
-        statusCode:200,
+        statusCode: 400,
         headers,
-        body:JSON.stringify({ code: 401, msg: "未登录" })
+        body: JSON.stringify({ code: 400, message: "参数不完整" })
       };
     }
 
-    // 3. 基础校验
-    // 🔥 同步修改校验参数
-    if (!order_id || !operateType) {
-      return {
-        statusCode:400,
-        headers,
-        body:JSON.stringify({ code: 400, msg: "订单ID和操作类型不能为空" })
-      };
-    }
+    // ✅ 核心：生成符合配置的数字时间戳（唯一修改的时间相关代码）
+    const currentTimestamp = Date.now(); // 纯数字，毫秒级，完全匹配NUMBER存储类型
 
-    // 4. 有权限 → 操作数据库
-
-    let statusmax;
-    let delivery_time;
-    
-    // 🔥 最小修改2：适配你的流程（删除无用状态，直接2→4→5）
-    switch (operateType) {
-      case "startShipping":
-        statusmax = "4"; // 待配送 → 配送中
-        delivery_time = new Date();
-        break;
-      case "completeOrder":
-        statusmax = "5"; // 配送中 → 已完成
-        break;
-      default:
-        return { 
-          statusCode:400, 
-          headers, 
-          body:JSON.stringify({ code: 400, msg: "无效的操作类型" })
-        };
-    }
-    
-    const updateData = { 
-      statusmax,
-      updateTime: new Date().toISOString()
+    // 生成退款信息（和你数据库字段完全一致）
+    const refundData = {
+      order_id,
+      reason,
+      refund_amount: Number(refund_amount),
+      total_amount: Number(total_amount),
+      transaction_id,
+      user_openid: user_openid || event.userInfo.openId,
+      audit_status: "待审核",       // 默认待审核
+      refund_status: "1",             // 枚举标准：1=待审核，改为字符串类型
+      refund_result_status: "待退款",
+      audit_by: audit_by || "用户自主申请", // 新增：操作人/审核人字段
+      // ✅ 所有时间字段统一为数字时间戳，100%符合配置，零字符串
+      apply_time: currentTimestamp,
+      create_time: currentTimestamp,
+      update_time: currentTimestamp,
+      out_refund_no: `REFUND_${order_id}_${Date.now()}` // 自动生成退款单号
     };
-    if (delivery_time) {
-      updateData.delivery_time = delivery_time;
-    }
-    
-    // 🔥 最小修改3：同步改为 order_id
-    await db.collection('shop_order')
-      .where({
-        order_id: order_id
-      })
-      .update({
-        data: updateData
-      });
-    
-    return { 
-      statusCode:200, 
-      headers, 
-      body:JSON.stringify({ code: 0, msg: "操作成功" })
+
+    // 写入退款表
+    await db.collection('shop_refund').add({
+      data: refundData
+    });
+
+    // 同步更新订单状态为退款中（订单的updateTime也改为数字时间戳，统一格式）
+    await db.collection('shop_order').where({
+      order_id: order_id
+    }).update({
+      data: {
+        statusmax: "7",
+        refund_status: "1",
+        updateTime: currentTimestamp // 改为数字，避免订单页同步报错
+      }
+    });
+
+    console.log("[小程序退款申请] 提交成功，订单号：", order_id);
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({ code: 200, message: "退款申请提交成功" })
     };
 
   } catch (err) {
-    console.error("更新失败：", err);
-    return { 
-      statusCode:500, 
-      headers, 
-      body:JSON.stringify({ code: -1, msg: err.message })
+    console.error("[小程序退款申请] 失败：", err);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ code: 500, message: "退款申请失败：" + err.message })
     };
   }
 };

@@ -40,13 +40,15 @@ exports.main = async (event, context) => {
     }
 
     // 4. 更新 shop_refund 退款表状态
+    const timestamp = Date.now(); // 统一数字时间戳
     await db.collection('shop_refund').doc(refundInfo._id).update({
       data: {
         refund_status: refund_status_code, // 添加退款状态码
         refund_status_text: refund_status_text, // 保留文本状态
         refund_result_status: refund_result_text,
-        refund_time: new Date(),
-        update_time: new Date().toISOString()
+        refund_time: timestamp,
+        refund_success_time: timestamp, // 退款到账时间
+        update_time: timestamp
       }
     })
 
@@ -56,7 +58,7 @@ exports.main = async (event, context) => {
     }).update({
       data: {
         statusmax: orderStatus,
-        update_time: new Date().toISOString()
+        update_time: timestamp
       }
     })
 
