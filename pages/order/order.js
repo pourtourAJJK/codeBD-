@@ -23,7 +23,13 @@ Page({
     // 倒计时定时器
     timer: null,
     // 设备平台
-    platform: ''
+    platform: '',
+    // 页面参数
+    pageOptions: {},
+    // 分页参数
+    currentPage: 1,
+    pageSize: 10,
+    hasMore: true
   },
 
   // 页面加载
@@ -32,6 +38,11 @@ Page({
     if (!this.checkLoginStatus()) {
       return;
     }
+    
+    // 存储页面参数
+    this.setData({
+      pageOptions: options || {}
+    });
     
     // 获取设备平台（处理iOS时间兼容）
     const that = this;
@@ -58,6 +69,20 @@ Page({
   // 页面显示
   onShow: function() {
     console.log('【订单列表】页面显示');
+    
+    // 修复：从其他页面跳转过来时，确保正确显示对应标签
+    const { pageOptions } = this.data;
+    
+    if (pageOptions?.type && typeof pageOptions.type === 'string') {
+      this.setData({
+        activeTab: pageOptions.type
+      });
+    } else if (pageOptions?.tab && typeof pageOptions.tab === 'string') {
+      this.setData({
+        activeTab: pageOptions.tab
+      });
+    }
+    
     // 修复：页面显示时总是重新加载订单列表，确保状态更新
     console.log('【订单列表】页面显示，执行 loadOrders');
     this.loadOrders();
@@ -150,6 +175,7 @@ Page({
       activeTab: tab,
       orders: [], // 清空旧数据
       currentPage: 1, // 重置分页（避免分页错乱）
+      hasMore: true, // 重置是否有更多数据
       isLoading: true // 上锁
     }, () => {
       // 确保 activeTab 已经更新后，再执行加载
@@ -183,12 +209,14 @@ Page({
   },
 
   // 加载订单列表
-  loadOrders: function(callback) {
+  loadOrders: function(callback, isLoadMore = false) {
 
 
     console.log('========================================');
     console.log('【订单列表日志0】开始加载订单列表');
     console.log('【订单列表日志0.1】当前选中标签:', this.data.activeTab);
+    console.log('【订单列表日志0.1.1】是否加载更多:', isLoadMore);
+    console.log('【订单列表日志0.1.2】当前页码:', this.data.currentPage);
     
     if (!this.checkLoginStatus()) {
       console.log('【订单列表日志0.2】登录状态检查失败');
@@ -196,10 +224,19 @@ Page({
       return;
     }
     
+    // 如果没有更多数据，停止加载
+    if (isLoadMore && !this.data.hasMore) {
+      console.log('【订单列表日志0.3】没有更多数据，停止加载');
+      console.log('========================================');
+      if (typeof callback === 'function') {
+        callback();
+      }
+      return;
+    }
 
     // 核心修复：在开始加载前，仅设置 loading / errorMsg，避免大列表二次清空闪屏
     this.setData({
-      loading: true,
+      loading: !isLoadMore, // 加载更多时不显示全屏加载
       errorMsg: '' // 清空错误提示
     });
     
@@ -207,12 +244,15 @@ Page({
 
 
     // 构建查询参数
-    const params = {};
+    const params = {
+      page: this.data.currentPage,
+      pageSize: this.data.pageSize
+    };
     console.log('【订单列表日志0.6】基础查询参数:', params);
     
     // 标签到查询条件的映射（适配字符串类型 statusmax/pay_status）
     const tabQueryMap = {
-      all: {},
+      all: { $or: [{ pay_status: "1" }, { statusmax: "6" }] }, // 全部已支付和已取消订单
       unpaid: { statusmax: "1" }, // 待支付：statusmax = "1"
       pending_delivery: {
         pay_status: "1", // 已支付
@@ -248,11 +288,21 @@ Page({
           const formattedOrders = this.formatOrders(rawOrders);
           console.log('【订单列表日志5】格式化后的订单数据:', formattedOrders);
 
-          const mergedOrders = formattedOrders;
+          // 处理加载更多
+          let mergedOrders = [];
+          if (isLoadMore) {
+            mergedOrders = [...this.data.orders, ...formattedOrders];
+          } else {
+            mergedOrders = formattedOrders;
+          }
+          
+          // 更新分页信息
+          const hasMore = res.result.data?.hasMore || false;
           
           // 终极修复：强制清空错误信息，确保万无一失
           this.setData({
-            errorMsg: '' // 再次强制清空错误提示
+            errorMsg: '', // 再次强制清空错误提示
+            hasMore: hasMore
           }, () => {
             // 分片渲染，降低单次 setData 体积
             this.renderOrdersInChunks(mergedOrders);
@@ -265,8 +315,9 @@ Page({
               this.clearCountDownTimer();
             }
 
-            console.log('【订单列表日志6】订单数据加载成功，共', formattedOrders.length, '条订单');
-            console.log('【订单列表日志7】当前errorMsg状态:', this.data.errorMsg); // 打印确认
+            console.log('【订单列表日志6】订单数据加载成功，共', mergedOrders.length, '条订单');
+            console.log('【订单列表日志7】是否有更多数据:', hasMore);
+            console.log('【订单列表日志8】当前errorMsg状态:', this.data.errorMsg); // 打印确认
             console.log('========================================');
             // 如果有回调函数，执行回调（如下拉刷新）
             if (typeof callback === 'function') {
@@ -890,7 +941,16 @@ Page({
 
   // 页面上拉触底
   onReachBottom: function() {
-    // TODO: 实现分页加载
+    // 防重复加载
+    if (this.data.isLoading || !this.data.hasMore) return;
+    
+    // 增加页码并加载更多
+    this.setData({
+      currentPage: this.data.currentPage + 1,
+      isLoading: true
+    }, () => {
+      this.loadOrders(null, true);
+    });
   },
 
   // 页面隐藏/卸载时清理计时器

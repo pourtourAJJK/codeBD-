@@ -143,7 +143,7 @@ Page({
   // 跳转到全部订单页面
   toAllOrders() {
     wx.navigateTo({
-      url: "/pages/order/order",
+      url: "/pages/order/order?type=all",
       fail: () => wx.showToast({ title: "订单页面未配置", icon: "none" }),
     });
   },
@@ -152,16 +152,7 @@ Page({
   toOrder(e) {
     const orderType = e.currentTarget.dataset.type;
     
-    // 售后/退桶跳转到售后页面
-    if (orderType === 'after_sales') {
-      wx.navigateTo({
-        url: '/pages/after-sales/after-sales',
-        fail: () => wx.showToast({ title: "售后页面未配置", icon: "none" }),
-      });
-      return;
-    }
-    
-    // 其他订单类型跳转到订单页面
+    // 所有订单类型都跳转到订单页面
     wx.navigateTo({
       url: `/pages/order/order?type=${orderType}`,
       fail: () => wx.showToast({ title: "订单页面未配置", icon: "none" }),

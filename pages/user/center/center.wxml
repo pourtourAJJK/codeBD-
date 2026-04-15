@@ -41,7 +41,7 @@
       <view 
         class="order-item" 
         bindtap="toOrder"
-        data-type="pending_delivery"
+        data-type="unpaid"
       >
         <view class="order-icon">
           <image src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/待配送blue.png" mode="widthFix"></image>
@@ -51,7 +51,7 @@
       <view 
         class="order-item" 
         bindtap="toOrder"
-        data-type="pending_receipt"
+        data-type="pending_delivery"
       >
         <view class="order-icon">
           <image src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/待配送blue.png" mode="widthFix"></image>
@@ -61,7 +61,7 @@
       <view 
         class="order-item" 
         bindtap="toOrder"
-        data-type="pending_review"
+        data-type="delivering"
       >
         <view class="order-icon">
           <image src="cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/_订单 处理中blue.png" mode="widthFix"></image>
@@ -106,4 +106,7 @@
         </view>
       </view>
     </view>
+    
+    <!-- 安全区域占位符 -->
+    <view class="safe-area-bottom"></view>
 </view>

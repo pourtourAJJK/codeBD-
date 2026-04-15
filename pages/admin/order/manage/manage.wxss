@@ -5,7 +5,8 @@
   width: 100%;
   min-height: 100vh;
   background-color: #f5f5f5;
-  padding-bottom: 30rpx;
+  padding-bottom: calc(30rpx + env(safe-area-inset-bottom));
+  padding-bottom: calc(30rpx + constant(safe-area-inset-bottom));
 }
 
 /* 搜索和筛选区域 */
@@ -15,6 +16,8 @@
   background-color: #fff;
   box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
   margin-bottom: 20rpx;
+  padding-top: calc(20rpx + env(safe-area-inset-top));
+  padding-top: calc(20rpx + constant(safe-area-inset-top));
 }
 
 /* 搜索框 */
@@ -314,6 +317,10 @@
   z-index: 1000;
   max-height: 70vh;
   overflow-y: auto;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  padding-bottom: calc(20rpx + constant(safe-area-inset-bottom));
+  bottom: env(safe-area-inset-bottom);
+  bottom: constant(safe-area-inset-bottom);
 }
 
 /* 筛选面板头部 */

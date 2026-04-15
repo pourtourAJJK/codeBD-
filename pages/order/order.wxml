@@ -181,5 +181,8 @@
         </block>
       </view>
     </view>
+    
+    <!-- 安全区域占位符 -->
+    <view class="safe-area-bottom"></view>
   </view>
 </view>

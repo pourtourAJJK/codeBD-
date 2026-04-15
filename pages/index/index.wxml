@@ -63,6 +63,9 @@
   <!-- 图片下方文字区域 -->
   <text class="image-text">汲天然之山泉，蕴生命之微元</text>
   <text class="image-text">粤ICP备2026014843号-1X</text>
+  
+  <!-- 安全区域占位符 -->
+  <view class="safe-area-bottom"></view>
 </view>
 
 <!-- 广告弹窗 -->

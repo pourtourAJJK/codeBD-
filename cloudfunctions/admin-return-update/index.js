@@ -4,7 +4,7 @@ const db = cloud.database()
 const _ = db.command
 
 exports.main = async (event, context) => {
-  // 原有跨域头 完整保留
+  // 原有跨域头 完整保留（完全不动）
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
@@ -13,7 +13,7 @@ exports.main = async (event, context) => {
   if(event.httpMethod === "OPTIONS") return { statusCode:204, headers };
 
   console.log("[退款审核] 接收参数：", event);
-  const { type, user_openid, adminToken, returnId, account = "管理员" } = event;
+  const { type, user_openid, adminToken, returnId, account = "管理员", audit_note = "" } = event;
   const wxContext = cloud.getWXContext();
 
   // ==============================================
@@ -43,12 +43,23 @@ exports.main = async (event, context) => {
         return { statusCode:400, headers, body:JSON.stringify({ code: 400, message: "该订单已发起退款，请勿重复申请" }) };
       }
 
+      // ✅ 新增：申请时写入createdAt，和updatedAt一致
+      const timestamp = Date.now();
       const addRes = await db.collection('shop_refund').add({
         data: {
           ...event,
           createTime: db.serverDate(),
           updateTime: db.serverDate(),
-          openid: user_openid
+          openid: user_openid,
+          createdAt: timestamp, // 申请时间=createdAt，永久不变
+          updatedAt: timestamp, // 初始updatedAt=申请时间
+          // 申请时的操作记录（前端已自动生成，这里补全）
+          operation_records: [{
+            time: timestamp,
+            operator: "用户",
+            content: "申请退款",
+            status: "待审核"
+          }]
         }
       });
 
@@ -60,12 +71,12 @@ exports.main = async (event, context) => {
   }
 
   // ==============================================
-  // 场景2：管理后台审核（100%还原Git成功逻辑 + 仅加需求）
+  // 场景2：管理后台审核（100%还原Git逻辑 + 新增操作记录）
   // ==============================================
   try {
     const { returnId, audit_status, refund_status, audit_note = "" } = event;
 
-    // 权限校验（完全不动）
+    // 原有权限校验（完全不动）
     if (!adminToken) {
       return { statusCode:200, headers, body:JSON.stringify({ code: 401, message: "未登录" }) };
     }
@@ -85,10 +96,43 @@ exports.main = async (event, context) => {
     const refundInfo = refundRes.data;
     const order_id = refundInfo.order_id;
 
-    // 时间戳（原版保留）
+    // 时间戳（原版保留，用于更新updatedAt）
     const timestamp = Date.now();
 
-    // ===================== 数据库更新（核心！还原原版状态写入） =====================
+    // ===================== 【核心新增：操作记录追加逻辑】 =====================
+    // 1. 获取原有操作记录，不存在则初始化空数组
+    const oldRecords = refundInfo.operation_records || [];
+    // 2. 根据操作类型生成新的操作记录
+    let newRecordContent = "";
+    let newRecordStatus = "";
+    if (audit_status === "通过") {
+      newRecordContent = "商家审核通过";
+      newRecordStatus = "审核通过";
+    } else if (audit_status === "拒绝") {
+      newRecordContent = `商家审核拒绝，原因：${audit_note || "无"}`;
+      newRecordStatus = "审核拒绝";
+    } else if (refund_status === "退款成功") {
+      newRecordContent = "退款成功";
+      newRecordStatus = "退款成功";
+    } else if (refund_status === "退款失败") {
+      newRecordContent = "退款失败";
+      newRecordStatus = "退款失败";
+    } else {
+      newRecordContent = "操作更新";
+      newRecordStatus = "状态更新";
+    }
+    // 3. 生成新的操作记录（包含管理员账号、时间、内容）
+    const newRecord = {
+      time: timestamp,
+      operator: account,
+      content: newRecordContent,
+      status: newRecordStatus
+    };
+    // 4. 追加到原有记录，生成新数组（不覆盖历史记录）
+    const newOperationRecords = [...oldRecords, newRecord];
+    // ==========================================================================
+
+    // ===================== 数据库更新（核心：保留Git逻辑 + 新增字段） =====================
     await db.collection('shop_refund').doc(returnId).update({
       data: {
         // 🚨【绝对不动】Git原版状态：直接写入前端传的 "通过"/"拒绝"（退款校验关键！）
@@ -99,10 +143,12 @@ exports.main = async (event, context) => {
         updateTime: db.serverDate(),
 
         // 🎯【你要的新增字段】仅加这些，不破坏任何逻辑
-        refund_result_status: "3",  // 审核通过默认值
+        refund_result_status: audit_status === "通过" ? "3" : "4", // 审核通过=3，拒绝=4
         audit_by: account,          // 操作人
         audit_time: db.serverDate(),// ✅ 修复1970时间（和项目统一）
-        updatedAt: timestamp         // 正常时间
+        updatedAt: timestamp,         // ✅ 每次操作更新updatedAt=当前时间（商家操作时间）
+        // ✅ 追加操作记录（不覆盖历史）
+        operation_records: newOperationRecords
       }
     });
 
