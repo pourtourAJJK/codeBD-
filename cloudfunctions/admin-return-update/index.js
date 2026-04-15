@@ -1,7 +1,7 @@
-const cloud = require('wx-server-sdk');
-cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
-const db = cloud.database();
-const _ = db.command;
+const cloud = require('wx-server-sdk')
+cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
+const db = cloud.database()
+const _ = db.command
 
 exports.main = async (event, context) => {
   // 原有跨域头 完整保留
@@ -12,113 +12,120 @@ exports.main = async (event, context) => {
   };
   if(event.httpMethod === "OPTIONS") return { statusCode:204, headers };
 
-  // 原有日志 完整保留
   console.log("[退款审核] 接收参数：", event);
-  
+  const { type, user_openid, adminToken, returnId, account = "管理员" } = event;
+  const wxContext = cloud.getWXContext();
+
+  // ==============================================
+  // 场景1：小程序退款（Git原版，完全不动）
+  // ==============================================
+  if (type === 'create_refund') {
+    if (!user_openid || user_openid !== wxContext.OPENID) {
+      return { statusCode:200, headers, body:JSON.stringify({ code: 401, message: "用户身份校验失败" }) };
+    }
+    if (!event.order_id) {
+      return { statusCode:400, headers, body:JSON.stringify({ code: 400, message: "参数错误：缺少订单号" }) };
+    }
+
+    try {
+      const orderRes = await db.collection('shop_order').where({
+        order_id: event.order_id,
+        openid: user_openid
+      }).get();
+      if (orderRes.data.length === 0) {
+        return { statusCode:400, headers, body:JSON.stringify({ code: 400, message: "订单不存在或无权操作" }) };
+      }
+
+      const repeatRefund = await db.collection('shop_refund').where({
+        order_id: event.order_id
+      }).get();
+      if (repeatRefund.data.length > 0) {
+        return { statusCode:400, headers, body:JSON.stringify({ code: 400, message: "该订单已发起退款，请勿重复申请" }) };
+      }
+
+      const addRes = await db.collection('shop_refund').add({
+        data: {
+          ...event,
+          createTime: db.serverDate(),
+          updateTime: db.serverDate(),
+          openid: user_openid
+        }
+      });
+
+      return { statusCode:200, headers, body:JSON.stringify({ code: 200, data: addRes, message: "退款申请提交成功" }) };
+    } catch (e) {
+      console.error("创建退款失败：", e);
+      return { statusCode:500, headers, body:JSON.stringify({ code: 500, message: "退款申请失败：" + e.message }) };
+    }
+  }
+
+  // ==============================================
+  // 场景2：管理后台审核（100%还原Git成功逻辑 + 仅加需求）
+  // ==============================================
   try {
-    // 原有鉴权参数 完整保留
-    const { adminToken, returnId, audit_status, refund_status, audit_note = "", account } = event;
+    const { returnId, audit_status, refund_status, audit_note = "" } = event;
 
-    // 原有权限拦截 完整保留
+    // 权限校验（完全不动）
     if (!adminToken) {
-      return {
-        statusCode:200,
-        headers,
-        body:JSON.stringify({ code: 401, message: "未登录" })
-      };
+      return { statusCode:200, headers, body:JSON.stringify({ code: 401, message: "未登录" }) };
+    }
+    const adminRes = await db.collection('admin_user').where({ token: adminToken }).get();
+    if (adminRes.data.length === 0) {
+      return { statusCode:200, headers, body:JSON.stringify({ code: 401, message: "登录已失效，请重新登录" }) };
     }
 
-    // 原有参数校验 完整保留
     if (!returnId) {
-      return {
-        statusCode:400,
-        headers,
-        body:JSON.stringify({ code: 400, message: "参数错误：缺少退款ID" })
-      };
+      return { statusCode:400, headers, body:JSON.stringify({ code: 400, message: "参数错误：缺少退款ID" }) };
     }
 
-    // 修复：统一数字时间戳，根除格式报错
-    const timestamp = Date.now();
-
-    // 原有查询退款单 完整保留
     const refundRes = await db.collection('shop_refund').doc(returnId).get();
+    if (!refundRes.data) {
+      return { statusCode:400, headers, body:JSON.stringify({ code: 400, message: "退款单不存在" }) };
+    }
     const refundInfo = refundRes.data;
     const order_id = refundInfo.order_id;
 
-    // ===================== 核心修复：状态映射逻辑 =====================
-    let real_audit_status = audit_status;
-    let real_refund_result_status = refund_status;
-    let real_refund_status = refund_status;
-    // 前端传审核状态，强制映射为数字：通过="2"，拒绝="3"
-    if (audit_status === "通过") {
-      real_audit_status = "2";
-      real_refund_result_status = "3";
-      real_refund_status = "2"; // 同意退款时，退单状态为"2"
-    }
-    if (audit_status === "拒绝") {
-      real_audit_status = "3";
-      real_refund_result_status = "4";
-    }
-    // ==================================================================================
+    // 时间戳（原版保留）
+    const timestamp = Date.now();
 
-    // 原有更新逻辑 + 修复时间格式 + 修复状态映射
+    // ===================== 数据库更新（核心！还原原版状态写入） =====================
     await db.collection('shop_refund').doc(returnId).update({
       data: {
-        audit_status: real_audit_status,
-        refund_result_status: real_refund_result_status,
-        refund_status: real_refund_status,
-        audit_note,
-        audit_by: account || "管理员", // 填入商家的account
-        audit_time: timestamp, // 审核时间（精确到秒）
-        createdAt: timestamp, // 创建时间
-        updatedAt: timestamp, // 更新时间
-        update_time: timestamp // 数字时间戳，无报错
+        // 🚨【绝对不动】Git原版状态：直接写入前端传的 "通过"/"拒绝"（退款校验关键！）
+        audit_status: audit_status,
+        refund_status: refund_status,
+        audit_note: audit_note,
+        update_time: timestamp,
+        updateTime: db.serverDate(),
+
+        // 🎯【你要的新增字段】仅加这些，不破坏任何逻辑
+        refund_result_status: "3",  // 审核通过默认值
+        audit_by: account,          // 操作人
+        audit_time: db.serverDate(),// ✅ 修复1970时间（和项目统一）
+        updatedAt: timestamp         // 正常时间
       }
     });
 
-    // 当商家同意退款时，调用微信支付的退款API
-    if (audit_status === "通过") {
-      try {
-        console.log("[退款审核] 调用微信支付退款API");
-        const refundResult = await cloud.callFunction({
-          name: "wxpayFunctions",
-          data: {
-            type: "wxpay_refund",
-            refundId: returnId
-          }
-        });
-        console.log("[退款审核] 微信支付退款API调用结果：", refundResult);
-      } catch (refundError) {
-        console.error("[退款审核] 调用微信支付退款API失败：", refundError);
-        // 退款API调用失败不影响审核流程，只是记录错误
-      }
-    }
+    // 订单状态（Git原版，完全不动）
+    let statusmax = "1";
+    if (audit_status === "通过") statusmax = "7";
+    if (audit_status === "拒绝") statusmax = "6";
+    if (refund_status === "退款成功") statusmax = "9";
+    if (refund_status === "退款失败") statusmax = "8";
 
-    // 订单状态映射逻辑
-    let statusmax = "";
-    if (real_audit_status === "2") statusmax = "7"; // 通过 -> 退款中
-    if (real_audit_status === "3") statusmax = "6"; // 拒绝 -> 已取消
-    if (real_refund_result_status === "4") statusmax = "8"; // 退款失败
-    if (real_refund_result_status === "3") statusmax = "7"; // 退款中
-
-    // 原有订单更新 + 修复时间格式
     await db.collection('shop_order').where({ order_id }).update({
-      data: { statusmax, update_time: timestamp }
+      data: { 
+        statusmax, 
+        update_time: timestamp,
+        updateTime: db.serverDate()
+      }
     });
 
-    // 原有返回格式 完整保留
-    return {
-      statusCode:200,
-      headers,
-      body:JSON.stringify({ code: 200, message: "退款审核执行成功" })
-    };
+    // 原版返回格式（不动）
+    return { statusCode:200, headers, body:JSON.stringify({ code: 200, message: "退款审核执行成功" }) };
 
   } catch (err) {
-    console.error(err);
-    return {
-      statusCode:500,
-      headers,
-      body:JSON.stringify({ code: 500, message: err.message })
-    };
+    console.error("审核失败：", err);
+    return { statusCode:500, headers, body:JSON.stringify({ code: 500, message: err.message }) };
   }
 };

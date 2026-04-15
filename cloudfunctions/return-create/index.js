@@ -1,5 +1,3 @@
-// 云函数名称：return-create
-// 功能：小程序用户提交退款申请（专用，无adminToken）
 const cloud = require('wx-server-sdk');
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
@@ -32,11 +30,15 @@ exports.main = async (event, context) => {
       };
     }
 
-    // 统一数字时间戳（彻底修复字段格式错误）
     const timestamp = Date.now();
-    
-    // 退款状态枚举：1=待审核 2=已同意 3=已拒绝 4=已退款
     const out_refund_no = `REFUND_${order_id}_${timestamp}`;
+    
+    // ===================== 核心修复区 =====================
+    // 🔥 1. 严格使用字符串！不要用数字 1/2/3/4
+    // 根据你的模型选项：
+    // "1" -> 待审核 (字符串)
+    // "3" -> 已拒绝
+    // =======================================================
     const refundData = {
       order_id,
       reason,
@@ -44,14 +46,24 @@ exports.main = async (event, context) => {
       total_amount: Number(total_amount),
       transaction_id,
       user_openid: user_openid || event.userInfo.openId,
-      audit_status: "待审核",
-      refund_status: "1", // 严格枚举，改为字符串类型
-      refund_result_status: "待退款",
-      // 已修复：纯数字时间戳，无报错
+      
+      // ✅ 修复：这里必须是字符串 "1"，不能是数字 1
+      audit_status: "1", 
+      
+      // ✅ 修复：退单状态，填入字符串 "待审核" 或对应枚举值
+      // 这里根据你的模型，应该填选项对应的标识，这里我们填入稳定态 "待审核"
+      refund_status: "1", 
+      
+      refund_result_status: "1", // 对应模型选项
+      
+      // 已修复：纯数字时间戳
       apply_time: timestamp,
       create_time: timestamp,
       update_time: timestamp,
+      creatAt:timestamp,
       out_refund_no,
+      // 👇 新增：与另一函数updatedAt格式完全一致（毫秒时间戳）
+      createdAt: timestamp,
       
       // 👇 你要求的操作记录 已添加
       operation_records: [{
@@ -69,16 +81,13 @@ exports.main = async (event, context) => {
     await db.collection('shop_order').where({ order_id }).update({
       data: {
         statusmax: "7",
-        refund_status: "1",
+        refund_status: "1", // 👈 同步到订单的也必须是字符串
         updateTime: timestamp
       }
     });
 
     console.log("[小程序退款申请] 提交成功，订单号：", order_id);
     
-    // ===================== 修复点 =====================
-    // ✅ 返回 refund_status 等核心字段给前端
-    // ==================================================
     return {
       statusCode: 200,
       headers,
@@ -88,8 +97,8 @@ exports.main = async (event, context) => {
         data: {
           order_id,
           out_refund_no,
-          refund_status: "1",        // 前端需要的字段，改为字符串类型
-          refund_status_text: "待审核"
+          refund_status: "1", // 前端展示可以转成文本，后端存储必须匹配模型
+          refund_status_text: "1"
         }
       })
     };

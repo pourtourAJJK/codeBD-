@@ -3,13 +3,13 @@ cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
 const _ = db.command
 
-// 微信退款结果回调云函数
+// 微信退款结果回调云函数（Git原版+仅修时间格式）
 exports.main = async (event, context) => {
   try {
     // 1. 获取微信回调的退款结果（固定格式）
     const refundData = event.body
-    const out_refund_no = refundData.out_refund_no // 退款单号
-    const refund_status = refundData.refund_status // 退款状态：SUCCESS/FAIL
+    const out_refund_no = refundData.out_refund_no 
+    const refund_status = refundData.refund_status 
 
     console.log("微信退款回调", refundData)
 
@@ -23,31 +23,26 @@ exports.main = async (event, context) => {
     const refundInfo = refundRes.data[0]
     const order_id = refundInfo.order_id
 
-    // 3. 根据退款结果更新状态
-    let refund_status_text, refund_result_text, orderStatus, refund_status_code
+    // 3. 根据退款结果更新状态（Git原版逻辑）
+    let refund_status_text, refund_result_text, orderStatus
     if (refund_status === "SUCCESS") {
-      // 退款成功
       refund_status_text = "退款成功"
       refund_result_text = "退款成功"
-      orderStatus = "9" // 订单状态：已退款
-      refund_status_code = "4" // 退款状态码：已退款
+      orderStatus = "9" 
     } else {
-      // 退款失败
       refund_status_text = "退款失败"
       refund_result_text = "退款失败"
-      orderStatus = "8" // 订单状态：退款失败
-      refund_status_code = "3" // 退款状态码：退款失败
+      orderStatus = "8" 
     }
 
+    // 修复：数字时间戳，其余100%原版
+    const timestamp = Date.now();
     // 4. 更新 shop_refund 退款表状态
-    const timestamp = Date.now(); // 统一数字时间戳
     await db.collection('shop_refund').doc(refundInfo._id).update({
       data: {
-        refund_status: refund_status_code, // 添加退款状态码
-        refund_status_text: refund_status_text, // 保留文本状态
+        refund_status: refund_status_text,
         refund_result_status: refund_result_text,
         refund_time: timestamp,
-        refund_success_time: timestamp, // 退款到账时间
         update_time: timestamp
       }
     })
@@ -62,7 +57,7 @@ exports.main = async (event, context) => {
       }
     })
 
-    // 6. 返回微信成功标识（必须返回，否则微信会重复回调）
+    // 6. 返回微信成功标识
     return {
       code: 200,
       msg: "成功",
