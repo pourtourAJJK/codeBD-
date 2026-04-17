@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿// 微信支付核心云函数 - 原生API实现
+﻿﻿﻿// 微信支付核心云函数 - 原生API实现
 // 【修复点：彻底替换wechatpay-node-v3】改用https直接调用微信支付原生API
 // 适配微信支付v3 API，支持小程序支付统一下单
 
@@ -332,7 +332,9 @@ const createWxpayRefund = async (params) => {
         refund: refundFee,
         total: totalFee,
         currency: 'CNY'
-      }
+      },
+       // 🔥 退款回调通知地址
+       notify_url: "https://fuxididai8888-5g9tptvfb7056681-1397228946.ap-shanghai.app.tcloudbase.com/refund-notify"
     };
 
     // 如果有退款原因，添加到请求体
@@ -505,7 +507,8 @@ const handler = async (event, context) => {
         
         const timestamp = new Date().toISOString();
         const orderId = refundInfo.order_id || '未提供';
-        const outRefundNo = `REFUND_${Date.now()}`;
+        // 直接用数据库里原本的退款单号，不重新生成！
+        const outRefundNo = refundInfo.out_refund_no;
         const maskedTransactionId = transaction_id.substring(0, 10) + '...';
         
         console.log(`[${timestamp}] [wxpayFunctions-wxpay_refund-开始] [订单ID:${orderId}] [退款单号:${outRefundNo}] 接收退款请求`);

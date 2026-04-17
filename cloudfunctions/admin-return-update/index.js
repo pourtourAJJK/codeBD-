@@ -105,10 +105,10 @@ exports.main = async (event, context) => {
     // 2. 根据操作类型生成新的操作记录
     let newRecordContent = "";
     let newRecordStatus = "";
-    if (audit_status === "通过") {
+    if (audit_status === "2") {
       newRecordContent = "商家审核通过";
       newRecordStatus = "审核通过";
-    } else if (audit_status === "拒绝") {
+    } else if (audit_status === "3") {
       newRecordContent = `商家审核拒绝，原因：${audit_note || "无"}`;
       newRecordStatus = "审核拒绝";
     } else if (refund_status === "退款成功") {
@@ -166,6 +166,45 @@ exports.main = async (event, context) => {
         updateTime: db.serverDate()
       }
     });
+
+    // ===================== 【新增：写入操作记录到web_detail_refund集合】 =====================
+    // 操作类型映射（对应action枚举）
+    const actionMap = {
+      '审核通过': "1",
+      '审核拒绝': "2",
+      '退款成功': "3",
+      '退款失败': "4"
+    };
+
+    // 生成操作类型和详情
+    let action = "1";
+    let details = "";
+    if (audit_status === "2") {
+      action = actionMap['审核通过'];
+      details = "商家审核通过退款申请";
+    } else if (audit_status === "3") {
+      action = actionMap['审核拒绝'];
+      details = `商家审核拒绝退款申请，原因：${audit_note || "无"}`;
+    } else if (refund_status === "退款成功") {
+      action = actionMap['退款成功'];
+      details = "退款成功";
+    } else if (refund_status === "退款失败") {
+      action = actionMap['退款失败'];
+      details = "退款失败";
+    }
+
+    // 写入 web_detail_refund 集合（严格匹配数据模型）
+    await db.collection('web_detail_refund').add({
+      data: {
+        orderId: order_id,          // 订单ID（模型字段）
+        action: action,             // 操作类型（枚举，模型字段）
+        operator: account,          // 操作人账号（模型字段）
+        details: details,           // 操作详情（模型字段）
+        timestamp: db.serverDate()  // 操作时间（服务器时间，不可篡改）
+        // 系统字段 _id/createdAt/updatedAt 自动生成，无需手动传
+      }
+    });
+    // =====================================================================================
 
     // 原版返回格式（不动）
     return { statusCode:200, headers, body:JSON.stringify({ code: 200, message: "退款审核执行成功" }) };
