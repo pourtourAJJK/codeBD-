@@ -391,15 +391,10 @@ Page({
       return;
     }
     
-    // 商品ID校验
+    // 商品ID校验 - 移除严格校验，因为pay-create云函数不需要productId参数
     if (!productId) {
-      wx.showToast({
-        title: '商品信息异常，请返回重新下单',
-        icon: 'none',
-        duration: 2000
-      });
-      console.error('【支付页面日志2.6】支付页面参数校验失败：缺失productId');
-      return;
+      console.warn('【支付页面日志2.6】商品ID缺失，但不阻止支付流程');
+      // 继续执行支付流程，不返回
     }
     
     console.log('【支付页面日志2.7】前端参数校验通过');
@@ -414,8 +409,6 @@ Page({
       name: 'pay-create',
       data: {
         orderId: orderId,
-        productId: productId,
-        quantity: quantity,
         amount: amount,
         description: `硒养山泉商品支付 - ${orderId}`
       },
@@ -603,7 +596,7 @@ Page({
       // 支付成功，触发订阅授权
       this.afterPaySuccess();
       // 跳转到订单详情页
-      wx.redirectTo({
+      wx.navigateTo({
         url: `/pages/order/detail/detail?orderId=${this.data.order.orderId}`
       });
     } else {

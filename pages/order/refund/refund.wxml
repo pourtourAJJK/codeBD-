@@ -1,10 +1,9 @@
 <view class="refund-page">
-  <view class="header">申请退款</view>
 
-  <view class="item-card">
-    <checkbox-group>
+  <checkbox-group bindchange="onCheckboxChange">
+    <view class="item-card" wx:for="{{items}}" wx:key="id">
       <label class="item-row">
-        <checkbox value="all" checked bindtap="toggleSelectAll" class="item-checkbox"></checkbox>
+        <checkbox value="{{item.id}}" checked="{{item.selected}}" class="item-checkbox"></checkbox>
         <image class="item-img" src="{{item.cover || '/assets/images/default-product.png'}}" mode="aspectFill"></image>
         <view class="item-info">
           <view class="item-title">{{item.title}}</view>
@@ -15,14 +14,37 @@
           <text class="count">x{{item.quantity}}</text>
         </view>
       </label>
-    </checkbox-group>
-  </view>
+      
+      <!-- 数量选择器 -->
+      <view class="quantity-selector" wx:if="{{item.selected && item.quantity > 1}}">
+        <text class="quantity-label">退款数量：</text>
+        <view class="quantity-control">
+          <view class="quantity-btn minus {{item.refundQuantity <= 1 ? 'disabled' : ''}}" bindtap="decreaseQuantity" data-index="{{index}}">-</view>
+          <input class="quantity-input" type="number" value="{{item.refundQuantity}}" bindinput="onQuantityInput" data-index="{{index}}" />
+          <view class="quantity-btn plus {{item.refundQuantity >= item.quantity ? 'disabled' : ''}}" bindtap="increaseQuantity" data-index="{{index}}">+</view>
+        </view>
+        <view class="item-subtotal">
+          <text class="subtotal-label">小计：</text>
+          <text class="subtotal-value">¥{{item.subtotal}}</text>
+        </view>
+      </view>
+      
+      <!-- 退款金额组件，仅在最后一件商品显示 -->
+      <view class="total-amount-card" wx:if="{{index === items.length - 1}}">
+        <view class="total-amount-content">
+          <text class="total-amount-label">退款金额：</text>
+          <text class="total-amount-value">¥{{totalRefundAmount}}</text>
+        </view>
+      </view>
+    </view>
+  </checkbox-group>
 
   <view class="bottom-bar">
     <view class="select-all" bindtap="toggleSelectAll">
       <checkbox checked="{{selectAll}}" class="small-checkbox"></checkbox>
       <text class="select-text">全选</text>
     </view>
+    
     <button class="submit-btn" bindtap="submit">提交</button>
   </view>
 </view>

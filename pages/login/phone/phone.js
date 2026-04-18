@@ -2,7 +2,9 @@ const app = getApp()
 
 Page({
   data: {
-    fromPage: '/pages/index/index' // 记录登录来源页面，登录后跳回（解决之前只跳首页的问题）
+    fromPage: '/pages/index/index', // 记录登录来源页面，登录后跳回（解决之前只跳首页的问题）
+    isNewUser: false, // 是否是新用户
+    hasPhone: false // 是否已绑定手机号
   },
 
   onLoad(options) {
@@ -10,6 +12,18 @@ Page({
     if (options.from) {
       this.setData({ fromPage: decodeURIComponent(options.from) })
     }
+    // 保存用户信息状态
+    if (options.isNewUser) {
+      this.setData({ isNewUser: options.isNewUser === 'true' })
+    }
+    if (options.hasPhone) {
+      this.setData({ hasPhone: options.hasPhone === 'true' })
+    }
+    console.log('phone.js 页面参数:', {
+      fromPage: this.data.fromPage,
+      isNewUser: this.data.isNewUser,
+      hasPhone: this.data.hasPhone
+    })
   },
 
   // 【关键】点击按钮前检查隐私授权（符合微信最新隐私规范）
@@ -31,7 +45,7 @@ Page({
     })
   },
 
-  // 【核心】微信手机号快捷登录回调（完全复用你现有逻辑）
+  // 【核心】微信手机号快捷登录回调
   handleGetPhoneNumber(e) {
     console.log("手机号授权回调", e.detail)
 
@@ -47,33 +61,34 @@ Page({
       return
     }
 
-    // 👇 全部注释，开发版也能正常获取手机号
-    // 3. 环境区分（完全保留你现有逻辑）
-    // const accountInfo = wx.getAccountInfoSync();
-    // const envVersion = accountInfo.miniProgram.envVersion; // 取值：develop(开发版)/trial(体验版)/release(正式版)
-    // if (envVersion !== 'release') {
-    //   console.log('开发/体验版：临时放开手机号授权，直接进入首页');
-    //   wx.showToast({ title: "开发环境，跳过绑定", icon: "none" })
-    //   setTimeout(() => this.goBackToPage(), 1500)
-    //   return
-    // }
+    // 3. 检查 cloudID 是否存在
+    if (!e.detail.cloudID) {
+      wx.showToast({ title: "授权失败，请重试", icon: "none" })
+      return
+    }
 
-    // 4. 正式版：调用你现有云函数解密手机号（100%无修改）
+    // 4. 只传递 cloudID 给云函数
     wx.showLoading({ title: "绑定中..." })
     wx.cloud.callFunction({
       name: "user-decode-phone-v2",
       data: {
-        encryptedData: e.detail.encryptedData,
-        iv: e.detail.iv
+        cloudID: e.detail.cloudID
       }
     }).then(res => {
       wx.hideLoading()
+      console.log("绑定结果：", res);
       if (res.result.code === 200) {
         // 解密成功：存储手机号
         const phone = res.result.data.phoneNumber;
+
+        // 更新本地存储的用户信息
+        if (res.result.data.userInfo) {
+          wx.setStorageSync('userInfo', encodeURIComponent(JSON.stringify(res.result.data.userInfo)));
+        }
         wx.setStorageSync('userPhone', phone)
         console.log("登录页已存储手机号：", phone);
-        
+        console.log("登录页已更新用户信息：", res.result.data.userInfo);
+
         wx.showToast({ title: "绑定成功", icon: "success" })
         // 登录后跳回来源页面（购物车/我的/首页）
         setTimeout(() => this.goBackToPage(), 1500)
@@ -103,12 +118,33 @@ Page({
 
   // 【通用】跳回来源页面（统一跳转逻辑）
   goBackToPage() {
-    const { fromPage } = this.data
-    // 如果是Tab页（购物车/我的），用switchTab；普通页用navigateTo
-    if (fromPage.includes('cart') || fromPage.includes('center')) {
-      wx.switchTab({ url: fromPage })
+    const { fromPage, isNewUser, hasPhone } = this.data
+    console.log('phone.js goBackToPage 参数:', {
+      fromPage,
+      isNewUser,
+      hasPhone
+    })
+
+    if (isNewUser) {
+      // 新用户：跳转到个人中心
+      console.log('新用户：跳转到个人中心')
+      wx.redirectTo({
+        url: '/pages/user/profile/profile'
+      })
+    } else if (!hasPhone) {
+      // 老用户但没绑定手机：跳转到首页
+      console.log('老用户但没绑定手机：跳转到首页')
+      wx.switchTab({
+        url: '/pages/index/index'
+      })
     } else {
-      wx.navigateTo({ url: fromPage })
+      // 其他情况：跳转到来源页面
+      console.log('跳转到来源页面:', fromPage)
+      if (fromPage.includes('cart') || fromPage.includes('center')) {
+        wx.switchTab({ url: fromPage })
+      } else {
+        wx.navigateTo({ url: fromPage })
+      }
     }
   },
 

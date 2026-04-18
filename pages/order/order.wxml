@@ -66,7 +66,7 @@
 
   <!-- 订单列表 - 图二风格的订单卡片 -->
   <view wx:else class="order-list">
-    <view wx:for="{{orders}}" wx:key="orderId" class="order-card">
+    <view wx:for="{{orders}}" wx:key="order_id" class="order-card">
       <!-- 店铺信息 -->
       <view class="shop-info">
         <text class="shop-name">硒养山泉</text>
@@ -79,7 +79,7 @@
       <view class="order-info">
         <view class="info-row">
           <text class="info-label">取单号</text>
-          <text class="info-value">{{item.orderId}}</text>
+          <text class="info-value">{{item.order_id}}</text>
         </view>
         <view class="info-row">
           <text class="info-label">下单时间</text>
@@ -136,45 +136,31 @@
 
       <!-- 操作按钮 -->
       <view class="action-buttons">
-        <!-- 待支付状态：显示管理、查看详情、去支付 -->
+        <!-- 待支付状态：显示查看详情、去支付 -->
         <block wx:if="{{item.statusmax === 1 || item.statusmax === '1'}}">
-          <button 
-            class="btn-secondary" 
-            bindtap="manageOrder"
-            data-order-id="{{item.orderId}}"
-          >
-            管理
-          </button>
-          <button 
-            class="btn-primary" 
+          <button
+            class="btn-primary"
             bindtap="viewOrderDetail"
-            data-order-id="{{item.orderId}}"
+            data-order-id="{{item.order_id}}"
           >
             查看详情
           </button>
-          <button 
-            class="btn-primary" 
+          <button
+            class="btn-primary"
             bindtap="payOrder"
-            data-order-id="{{item.orderId}}"
+            data-order-id="{{item.order_id}}"
             data-index="{{index}}"
           >
             去支付
           </button>
         </block>
-        
-        <!-- 其他状态：只显示管理、查看详情 -->
+
+        <!-- 其他状态：只显示查看详情 -->
         <block wx:else>
-          <button 
-            class="btn-secondary" 
-            bindtap="manageOrder"
-            data-order-id="{{item.orderId}}"
-          >
-            管理
-          </button>
-          <button 
-            class="btn-primary" 
+          <button
+            class="btn-primary"
             bindtap="viewOrderDetail"
-            data-order-id="{{item.orderId}}"
+            data-order-id="{{item.order_id}}"
           >
             查看详情
           </button>

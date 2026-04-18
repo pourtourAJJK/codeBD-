@@ -1,12 +1,14 @@
 <view class="confirm-page">
-  <view class="header">退款申请</view>
 
-  <view class="item-card">
-    <image class="item-img" src="{{item.cover}}" mode="aspectFill"></image>
-    <view class="item-info">
-      <view class="item-title">{{item.title}}</view>
-      <view class="item-spec">规格：{{item.spec}}</view>
-      <view class="item-price">¥ {{item.priceYuan}}</view>
+  <view class="items-container">
+    <view class="item-card" wx:for="{{items}}" wx:key="id">
+      <image class="item-img" src="{{item.cover}}" mode="aspectFill"></image>
+      <view class="item-info">
+        <view class="item-title">{{item.title}}</view>
+        <view class="item-spec">规格：{{item.spec}}</view>
+        <view class="item-price">¥ {{item.priceYuan}} × {{item.refundQuantity}}</view>
+        <view class="item-subtotal">小计：¥ {{item.subtotal}}</view>
+      </view>
     </view>
   </view>
 
@@ -21,8 +23,8 @@
     </view>
     <view class="amount-row">
       <view class="label">退款金额：</view>
-      <view class="amount">¥ {{item.priceYuan}}</view>
-      <view class="tips">最多可退 ¥ {{item.priceYuan}} （按实付金额退款）</view>
+      <view class="amount">¥ {{refundAmount}}</view>
+      <view class="tips">最多可退 ¥ {{totalAmount}} （按实付金额退款）</view>
     </view>
     <view class="desc-block">
       <view class="label">问题描述（选填）</view>

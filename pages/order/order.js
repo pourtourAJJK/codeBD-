@@ -69,23 +69,29 @@ Page({
   // 页面显示
   onShow: function() {
     console.log('【订单列表】页面显示');
-    
+
     // 修复：从其他页面跳转过来时，确保正确显示对应标签
     const { pageOptions } = this.data;
-    
+
+    // 修复：将 loadOrders 放到 setData 回调中，确保 activeTab 已更新后再加载订单
     if (pageOptions?.type && typeof pageOptions.type === 'string') {
       this.setData({
         activeTab: pageOptions.type
+      }, () => {
+        console.log('【订单列表】页面显示，执行 loadOrders (type)');
+        this.loadOrders();
       });
     } else if (pageOptions?.tab && typeof pageOptions.tab === 'string') {
       this.setData({
         activeTab: pageOptions.tab
+      }, () => {
+        console.log('【订单列表】页面显示，执行 loadOrders (tab)');
+        this.loadOrders();
       });
+    } else {
+      console.log('【订单列表】页面显示，执行 loadOrders (default)');
+      this.loadOrders();
     }
-    
-    // 修复：页面显示时总是重新加载订单列表，确保状态更新
-    console.log('【订单列表】页面显示，执行 loadOrders');
-    this.loadOrders();
 
     // 清理旧倒计时（防止干扰）
     this.clearCountDownTimer();
@@ -693,30 +699,50 @@ Page({
   // 管理订单
   manageOrder: function(e) {
     const orderId = e.currentTarget?.dataset?.orderId;
+    console.log('【管理订单日志1】点击的订单ID:', orderId);
+    console.log('【管理订单日志1.1】dataset:', e.currentTarget?.dataset);
     if (!orderId) {
       this.showError('订单信息获取失败');
       return;
     }
-    
-    wx.showModal({
-      title: '是否删除订单',
-      content: '确定要删除该订单吗？',
-      confirmText: '确定',
-      cancelText: '取消',
-      success: res => {
-        if (res.confirm) {
-          // 前端删除订单（不操作数据库）
-          const updatedOrders = this.data.orders.filter(order => order.orderId !== orderId);
-          this.setData({
-            orders: updatedOrders
-          });
-          wx.showToast({
-            title: '订单已删除',
-            icon: 'success'
-          });
-        }
-      }
+
+    // 获取订单状态
+    const order = this.data.orders.find(o => {
+      const id = o.orderId || o.order_id || o.orderNo || o.out_trade_no || o._id;
+      console.log('【管理订单日志2】查找订单，当前订单ID:', id, '目标ID:', orderId);
+      return id === orderId;
     });
+
+    console.log('【管理订单日志3】找到的订单:', order);
+    console.log('【管理订单日志3.1】当前订单列表:', this.data.orders);
+    
+    if (order && (order.statusmax === 1 || order.statusmax === '1')) {
+      // 待支付状态：显示取消订单选项
+      wx.showModal({
+        title: '是否取消订单',
+        content: '确定要取消该订单吗？',
+        confirmText: '确定',
+        cancelText: '取消',
+        success: res => {
+          if (res.confirm) {
+            this.doCancelOrder(orderId);
+          }
+        }
+      });
+    } else {
+      // 其他状态：显示删除订单选项
+      wx.showModal({
+        title: '是否删除订单',
+        content: '确定要删除该订单吗？删除后您将无法在个人中心看到该订单，但后台数据会保留。',
+        confirmText: '确定',
+        cancelText: '取消',
+        success: res => {
+          if (res.confirm) {
+            this.doDeleteOrder(orderId);
+          }
+        }
+      });
+    }
   },
 
   // 删除订单
@@ -740,33 +766,37 @@ Page({
 
   // 执行删除订单操作
   doDeleteOrder: function(orderId) {
+    console.log('【删除订单日志1】开始删除订单，orderId:', orderId);
     if (!orderId) {
       this.showError('订单信息错误');
       return;
     }
-    
+
     this.setData({
       loading: true
     });
-    
+
     wx.cloud.callFunction({
-      name: 'order-cancel',
+      name: 'order-delete',
       data: {
         orderId: orderId
       },
       success: res => {
+        console.log('【删除订单日志2】云函数返回结果:', res);
         if (res?.result?.code === 200) {
+          console.log('【删除订单日志3】删除成功');
           wx.showToast({
-            title: '订单已取消',
+            title: '订单已删除',
             icon: 'success'
           });
           this.loadOrders();
         } else {
-          this.showError('取消订单失败：' + (res?.result?.message || '未知错误'));
+          console.log('【删除订单日志4】删除失败:', res?.result?.message);
+          this.showError('删除订单失败：' + (res?.result?.message || '未知错误'));
         }
       },
       fail: err => {
-        console.error('删除订单失败', err);
+        console.error('【删除订单日志5】云函数调用失败:', err);
         this.showError('网络错误，请稍后重试');
       },
       complete: () => {

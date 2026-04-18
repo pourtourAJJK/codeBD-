@@ -351,6 +351,24 @@ Page({
     });
   },
 
+  // 取消订单
+  cancelOrder: function () {
+    if (!this.data.order) {
+      wx.showToast({ title: '订单信息缺失', icon: 'none' });
+      return;
+    }
+    
+    wx.showModal({
+      title: '确认取消',
+      content: '确定要取消该订单吗？',
+      success: res => {
+        if (res.confirm) {
+          this.performCancelOrder();
+        }
+      }
+    });
+  },
+
   // 取消订单（实际执行）
   performCancelOrder: async function () {
     try {

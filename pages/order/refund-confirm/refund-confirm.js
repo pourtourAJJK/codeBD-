@@ -1,9 +1,10 @@
 Page({
   data: {
     orderId: '',
-    item: {},
+    items: [],
     transaction_id: '',
     totalAmount: 0,
+    refundAmount: 0,
     statusText: '',
     reasonText: '',
     desc: '',
@@ -15,9 +16,10 @@ Page({
     eventChannel && eventChannel.on('refundData', (data) => {
       this.setData({
         orderId: data.orderId || '',
-        item: data.item || {},
+        items: data.items || [],
         transaction_id: data.transaction_id || '',
-        totalAmount: data.totalAmount || 0
+        totalAmount: data.totalAmount || 0,
+        refundAmount: data.refundAmount || 0
       });
     });
   },
@@ -33,7 +35,7 @@ Page({
   },
 
   chooseReason() {
-    const options = ['多拍/拍错/不想要', '快递一直未送到', '未按约定时间发货', '快递无跟踪记录', '空包裹/少货', '其他'];
+    const options = ['送得太慢/没送到', '送错地址/送错人', '商品破损/漏油/漏水', '发错货/数量不对', '退款/退货申请', '其他问题'];
     wx.showActionSheet({
       itemList: options,
       success: (res) => {
@@ -71,7 +73,17 @@ Page({
       // 准备参数
       const transactionId = this.data.transaction_id;
       const outRefundNo = `REFUND_${this.data.orderId}_${Date.now()}`;
-      const refundFee = this.data.item.price * this.data.item.quantity;
+      const refundFee = this.data.refundAmount;
+      
+      // 构建退款商品详情
+      const refundItems = this.data.items.map(item => ({
+        product_id: item.id,
+        product_name: item.title,
+        spec: item.spec,
+        price: item.price,
+        quantity: item.refundQuantity,
+        subtotal: item.price * item.refundQuantity
+      }));
       
       console.log(`[${new Date().toISOString()}] [前端-退款确认-创建退款申请] [订单ID:${orderId}] [退款单号:${outRefundNo}] 准备创建待审核记录`);
 
@@ -84,7 +96,8 @@ Page({
           transaction_id: this.data.transaction_id,
           refund_amount: refundFee,
           total_amount: this.data.totalAmount,
-          user_openid: wx.getStorageSync('openid')
+          user_openid: wx.getStorageSync('openid'),
+          refund_items: refundItems
         }
       });
 
@@ -96,8 +109,9 @@ Page({
         icon: 'success'
       });
       setTimeout(() => {
-        wx.redirectTo({
-          url: '/pages/order/order'
+        // 退回2级页面 → 直接回到订单页，保留完整页面栈
+        wx.navigateBack({
+          delta: 2
         });
       }, 1000);
 

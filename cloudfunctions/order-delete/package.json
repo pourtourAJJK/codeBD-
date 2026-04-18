@@ -1,0 +1,19 @@
+{
+  "name": "order-delete",
+  "version": "1.0.0",
+  "description": "订单逻辑删除云函数",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "cloudbase",
+    "order",
+    "delete"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

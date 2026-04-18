@@ -110,6 +110,11 @@
         售后退款
       </button>
     </view>
+    <!-- 待支付状态：显示修改地址和取消订单按钮 -->
+    <view class="pill-group" wx:elif="{{order.statusmax === '1'}}">
+      <button class="pill-btn modify-address" bindtap="modifyAddress">修改地址</button>
+      <button class="pill-btn pill-danger" bindtap="cancelOrder">取消订单</button>
+    </view>
     <!-- 其他状态：显示修改地址和售后按钮 -->
     <view class="pill-group" wx:else>
       <button class="pill-btn modify-address" bindtap="modifyAddress">修改地址</button>

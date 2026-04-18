@@ -261,6 +261,13 @@
   color: #ffffff;
 }
 
+/* 待支付状态的修改地址按钮 */
+.pill-btn.full-width {
+  background-color: #2F8FC7;
+  border-color: #2F8FC7;
+  color: #ffffff;
+}
+
 .pill-danger {
   background-color: #1A6DA0;
   border-color: #1A6DA0;

@@ -174,44 +174,115 @@ Page({
             });
           });
       } else {
-        // 检查第一个商品的必填字段（兼容 productTitle / producttitle 任一存在即可）
-        const firstItem = cartItems[0];
-        const hasTitle = firstItem.productTitle || firstItem.producttitle;
-        const missingFields = [];
-        if (!hasTitle) missingFields.push('productTitle/producttitle');
-        if (!firstItem.spec) missingFields.push('spec');
-        if (!firstItem.currentPrice) missingFields.push('currentPrice');
-        if (!firstItem.quantity) missingFields.push('quantity');
+        // 检查所有商品的必填字段（兼容 productTitle / producttitle 任一存在即可）
+        let hasMissingFields = false;
+        let missingFieldsExample = [];
         
-        if (missingFields.length > 0) {
-          console.error("[购物车报错] 渲染字段缺失", {
-            环节: "渲染字段检查",
-            原因: `缺少必要渲染字段：${missingFields.join(",")}`,
-            商品数据示例: firstItem
-          });
-          this.setData({ errorMessage: `渲染失败：缺少${missingFields.join(",")}字段` });
+        cartItems.forEach((item, index) => {
+          const hasTitle = item.productTitle || item.producttitle;
+          const itemMissingFields = [];
+          if (!hasTitle) itemMissingFields.push('productTitle/producttitle');
+          if (!item.spec) itemMissingFields.push('spec');
+          if (!item.currentPrice) itemMissingFields.push('currentPrice');
+          if (!item.quantity) itemMissingFields.push('quantity');
+          
+          if (itemMissingFields.length > 0) {
+            hasMissingFields = true;
+            if (missingFieldsExample.length === 0) {
+              missingFieldsExample = itemMissingFields;
+              console.error("[购物车报错] 渲染字段缺失", {
+                环节: "渲染字段检查",
+                原因: `第${index + 1}个商品缺少必要渲染字段：${itemMissingFields.join(",")}`,
+                商品数据示例: item
+              });
+            }
+          }
+        });
+        
+        if (hasMissingFields) {
+          this.setData({ errorMessage: `渲染失败：部分商品缺少${missingFieldsExample.join(",")}字段` });
           return;
         }
       }
       
       // 格式化购物车数据
-      const formattedCartItems = cartItems.map(item => ({
-        ...item,
-        checked: item.checked || false,
-        productTitle: item.productTitle || item.producttitle || '商品名称',
-        producttitle: item.producttitle || item.productTitle || '商品名称',
-        productImage: item.productImage || '/assets/images/default-product.png',
-        currentPrice: item.currentPrice || 0
-      }));
+      const formattedCartItems = cartItems.map((item, index) => {
+        // 严格检查 quantity 字段
+        let quantity = item.quantity;
+        if (quantity === undefined || quantity === null || quantity === 'undefined') {
+          quantity = 1;
+        } else {
+          quantity = Number(quantity) || 1;
+        }
+        console.log('[购物车查询] 商品数量处理', {
+          index,
+          originalQuantity: item.quantity,
+          formattedQuantity: quantity,
+          itemId: item._id
+        });
+        return {
+          ...item,
+          checked: item.checked || false,
+          productTitle: item.productTitle || item.producttitle || '商品名称',
+          producttitle: item.producttitle || item.productTitle || '商品名称',
+          productImage: item.productImage || '/assets/images/default-product.png',
+          currentPrice: item.currentPrice || 0,
+          quantity: quantity
+        };
+      });
 
       console.log('[购物车查询] 格式化后的购物车数据:', JSON.stringify(formattedCartItems, null, 2));
       console.log('[购物车查询] 购物车商品数量:', formattedCartItems.length);
 
-      this.setData({ cartItems: formattedCartItems });
-      // 更新购物车状态（全选、总价等）
-      this.updateCartStatus();
-      // 缓存购物车数据
-      cartUtil.saveCartData(formattedCartItems);
+      // 确保所有商品都有quantity字段
+      const finalCartItems = formattedCartItems.map((item, index) => {
+        // 强制设置quantity为数字，避免undefined
+        const finalQuantity = Number(item.quantity) || 1;
+        console.log('[购物车查询] 最终商品数量设置', {
+          index,
+          itemId: item._id,
+          originalQuantity: item.quantity,
+          finalQuantity
+        });
+        return {
+          ...item,
+          quantity: finalQuantity
+        };
+      });
+
+      console.log('[购物车查询] 准备设置数据，finalCartItems:', JSON.stringify(finalCartItems, null, 2));
+      this.setData({ cartItems: finalCartItems }, () => {
+        console.log('[购物车查询] 数据设置完成回调，cartItems:', JSON.stringify(this.data.cartItems, null, 2));
+        // 再次确保数据正确
+        const verifyCartItems = this.data.cartItems.map((item, index) => {
+          const verifyQuantity = Number(item.quantity) || 1;
+          console.log('[购物车查询] 数据验证', {
+            index,
+            itemId: item._id,
+            currentQuantity: item.quantity,
+            verifyQuantity
+          });
+          return {
+            ...item,
+            quantity: verifyQuantity
+          };
+        });
+        
+        // 如果有需要修正的商品，再次更新
+        const needUpdate = verifyCartItems.some((item, index) => {
+          return item.quantity !== this.data.cartItems[index].quantity;
+        });
+        
+        if (needUpdate) {
+          console.log('[购物车查询] 发现需要修正的商品，重新设置数据');
+          this.setData({ cartItems: verifyCartItems });
+        }
+        
+        // 更新购物车状态（全选、总价等）
+        this.updateCartStatus();
+        // 缓存购物车数据
+        cartUtil.saveCartData(verifyCartItems);
+      });
       
       // 如果购物车为空，加载推荐商品
       if (formattedCartItems.length === 0) {
@@ -505,46 +576,93 @@ Page({
   },
 
   /**
-   * 数量输入处理
+   * 显示数量选择器
    */
-  onQuantityInput: async function(e) {
+  showQuantityPicker: function(e) {
     const { index, itemId } = e.currentTarget.dataset;
-    let { value } = e.detail;
+    const currentQuantity = this.data.cartItems[index].quantity || 1;
     
-    // 校验输入内容为合法数字
-    value = parseInt(value);
-    if (isNaN(value) || value < 0) {
-      value = 0;
-    }
+    console.log('[购物车数量选择] 显示数量选择器', {
+      index,
+      itemId,
+      currentQuantity
+    });
     
-    // 限制不超过999
-    if (value > 999) {
-      value = 999;
-      wx.showToast({ title: '已达到最大购买数量', icon: 'none' });
-    }
+    // 弹出数字选择器
+    console.log('[购物车数量选择] 准备弹出模态框', {
+      inputValue: currentQuantity.toString()
+    });
     
-    const cartItems = [...this.data.cartItems];
-    const item = cartItems[index];
-    
-    if (item.quantity !== value) {
-      cartItems[index].quantity = value;
-      this.setData({ cartItems });
-      this.updateCartStatus();
-      
-      // 更新购物车云数据
-      try {
-        await wx.cloud.callFunction({
-          name: 'cart-update-item',
-          data: {
-            itemId,
-            quantity: value
+    wx.showModal({
+      title: '选择数量',
+      content: '',
+      editable: true,
+      placeholderText: '请输入1-999的数据',
+      inputValue: String(currentQuantity),
+      success: (res) => {
+        if (res.confirm && res.content) {
+          let value = res.content;
+          console.log('[购物车数量选择] 用户输入:', value);
+          
+          // 处理输入值
+          value = value.replace(/[^0-9]/g, '');
+          value = parseInt(value);
+          
+          // 处理边界情况
+          if (isNaN(value) || value < 1) {
+            value = 1;
+            console.log('[购物车数量选择] 输入无效，设置为默认值:', value);
           }
-        });
-      } catch (error) {
-        console.error('更新购物车数量失败:', error);
-        wx.showToast({ title: '更新失败，请重试', icon: 'none' });
+          
+          // 限制不超过999
+          if (value > 999) {
+            value = 999;
+            console.log('[购物车数量选择] 超过最大限制，设置为最大值:', value);
+            wx.showToast({ title: '已达到最大购买数量', icon: 'none' });
+          }
+          
+          const cartItems = [...this.data.cartItems];
+          const item = cartItems[index];
+          
+          if (item.quantity !== value) {
+            cartItems[index].quantity = value;
+            console.log('[购物车数量选择] 更新本地数据', {
+              updatedItem: cartItems[index]
+            });
+            
+            this.setData({ cartItems }, () => {
+              console.log('[购物车数量选择] 页面数据更新完成');
+              this.updateCartStatus();
+              
+              // 更新购物车云数据
+              try {
+                console.log('[购物车数量选择] 开始更新云数据', {
+                  itemId,
+                  quantity: value
+                });
+                wx.cloud.callFunction({
+                  name: 'cart-update-item',
+                  data: {
+                    itemId,
+                    quantity: value
+                  },
+                  success: (result) => {
+                    console.log('[购物车数量选择] 云数据更新成功', result);
+                  },
+                  fail: (error) => {
+                    console.error('[购物车数量选择] 更新购物车数量失败:', error);
+                    wx.showToast({ title: '更新失败，请重试', icon: 'none' });
+                  }
+                });
+              } catch (error) {
+                console.error('[购物车数量选择] 更新购物车数量失败:', error);
+                wx.showToast({ title: '更新失败，请重试', icon: 'none' });
+              }
+            });
+          }
+        }
       }
-    }
+    });
   },
   
   /**

@@ -161,6 +161,11 @@ App({
         };
         console.log('登录状态有效');
         return true;
+      } else if (encryptedOpenid) {
+        // 只有 openid，尝试静默登录
+        console.log('只有 openid，尝试静默登录');
+        this.silentLogin();
+        return false;
       } else {
         this.clearLoginInfo();
         console.log('未登录或登录状态已过期');
@@ -183,6 +188,50 @@ App({
       openid: '', 
       token: ''
     };
+  },
+
+  // 静默登录（使用 openid 自动登录）
+  async silentLogin() {
+    try {
+      const encryptedOpenid = wx.getStorageSync('openid');
+      if (!encryptedOpenid) return;
+
+      const openid = decodeURIComponent(encryptedOpenid);
+      console.log('开始静默登录，openid:', openid);
+
+      // 调用登录云函数，使用 openid 登录
+      const loginResult = await wx.cloud.callFunction({
+        name: "user-login-v2",
+        data: { 
+          openid: openid, // 直接传递 openid
+          silent: true // 标记为静默登录
+        }
+      });
+
+      console.log('静默登录结果:', loginResult);
+      
+      if (loginResult.result && loginResult.result.code === 0) {
+        const { userInfo, token } = loginResult.result.data;
+        
+        // 加密存储
+        wx.setStorageSync("userInfo", encodeURIComponent(JSON.stringify(userInfo)));
+        wx.setStorageSync("token", encodeURIComponent(token));
+        
+        // 更新全局数据
+        this.globalData = { 
+          ...this.globalData,
+          isLogin: true, 
+          userInfo: userInfo,
+          token: token
+        };
+        
+        console.log('静默登录成功');
+      } else {
+        console.log('静默登录失败，需要重新授权');
+      }
+    } catch (err) {
+      console.error('静默登录异常', err);
+    }
   },
 
   /**

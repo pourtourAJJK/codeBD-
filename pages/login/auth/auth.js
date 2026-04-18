@@ -21,6 +21,19 @@ Page({
     });
   },
 
+  // 页面显示时检查登录态
+  onShow() {
+    const app = getApp();
+    const isLoggedIn = app.checkLoginStatus();
+    
+    if (isLoggedIn) {
+      // 已登录，直接跳转到来源页面
+      wx.redirectTo({
+        url: this.data.fromPage,
+      });
+    }
+  },
+
   /**
    * 授权登录
    * 流程：wx.login -> get-openid-new -> user-login-v2 -> 跳转手机号绑定页
@@ -89,11 +102,23 @@ Page({
         wx.setStorageSync("openid", encodeURIComponent(openid));
         
         console.log('[auth] 登录成功，isNewUser:', isNewUser);
+        console.log('[auth] 用户信息:', userInfo);
         
-        // 跳转到手机号绑定页，并传递来源页面参数
-        wx.redirectTo({
-          url: `/pages/login/phone/phone?from=${encodeURIComponent(this.data.fromPage)}`,
-        });
+        // 检查用户是否已绑定手机号
+        const hasPhone = userInfo.phoneNumber && userInfo.phoneNumber.trim() !== '';
+        console.log('[auth] 是否已绑定手机号:', hasPhone);
+        
+        if (isNewUser || !hasPhone) {
+          // 新用户或未绑定手机号，跳转到手机号绑定页
+          wx.redirectTo({
+            url: `/pages/login/phone/phone?from=${encodeURIComponent(this.data.fromPage)}&isNewUser=${isNewUser}&hasPhone=${hasPhone}`,
+          });
+        } else {
+          // 老用户且已绑定手机号，跳转到首页
+          wx.switchTab({
+            url: '/pages/index/index',
+          });
+        }
       } else {
         throw new Error(loginResult.result?.message || "登录失败");
       }

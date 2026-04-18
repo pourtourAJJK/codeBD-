@@ -34,8 +34,12 @@ exports.main = async (event = {}) => {
     const limit = Math.min(Math.max(Number(pageSize) || 10, 1), 50);
     const skip = (pageIndex - 1) * limit;
 
-    // 构建查询条件（仅查询当前用户订单）
-    let query = { openid };
+    // 构建查询条件（仅查询当前用户订单，且未删除）
+    let query = {
+      openid,
+      // 过滤掉已删除的订单
+      is_deleted: _.neq(true)
+    };
     if (params.statusmax) {
       query.statusmax = params.statusmax;
     }
