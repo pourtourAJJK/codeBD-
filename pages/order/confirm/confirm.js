@@ -18,8 +18,7 @@ Page({
     selectedDelivery: { id: 'express', name: '商家自配' }, // 改为对象格式，与处理函数一致
     // 支付方式
     paymentOptions: [
-      { id: 'wechat', name: '微信支付', icon: 'cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/微信支付.png', checked: true },
-      { id: 'balance', name: '余额支付', icon: 'cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/余额支付-copy.png', checked: false }
+      { id: 'wechat', name: '微信支付', icon: 'cloud://fuxididai8888-5g9tptvfb7056681.6675-fuxididai8888-5g9tptvfb7056681-1397228946/xiaotubiao/微信支付.png', checked: true }
     ],
     selectedPayment: { id: 'wechat', name: '微信支付' }, // 改为对象格式，与处理函数一致
     paymentType: 'wechat', // 新增paymentType字段，用于提交订单
@@ -323,27 +322,11 @@ Page({
   onPaymentChange: function(e) {
     const paymentId = e.detail.value;
     
-    // 当选择余额支付时，弹出提示
-    if (paymentId === 'balance') {
-      wx.showModal({
-        title: '提示',
-        content: '余额支付正在开发中',
-        showCancel: false,
-        success: (res) => {
-          // 提示后，自动切回微信支付
-          this.setData({
-            selectedPayment: { id: 'wechat', name: '微信支付' },
-            paymentType: 'wechat'
-          });
-        }
-      });
-    } else {
-      // 选择微信支付时，正常设置
-      this.setData({
-        selectedPayment: { id: paymentId, name: paymentId === 'wechat' ? '微信支付' : '余额支付' },
-        paymentType: paymentId
-      });
-    }
+    // 只处理微信支付
+    this.setData({
+      selectedPayment: { id: paymentId, name: '微信支付' },
+      paymentType: paymentId
+    });
   },
 
   // 构建最近三天日期
@@ -562,6 +545,26 @@ Page({
           // 订单创建成功
           const orderId = res.result.data?.order_id || res.result.data?.orderId;
           console.log('【订单确认日志9】订单创建成功，订单ID:', orderId);
+          
+          // 调用订单创建通知云函数
+          wx.cloud.callFunction({
+            name: 'create-order-notification',
+            data: {
+              orderInfo: {
+                order_id: orderId, // 订单ID
+                totalPrice: this.data.totalPrice, // 订单总金额
+                paymentAmount: this.data.totalPrice, // 实付金额
+                statusmax: '待支付', // 订单状态
+                // 其他订单相关字段...
+              }
+            },
+            success: (res) => {
+              console.log('订单通知创建成功', res);
+            },
+            fail: (err) => {
+              console.error('订单通知创建失败', err);
+            }
+          });
           
           // 如果是从购物车过来的，删除购物车中已购买的商品
           if (this.options.from === 'cart') {

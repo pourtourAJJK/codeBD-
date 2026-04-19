@@ -61,17 +61,36 @@
   width: 75%;
   height: 100rpx;
   line-height: 100rpx;
-  background:  #07c160;
+  background: #1677ff; /* 自定义颜色，不用微信绿色 */
   color: #fff;
   font-size: 32rpx;
   font-weight: 500;
   border-radius: 50rpx;
   border: none;
-  box-shadow: 0 8rpx 16rpx rgba(47, 143, 199, 0.2);
+  box-shadow: 0 8rpx 16rpx rgba(22, 119, 255, 0.2);
   margin-bottom: 60rpx;
 }
 .phone-auth-btn::after {
   border: none; /* 强制去掉微信默认按钮边框 */
+}
+
+/* 隐私协议勾选框样式 */
+.agreement {
+  display: flex;
+  align-items: center;
+  width: 75%;
+  margin-bottom: 30rpx;
+  font-size: 26rpx;
+  color: #666;
+}
+
+.agreement checkbox {
+  margin-right: 10rpx;
+  transform: scale(1.2);
+}
+
+.agreement text {
+  line-height: 1.5;
 }
 
 /* 暂不绑定区（弱化处理，避免干扰核心操作） */

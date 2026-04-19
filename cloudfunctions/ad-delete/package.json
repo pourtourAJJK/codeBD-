@@ -1,9 +1,0 @@
-{
-  "name": "ad-delete",
-  "version": "1.0.0",
-  "description": "删除广告",
-  "main": "index.js",
-  "dependencies": {
-    "wx-server-sdk": "latest"
-  }
-}

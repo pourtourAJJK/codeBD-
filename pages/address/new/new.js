@@ -21,7 +21,40 @@ Page({
     loading: false,
     // 编辑模式相关
     editId: '',
-    isEdit: false
+    isEdit: false,
+    // 自定义地址数据
+    addressData: [
+      {
+        name: '广东省',
+        cities: [
+          {
+            name: '汕头市',
+            districts: ['金平区', '龙湖区', '濠江区', '潮阳区', '潮南区', '澄海区', '南澳县']
+          },
+          {
+            name: '广州市',
+            districts: ['越秀区', '海珠区', '荔湾区', '天河区', '白云区', '黄埔区', '番禺区', '花都区', '南沙区', '从化区', '增城区']
+          },
+          {
+            name: '湛江市',
+            districts: ['赤坎区', '霞山区', '坡头区', '麻章区', '遂溪县', '徐闻县', '廉江市', '雷州市', '吴川市']
+          }
+        ]
+      },
+      {
+        name: '江西省',
+        cities: [
+          {
+            name: '宜春市',
+            districts: ['袁州区', '奉新县', '万载县', '上高县', '宜丰县', '靖安县', '铜鼓县', '丰城市', '樟树市', '高安市']
+          }
+        ]
+      }
+    ],
+    // 地址选择器状态
+    addressPickerVisible: false,
+    // 当前选中的地址索引
+    addressIndexes: [0, 0, 0]
   },
 
   // 页面加载
@@ -68,6 +101,8 @@ Page({
               tag: addr.tag || ''
             }
           });
+          // 设置地址选择器索引
+          this.setAddressIndexes(addr.province, addr.city, addr.district);
         } else {
           wx.showToast({ title: res?.result?.message || '加载地址失败', icon: 'none' });
         }
@@ -79,12 +114,112 @@ Page({
     });
   },
 
+  // 设置地址选择器索引
+  setAddressIndexes: function(province, city, district) {
+    const { addressData } = this.data;
+    let provinceIndex = 0;
+    let cityIndex = 0;
+    let districtIndex = 0;
+
+    // 查找省份索引
+    for (let i = 0; i < addressData.length; i++) {
+      if (addressData[i].name === province) {
+        provinceIndex = i;
+        // 查找城市索引
+        for (let j = 0; j < addressData[i].cities.length; j++) {
+          if (addressData[i].cities[j].name === city) {
+            cityIndex = j;
+            // 查找区县索引
+            for (let k = 0; k < addressData[i].cities[j].districts.length; k++) {
+              if (addressData[i].cities[j].districts[k] === district) {
+                districtIndex = k;
+                break;
+              }
+            }
+            break;
+          }
+        }
+        break;
+      }
+    }
+
+    this.setData({
+      addressIndexes: [provinceIndex, cityIndex, districtIndex]
+    });
+  },
+
+  // 显示地址选择器
+  showAddressPicker: function() {
+    this.setData({
+      addressPickerVisible: true
+    });
+  },
+
+  // 隐藏地址选择器
+  hideAddressPicker: function() {
+    this.setData({
+      addressPickerVisible: false
+    });
+  },
+
+  // 地址选择器值变化
+  onAddressPickerChange: function(e) {
+    const indexes = e.detail.value;
+    this.setData({
+      addressIndexes: indexes
+    });
+  },
+
+  // 地址选择器确认
+  confirmAddressPicker: function() {
+    const { addressData, addressIndexes } = this.data;
+    const [provinceIndex, cityIndex, districtIndex] = addressIndexes;
+    
+    const province = addressData[provinceIndex].name;
+    const city = addressData[provinceIndex].cities[cityIndex].name;
+    const district = addressData[provinceIndex].cities[cityIndex].districts[districtIndex];
+
+    this.setData({
+      'formData.province': province,
+      'formData.city': city,
+      'formData.district': district,
+      addressPickerVisible: false
+    });
+  },
+
   // 获取微信地址
 
   getWechatAddress: function() {
     wx.chooseAddress({
       success: (res) => {
         console.log('获取微信地址成功:', res);
+        
+        // 验证地址是否在指定区域
+        const province = res.provinceName;
+        const city = res.cityName;
+        
+        // 允许的区域
+        const allowedAreas = [
+          { province: '广东省', city: '汕头市' },
+          { province: '广东省', city: '广州市' },
+          { province: '广东省', city: '湛江市' },
+          { province: '江西省', city: '宜春市' }
+        ];
+        
+        // 检查地址是否在允许列表中
+        const isAllowed = allowedAreas.some(area => 
+          area.province === province && area.city === city
+        );
+        
+        if (!isAllowed) {
+          wx.showToast({
+            title: '该地区暂无配送场所，请重新选择',
+            icon: 'none',
+            duration: 2000
+          });
+          return;
+        }
+        
         this.setData({
           formData: {
             ...this.data.formData,

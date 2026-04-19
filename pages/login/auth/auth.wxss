@@ -62,10 +62,10 @@ page {
   text-align: center;
   border-radius: 45rpx;
   color: #fff;
-  background: linear-gradient(90deg, #07c160, #05a754);
+  background: #1677ff; /* 自定义颜色，不用微信绿色 */
   font-size: 32rpx;
   font-weight: bold;
-  box-shadow: 0 4rpx 12rpx rgba(7, 193, 96, 0.2);
+  box-shadow: 0 4rpx 12rpx rgba(22, 119, 255, 0.2);
   border: none; /* 去掉微信默认按钮边框 */
 }
 
@@ -103,4 +103,23 @@ page {
 
 .exit-btn::after {
   border: none;
+}
+
+/* 隐私协议勾选框样式 */
+.agreement {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 30rpx;
+  font-size: 26rpx;
+  color: #666;
+}
+
+.agreement checkbox {
+  margin-right: 10rpx;
+  transform: scale(1.2);
+}
+
+.agreement text {
+  line-height: 1.5;
 }

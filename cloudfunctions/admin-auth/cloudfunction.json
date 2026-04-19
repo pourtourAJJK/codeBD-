@@ -1,9 +1,0 @@
-{
-  "name": "admin-auth",
-  "description": "管理员认证云函数（单一云函数设计）",
-  "handler": "index.main",
-  "timeout": 5,
-  "runtime": "Node.js 16.0",
-  "envId": "fuxididai8888-5g9tptvfb7056681",
-  "memory": 256
-}

@@ -7,13 +7,27 @@
   </view>
 
   <view class="bottom-section">
-    <!-- 微信官方隐私授权按钮，必须使用此组件 -->
+    <!-- 隐私协议勾选框：默认未勾选 -->
+    <view class="agreement">
+      <checkbox-group bindchange="onAgreeChange">
+        <checkbox 
+          value="agree" 
+          checked="{{isAgree}}"
+        />
+      </checkbox-group>
+      <text>我已阅读并同意</text>
+      <text class="link" bindtap="openUserAgreement">《用户服务协议》</text>
+      <text>和</text>
+      <text class="link" bindtap="openPrivacyContract">《隐私政策》</text>
+    </view>
+
+    <!-- 登录按钮：未勾选 → 禁用 -->
     <button 
       class="login-btn" 
-      open-type="agreePrivacyAuthorization" 
-      bindagreeprivacyauthorization="handleAgreePrivacy"
+      bindtap="handleLogin"
+      disabled="{{!isAgree}}"
     >
-      微信授权登录
+      账号登录
     </button>
 
     <!-- 退出按钮 -->
@@ -23,10 +37,6 @@
 
     <!-- 隐私协议提示，必须包含可点击链接 -->
     <view class="privacy-tip">
-      登录即表示您已阅读并同意
-      <text class="link" bindtap="openPrivacyContract">
-        《小程序用户隐私保护指引》
-      </text>
       我们将收集您的微信昵称、头像用于账号登录识别
     </view>
   </view>

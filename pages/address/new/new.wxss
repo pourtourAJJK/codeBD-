@@ -192,3 +192,46 @@
     margin: 0 auto;
   }
 }
+
+/* 自定义地址选择器样式 */
+.address-picker-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #fff;
+  border-top-left-radius: 20rpx;
+  border-top-right-radius: 20rpx;
+  box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+}
+
+.address-picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.address-picker-cancel,
+.address-picker-confirm {
+  font-size: 32rpx;
+  color: #666;
+  padding: 0 20rpx;
+}
+
+.address-picker-confirm {
+  color: #2F8FC7;
+  font-weight: 500;
+}
+
+.address-picker-title {
+  font-size: 34rpx;
+  font-weight: 500;
+  color: #333;
+}
+
+.address-picker-content {
+  padding: 20rpx 0;
+}

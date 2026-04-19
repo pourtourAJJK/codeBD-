@@ -42,15 +42,10 @@
       <!-- 所在地区 -->
       <view class="form-item">
         <view class="form-label">所在地区</view>
-        <picker 
-          class="form-picker" 
-          mode="region" 
-          value="[formData.province, formData.city, formData.district]"
-          bindchange="onRegionChange"
-        >
+        <view class="form-picker" bindtap="showAddressPicker">
           <view class="picker-text">{{formData.province}}{{formData.city}}{{formData.district || '请选择'}}</view>
           <image class="picker-arrow" src="../../images/arrow-right.png"></image>
-        </picker>
+        </view>
       </view>
       
       <!-- 收货地址 -->
@@ -118,5 +113,32 @@
     >
       保存收货地址
     </button>
+  </view>
+  
+  <!-- 自定义地址选择器弹出层 -->
+  <view wx:if="{{addressPickerVisible}}" class="address-picker-container">
+    <view class="address-picker-header">
+      <view class="address-picker-cancel" bindtap="hideAddressPicker">取消</view>
+      <view class="address-picker-title">选择地区</view>
+      <view class="address-picker-confirm" bindtap="confirmAddressPicker">确定</view>
+    </view>
+    <view class="address-picker-content">
+      <picker-view 
+        indicator-style="height: 50rpx;" 
+        style="width: 100%; height: 400rpx;" 
+        value="{{addressIndexes}}" 
+        bindchange="onAddressPickerChange"
+      >
+        <picker-view-column>
+          <view wx:for="{{addressData}}" wx:key="index" style="line-height: 50rpx; text-align: center;">{{item.name}}</view>
+        </picker-view-column>
+        <picker-view-column>
+          <view wx:for="{{addressData[addressIndexes[0]].cities}}" wx:key="index" style="line-height: 50rpx; text-align: center;">{{item.name}}</view>
+        </picker-view-column>
+        <picker-view-column>
+          <view wx:for="{{addressData[addressIndexes[0]].cities[addressIndexes[1]].districts}}" wx:key="index" style="line-height: 50rpx; text-align: center;">{{item}}</view>
+        </picker-view-column>
+      </picker-view>
+    </view>
   </view>
 </view>

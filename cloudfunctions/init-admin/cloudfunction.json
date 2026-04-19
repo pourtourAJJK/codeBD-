@@ -1,9 +1,0 @@
-{
-  "name": "init-admin",
-  "description": "初始化管理员账号云函数",
-  "handler": "index.main",
-  "timeout": 5,
-  "runtime": "Node.js 16.0",
-  "envId": "fuxididai8888-5g9tptvfb7056681",
-  "memory": 256
-}

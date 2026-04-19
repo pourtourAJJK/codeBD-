@@ -1,7 +1,8 @@
 // pages/login/auth/auth.js
 Page({
   data: {
-    fromPage: '/pages/index/index' // 记录登录来源页面，登录后跳回
+    fromPage: '/pages/index/index', // 记录登录来源页面，登录后跳回
+    isAgree: false // 合规核心：默认不勾选隐私协议
   },
 
   onLoad(options) {
@@ -34,39 +35,80 @@ Page({
     }
   },
 
+  // 勾选框切换
+  onAgreeChange(e) {
+    console.log('checkbox-group 事件详情:', e);
+    console.log('checkbox-group 事件 detail:', e.detail);
+    console.log('checkbox-group 事件 value:', e.detail.value);
+    
+    // 检查是否包含 'agree' 值
+    const isChecked = e.detail.value && e.detail.value.includes('agree');
+    console.log('是否勾选:', isChecked);
+    
+    this.setData({
+      isAgree: isChecked
+    });
+    
+    // 延迟检查状态是否更新成功
+    setTimeout(() => {
+      console.log('更新后的 isAgree 状态:', this.data.isAgree);
+    }, 100);
+  },
+
   /**
    * 授权登录
    * 流程：wx.login -> get-openid-new -> user-login-v2 -> 跳转手机号绑定页
    */
-  // 官方隐私授权成功回调（用户同意隐私后才会触发）
-  handleAgreePrivacy(res) {
-    console.log('隐私授权回调:', res.detail.event);
+  // 登录按钮点击事件
+  handleLogin() {
+    console.log('登录按钮点击，开始登录流程');
     
-    // 👇 环境判断：仅开发/体验版（灰度期）临时放开，正式版强制走合规逻辑
-    const accountInfo = wx.getAccountInfoSync();
-    const envVersion = accountInfo.miniProgram.envVersion; // 取值：develop(开发版)/trial(体验版)/release(正式版)
-
-    // 正式版：严格走隐私授权判断（完全合规）
-    if (envVersion === 'release') {
-      if (res.detail.event === 'agree') {
-        // 用户同意隐私：执行登录逻辑
-        console.log('用户已同意隐私协议，开始登录流程');
-        this.doLogin();
-      } else {
-        // 用户拒绝隐私：提示并停留在当前页
-        wx.showToast({ title: '请同意隐私协议后登录', icon: 'none' });
-      }
+    // 检查协议勾选状态
+    if (!this.data.isAgree) {
+      wx.showToast({ title: '请先同意协议', icon: 'none' });
       return;
     }
-
-    // 开发/体验版（灰度期）：临时放开，直接登录，不影响测试
-    console.log('开发/体验版：临时放开隐私授权，直接登录');
-    this.doLogin();
+    
+    // 检查隐私授权状态
+    wx.getPrivacySetting({
+      success: (res) => {
+        console.log('隐私授权状态:', res);
+        if (res.needAuthorization) {
+          // 需要用户同意隐私协议，弹出授权弹窗
+          wx.requirePrivacyAuthorize({
+            success: () => {
+              // 用户同意后，执行登录逻辑
+              console.log('用户已同意隐私协议，开始登录流程');
+              this.doLogin();
+            },
+            fail: () => {
+              // 用户拒绝隐私协议
+              wx.showToast({ title: '请同意隐私协议后登录', icon: 'none' });
+            }
+          });
+        } else {
+          // 用户已同意隐私协议，直接执行登录逻辑
+          console.log('用户已同意隐私协议，直接登录');
+          this.doLogin();
+        }
+      },
+      fail: (err) => {
+        console.error('获取隐私授权状态失败:', err);
+        // 失败时直接执行登录逻辑
+        this.doLogin();
+      }
+    });
   },
 
   // 登录核心逻辑（必须在隐私授权后执行）
   async doLogin() {
     try {
+      // 检查协议勾选状态
+      if (!this.data.isAgree) {
+        wx.showToast({ title: '请先同意协议', icon: 'none' });
+        return;
+      }
+      
       wx.showLoading({ title: '登录中...' });
       
       // 1. 调用wx.login获取code（隐私接口，必须授权后调用）
@@ -138,6 +180,19 @@ Page({
       },
       fail: function(err) {
         console.error('打开隐私协议失败', err)
+      }
+    })
+  },
+
+  // 打开用户服务协议
+  openUserAgreement() {
+    // 使用微信官方接口打开用户服务协议
+    wx.openPrivacyContract({
+      success: function(res) {
+        console.log('打开用户服务协议成功', res)
+      },
+      fail: function(err) {
+        console.error('打开用户服务协议失败', err)
       }
     })
   },

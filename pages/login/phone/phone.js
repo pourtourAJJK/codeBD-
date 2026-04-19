@@ -4,7 +4,8 @@ Page({
   data: {
     fromPage: '/pages/index/index', // 记录登录来源页面，登录后跳回（解决之前只跳首页的问题）
     isNewUser: false, // 是否是新用户
-    hasPhone: false // 是否已绑定手机号
+    hasPhone: false, // 是否已绑定手机号
+    isAgree: false // 合规核心：默认不勾选隐私协议
   },
 
   onLoad(options) {
@@ -26,8 +27,34 @@ Page({
     })
   },
 
+  // 勾选框切换
+  onAgreeChange(e) {
+    console.log('phone.js checkbox-group 事件详情:', e);
+    console.log('phone.js checkbox-group 事件 detail:', e.detail);
+    console.log('phone.js checkbox-group 事件 value:', e.detail.value);
+    
+    // 检查是否包含 'agree' 值
+    const isChecked = e.detail.value && e.detail.value.includes('agree');
+    console.log('phone.js 是否勾选:', isChecked);
+    
+    this.setData({
+      isAgree: isChecked
+    });
+    
+    // 延迟检查状态是否更新成功
+    setTimeout(() => {
+      console.log('phone.js 更新后的 isAgree 状态:', this.data.isAgree);
+    }, 100);
+  },
+
   // 【关键】点击按钮前检查隐私授权（符合微信最新隐私规范）
   checkPrivacyBeforeAuth() {
+    // 检查协议勾选状态
+    if (!this.data.isAgree) {
+      wx.showToast({ title: '请先同意协议', icon: 'none' });
+      return;
+    }
+    
     wx.getPrivacySetting({
       success: res => {
         // 如果需要用户同意隐私协议，先弹出授权弹窗
@@ -48,6 +75,12 @@ Page({
   // 【核心】微信手机号快捷登录回调
   handleGetPhoneNumber(e) {
     console.log("手机号授权回调", e.detail)
+
+    // 检查协议勾选状态
+    if (!this.data.isAgree) {
+      wx.showToast({ title: '请先同意协议', icon: 'none' });
+      return;
+    }
 
     // 1. 用户取消授权
     if (e.detail.errMsg === "getPhoneNumber:fail user deny") {
@@ -156,6 +189,19 @@ Page({
       },
       fail: function(err) {
         console.error('打开隐私协议失败', err)
+      }
+    })
+  },
+
+  // 打开用户服务协议
+  openUserAgreement() {
+    // 使用微信官方接口打开用户服务协议
+    wx.openPrivacyContract({
+      success: function(res) {
+        console.log('打开用户服务协议成功', res)
+      },
+      fail: function(err) {
+        console.error('打开用户服务协议失败', err)
       }
     })
   }

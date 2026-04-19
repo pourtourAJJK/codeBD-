@@ -9,17 +9,32 @@
   <!-- 引导文案区（给用户明确的授权理由，符合送水业务） -->
   <view class="guide-block">
     <text class="guide-title">为保障订单配送与售后联系</text>
-    <text class="guide-subtitle">请授权您的常用手机号完成登录</text>
+    <text class="guide-subtitle">请验证您的常用手机号完成登录</text>
   </view>
 
-  <!-- 核心操作区：微信官方手机号快捷登录按钮 -->
+  <!-- 隐私协议勾选框：默认未勾选 -->
+  <view class="agreement">
+    <checkbox-group bindchange="onAgreeChange">
+      <checkbox 
+        value="agree" 
+        checked="{{isAgree}}"
+      />
+    </checkbox-group>
+    <text>我已阅读并同意</text>
+    <text class="link" bindtap="openUserAgreement">《用户服务协议》</text>
+    <text>和</text>
+    <text class="link" bindtap="openPrivacyContract">《隐私政策》</text>
+  </view>
+
+  <!-- 核心操作区：手机号快速验证按钮 -->
   <button
     class="phone-auth-btn"
     open-type="getPhoneNumber"
     bindgetphonenumber="handleGetPhoneNumber"
     bindtap="checkPrivacyBeforeAuth"
+    disabled="{{!isAgree}}"
   >
-    微信手机号快捷登录
+    本机号码快速验证
   </button>
 
   <!-- 辅助操作区：暂不绑定（弱化处理，可选保留/删除） -->
@@ -29,10 +44,6 @@
 
   <!-- 隐私协议提示区 -->
   <view class="privacy-tip">
-    登录即表示您已阅读并同意
-    <text class="link" bindtap="openPrivacyContract">
-      《小程序用户隐私保护指引》
-    </text>
-    我们将收集您的微信昵称、头像用于账号登录识别
+    我们将收集您的手机号用于订单配送与售后联系
   </view>
 </view>
