@@ -11,9 +11,9 @@ Page({
     // 获取本地存储的用户信息（解密）
     let wxUserInfo = {};
     try {
-      const encryptedUserInfo = wx.getStorageSync('userInfo');
-      if (encryptedUserInfo) {
-        wxUserInfo = JSON.parse(decodeURIComponent(encryptedUserInfo));
+      const userInfo = wx.getStorageSync('userInfo');
+      if (userInfo) {
+        wxUserInfo = userInfo;
       }
     } catch (error) {
       console.error('读取用户信息失败:', error);
@@ -30,13 +30,13 @@ Page({
     const userInfo = { ...appUserInfo, ...wxUserInfo };
     
     // 检查登录状态
-    const isLogin = app.globalData.isLogin || !!(wxUserInfo.nickName || wxUserInfo.phoneNumber || userPhone);
+    const isLogin = app.globalData.isLogin || !!(wxUserInfo.nickname || wxUserInfo.nickName || wxUserInfo.phoneNumber || userPhone);
     
     // 初始化编辑信息
     this.setData({
       userInfo: userInfo,
       editInfo: {
-        nickname: userInfo.nickName || '',
+        nickname: userInfo.nickname || userInfo.nickName || '',
         phoneNumber: userPhone || userInfo.phoneNumber || '',
         avatarUrl: userInfo.avatarUrl || ''
       },
@@ -135,15 +135,15 @@ Page({
     try {
       // 准备要保存的数据
       const userData = {
-        nickName: editInfo.nickname,
+        nickname: editInfo.nickname,
         phoneNumber: editInfo.phoneNumber,
         avatarUrl: editInfo.avatarUrl || '',
         updatedAt: new Date()
       };
       console.log('准备保存的数据:', userData);
       
-      // 保存到本地存储（加密）
-      wx.setStorageSync('userInfo', encodeURIComponent(JSON.stringify(userData)));
+      // 保存到本地存储
+      wx.setStorageSync('userInfo', userData);
       console.log('已保存到本地存储');
       
       // 保存到全局数据
@@ -151,16 +151,16 @@ Page({
       app.globalData.userInfo = userData;
       console.log('已更新全局数据');
       
-      // 确保 token 和 openid 也被保存（加密）
+      // 确保 token 和 openid 也被保存
       const token = app.globalData.token || wx.getStorageSync('token');
       const openid = app.globalData.openid || wx.getStorageSync('openid');
       
       if (token) {
-        wx.setStorageSync('token', encodeURIComponent(token));
+        wx.setStorageSync('token', token);
       }
       
       if (openid) {
-        wx.setStorageSync('openid', encodeURIComponent(openid));
+        wx.setStorageSync('openid', openid);
       }
       
       // 更新全局登录状态
@@ -214,15 +214,15 @@ Page({
     try {
       // 准备要保存的数据
       const userData = {
-        nickName: editInfo.nickname,
+        nickname: editInfo.nickname,
         phoneNumber: editInfo.phoneNumber || '',
         avatarUrl: editInfo.avatarUrl || '',
         updatedAt: new Date()
       };
       console.log('准备保存的数据:', userData);
       
-      // 保存到本地存储（加密）
-      wx.setStorageSync('userInfo', encodeURIComponent(JSON.stringify(userData)));
+      // 保存到本地存储
+      wx.setStorageSync('userInfo', userData);
       console.log('已保存到本地存储');
       
       // 保存到全局数据
@@ -230,16 +230,16 @@ Page({
       app.globalData.userInfo = userData;
       console.log('已更新全局数据');
       
-      // 确保 token 和 openid 也被保存（加密）
+      // 确保 token 和 openid 也被保存
       const token = app.globalData.token || wx.getStorageSync('token');
       const openid = app.globalData.openid || wx.getStorageSync('openid');
       
       if (token) {
-        wx.setStorageSync('token', encodeURIComponent(token));
+        wx.setStorageSync('token', token);
       }
       
       if (openid) {
-        wx.setStorageSync('openid', encodeURIComponent(openid));
+        wx.setStorageSync('openid', openid);
       }
       
       // 更新全局登录状态

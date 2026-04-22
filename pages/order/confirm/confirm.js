@@ -3,6 +3,7 @@ const app = getApp();
 const auth = require('../../../utils/auth');
 const orderUtil = require('../../../utils/orderUtil');
 const cartUtil = require('../../../utils/cartUtil');
+const { uploadUserLog } = require('../../../utils/log.js');
 
 Page({
   data: {
@@ -564,6 +565,15 @@ Page({
             fail: (err) => {
               console.error('订单通知创建失败', err);
             }
+          });
+          
+          // 订单创建成功后调用日志上传
+          uploadUserLog({
+            operate_module: 'order', // 匹配操作模块选项集：order（订单）
+            operate_type: 'create_order', // 匹配操作类型选项集：创建订单
+            relation_id: orderId, // 订单数据标识（自动映射到relation_id1）
+            operate_desc: `用户创建新订单，金额：${this.data.totalPrice}元，操作结果：success`, // 并入操作结果
+            fail_reason: ''
           });
           
           // 如果是从购物车过来的，删除购物车中已购买的商品

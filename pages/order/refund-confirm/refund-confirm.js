@@ -1,3 +1,5 @@
+const { uploadUserLog } = require('../../../utils/log.js');
+
 Page({
   data: {
     orderId: '',
@@ -91,6 +93,7 @@ Page({
       const res = await wx.cloud.callFunction({
         name: 'return-create', // 小程序专用退款申请接口
         data: {
+          type: 'create_refund', // 退款申请类型
           order_id: this.data.orderId,
           reason: this.data.reasonText,
           transaction_id: this.data.transaction_id,
@@ -102,6 +105,15 @@ Page({
       });
 
       console.log(`[${new Date().toISOString()}] [前端-退款确认-提交成功] [订单ID:${orderId}] [退款单号:${outRefundNo}] 退款申请已创建，等待商家审核`);
+
+      // 退款申请成功后调用日志上传
+      uploadUserLog({
+        operate_module: 'refund', // 操作模块：退款
+        operate_type: 'apply_refund', // 操作类型：申请退款
+        relation_id: outRefundNo, // 退款数据标识（自动映射到relation_id2）
+        operate_desc: `用户申请订单退款，退款金额：${this.data.refundAmount}元，操作结果：success`,
+        fail_reason: ''
+      });
 
       // 2. 提交成功 → 跳转到订单管理页
       wx.showToast({

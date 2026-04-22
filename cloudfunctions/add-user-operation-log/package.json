@@ -1,0 +1,9 @@
+{
+  "name": "add-user-operation-log",
+  "version": "1.0.0",
+  "description": "用户操作日志云函数",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

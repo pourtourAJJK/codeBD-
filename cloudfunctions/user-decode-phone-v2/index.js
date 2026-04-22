@@ -1,59 +1,58 @@
 const cloud = require('wx-server-sdk');
-cloud.init({
-  env: cloud.DYNAMIC_CURRENT_ENV
-});
+cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
 
-// 🔥 微信官方最新：云调用获取手机号（无需session_key/encryptedData/iv）
-exports.main = async (event, context) => {
+exports.main = async (event) => {
   try {
-    console.log("云函数入参：", event);
-    const { cloudID } = event;
-    const openid = cloud.getWXContext().OPENID;
+    const { code } = event;
+    const { OPENID } = cloud.getWXContext();
 
-    if (!cloudID) {
-      return { code: 400, message: "缺少cloudID", data: null };
+    // 参数校验
+    if (!code) {
+      return { code: 400, message: "缺少授权code", data: null };
     }
-    if (!openid) {
+    if (!OPENID) {
       return { code: 400, message: "未登录", data: null };
     }
 
-    // 官方接口：用cloudID换取手机号
-    const result = await cloud.openapi.phonenumber.getPhoneNumber({
-      code: cloudID
-    });
-    console.log("手机号获取结果：", result);
+    // 调用微信官方接口解密手机号
+    const result = await cloud.openapi.phonenumber.getPhoneNumber({ code });
+    // 精准获取手机号（匹配官方返回格式）
+    const phoneNumber = result.phoneInfo.phoneNumber;
 
-    const phoneNumber = result.data.phoneInfo.phoneNumber;
     if (!phoneNumber) {
-      return { code: 400, message: "获取手机号失败", data: null };
+      return { code: 400, message: "未获取到手机号", data: null };
     }
 
-    // 更新数据库
-    const userRes = await db.collection('shop_user').where({ openid }).get();
+    // 查询用户（增加空值判断，防止崩溃）
+    const userRes = await db.collection('shop_user').where({ openid: OPENID }).get();
     if (userRes.data.length === 0) {
       return { code: 404, message: "用户不存在", data: null };
     }
 
+    // 更新数据库手机号
     await db.collection('shop_user').doc(userRes.data[0]._id).update({
-      data: {
-        phoneNumber: phoneNumber,
-        updateTime: db.serverDate()
+      data: { 
+        phoneNumber: phoneNumber, 
+        updateTime: db.serverDate() 
       }
     });
 
+    // 绑定成功返回
     return {
       code: 200,
       message: "手机号绑定成功",
-      data: { phoneNumber }
+      data: { 
+        phoneNumber: phoneNumber,
+        isNewUser: false // 这里设置为false，因为用户已经存在
+      }
     };
 
   } catch (err) {
-    // 🔥 打印真实错误（关键！）
     console.error("绑定失败详情：", err);
     return {
       code: 400,
-      message: "绑定失败：" + (err.errMsg || JSON.stringify(err)),
+      message: "绑定失败：" + (err.errMsg || "系统异常"),
       data: null
     };
   }

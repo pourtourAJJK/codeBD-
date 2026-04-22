@@ -34,19 +34,6 @@
         <text class="original-price" wx:if="{{product['original-price'] > 0}}">¥{{product['original-price']}}</text>
       </view>
       
-      <!-- 商品库存显示（添加极致鲁棒的容错逻辑） -->
-      <!-- 容错逻辑说明：
-        1. 第一层保障：JS层面已通过parseStockField方法处理，确保stock和lockedStock为数字
-        2. 第二层保障：WXML层面添加容错，应对任何意外情况
-        3. 计算逻辑：可用库存 = 总库存 - 锁定库存
-      -->
-      <view class="product-stock">
-        <text class="stock-label">库存：</text>
-        <text class="stock-value">
-          {{ (product && product.stock ? product.stock : 0) - (product && product.lockedStock ? product.lockedStock : 0) }} 件
-        </text>
-      </view>
-      
       </view>
     
     <!-- 图文详情区域 -->

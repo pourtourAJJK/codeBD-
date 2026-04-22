@@ -66,9 +66,8 @@ Page({
       // 无论数据库读取是否成功，都从本地存储读取最新数据，确保显示最新修改
       console.log("[我的页面] 从本地存储读取用户信息");
       try {
-        const encryptedUserInfo = wx.getStorageSync('userInfo');
-        if (encryptedUserInfo) {
-          const localRes = JSON.parse(decodeURIComponent(encryptedUserInfo));
+        const localRes = wx.getStorageSync('userInfo');
+        if (localRes) {
           // 优先使用本地存储的最新数据
           res = localRes;
           console.log("[我的页面] 使用本地存储的最新数据:", localRes);
@@ -102,13 +101,12 @@ Page({
   // 读取数据库中的最新用户信息
   async getUserInfoFromDB() {
     try {
-      const encryptedOpenid = wx.getStorageSync("openid");
-      if (!encryptedOpenid) {
+      const openid = wx.getStorageSync("openid");
+      if (!openid) {
         console.error("[我的页面] getUserInfoFromDB被调用，但openid为空");
         wx.showToast({ title: "登录状态异常", icon: "none" });
         return {};
       }
-      const openid = decodeURIComponent(encryptedOpenid);
 
       // 调用云函数读取用户信息
       const res = await wx.cloud.callFunction({

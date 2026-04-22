@@ -526,6 +526,23 @@
   flex: 1;
 }
 
+.modal-product-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 8rpx;
+  display: block;
+  line-height: 40rpx;
+}
+
+.modal-product-detail {
+  font-size: 28rpx;
+  color: #999999;
+  margin-bottom: 16rpx;
+  display: block;
+  line-height: 36rpx;
+}
+
 .modal-current-price {
   font-size: 40rpx;
   font-weight: bold;

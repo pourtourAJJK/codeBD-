@@ -7,6 +7,10 @@
   align-items: center;
   padding: 120rpx 30rpx 60rpx;
   box-sizing: border-box;
+  padding-top: calc(120rpx + env(safe-area-inset-top));
+  padding-top: calc(120rpx + constant(safe-area-inset-top));
+  padding-bottom: calc(60rpx + env(safe-area-inset-bottom));
+  padding-bottom: calc(60rpx + constant(safe-area-inset-bottom));
 }
 
 /* 品牌区样式 */
@@ -77,20 +81,24 @@
 /* 隐私协议勾选框样式 */
 .agreement {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  width: 75%;
+  width: 100%;
   margin-bottom: 30rpx;
   font-size: 26rpx;
   color: #666;
+  padding: 0 40rpx;
 }
 
 .agreement checkbox {
   margin-right: 10rpx;
   transform: scale(1.2);
+  margin-bottom: 5rpx;
 }
 
 .agreement text {
   line-height: 1.5;
+  margin-bottom: 5rpx;
 }
 
 /* 暂不绑定区（弱化处理，避免干扰核心操作） */
@@ -106,15 +114,12 @@
 
 /* 隐私协议提示区 */
 .privacy-tip {
-  position: absolute;
-  bottom: 40rpx;
-  left: 0;
-  right: 0;
   text-align: center;
   font-size: 24rpx;
   color: #999;
   padding: 0 40rpx;
   line-height: 36rpx;
+  margin-bottom: 40rpx;
 }
 
 .privacy-tip .link {

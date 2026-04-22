@@ -33,12 +33,6 @@ exports.main = async (event, context) => {
     const timestamp = Date.now();
     const out_refund_no = `REFUND_${order_id}_${timestamp}`;
     
-    // ===================== 核心修复区 =====================
-    // 🔥 1. 严格使用字符串！不要用数字 1/2/3/4
-    // 根据你的模型选项：
-    // "1" -> 待审核 (字符串)
-    // "3" -> 已拒绝
-    // =======================================================
     const refundData = {
       order_id,
       reason,
@@ -47,25 +41,17 @@ exports.main = async (event, context) => {
       transaction_id,
       user_openid: user_openid || event.userInfo.openId,
       
-      // ✅ 修复：这里必须是字符串 "1"，不能是数字 1
-      audit_status: "1", 
+      audit_status: "1",
+      refund_status: "1",
+      refund_result_status: "1",
       
-      // ✅ 修复：退单状态，填入字符串 "待审核" 或对应枚举值
-      // 这里根据你的模型，应该填选项对应的标识，这里我们填入稳定态 "待审核"
-      refund_status: "1", 
-      
-      refund_result_status: "1", // 对应模型选项
-      
-      // 已修复：纯数字时间戳
       apply_time: timestamp,
       create_time: timestamp,
       update_time: timestamp,
       creatAt:timestamp,
       out_refund_no,
-      // 👇 新增：与另一函数updatedAt格式完全一致（毫秒时间戳）
       createdAt: timestamp,
       
-      // 👇 你要求的操作记录 已添加
       operation_records: [{
         time: timestamp,
         operator: "用户",
@@ -75,29 +61,51 @@ exports.main = async (event, context) => {
     };
 
     // 写入退款表
-    await db.collection('shop_refund').add({ data: refundData });
+    const addResult = await db.collection('shop_refund').add({ data: refundData });
+    const refundId = addResult.id; // 获取退款记录的 _id
 
     // 更新订单状态为退款中
     await db.collection('shop_order').where({ order_id }).update({
       data: {
         statusmax: "7",
-        refund_status: "1", // 👈 同步到订单的也必须是字符串
+        refund_status: "1",
         updateTime: timestamp
       }
     });
+
+    // ===================== 新增：生成退款通知 =====================
+    console.log('开始生成退款通知');
+    try {
+      const refundInfo = {
+        order_id: order_id,
+        out_refund_no: out_refund_no,
+        refund_amount: refund_amount,
+        audit_status: "待审核",
+        refund_id: refundId // 传入退款ID
+      };
+      console.log('准备调用 create-refund-notification，refundInfo：', refundInfo);
+      const result = await cloud.callFunction({
+        name: 'create-refund-notification',
+        data: { refundInfo }
+      });
+      console.log('create-refund-notification 调用结果：', result);
+    } catch (error) {
+      console.error('生成退款通知失败：', error);
+    }
+    // ===============================================================
 
     console.log("[小程序退款申请] 提交成功，订单号：", order_id);
     
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ 
-        code: 200, 
+      body: JSON.stringify({
+        code: 200,
         message: "退款申请提交成功",
         data: {
           order_id,
           out_refund_no,
-          refund_status: "1", // 前端展示可以转成文本，后端存储必须匹配模型
+          refund_status: "1",
           refund_status_text: "1"
         }
       })

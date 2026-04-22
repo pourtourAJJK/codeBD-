@@ -30,9 +30,7 @@
   <button
     class="phone-auth-btn"
     open-type="getPhoneNumber"
-    bindgetphonenumber="handleGetPhoneNumber"
-    bindtap="checkPrivacyBeforeAuth"
-    disabled="{{!isAgree}}"
+    bindgetphonenumber="getPhoneNumberHandler"
   >
     本机号码快速验证
   </button>

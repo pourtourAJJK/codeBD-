@@ -142,16 +142,11 @@ App({
   // 统一登录校验（所有页面可调用）
   checkLoginStatus() {
     try {
-      const encryptedUserInfo = wx.getStorageSync('userInfo');
-      const encryptedToken = wx.getStorageSync('token');
-      const encryptedOpenid = wx.getStorageSync('openid');
+      const userInfo = wx.getStorageSync('userInfo');
+      const token = wx.getStorageSync('token');
+      const openid = wx.getStorageSync('openid');
 
-      if (encryptedUserInfo && encryptedToken && encryptedOpenid) {
-        // 解密数据
-        const userInfo = JSON.parse(decodeURIComponent(encryptedUserInfo));
-        const token = decodeURIComponent(encryptedToken);
-        const openid = decodeURIComponent(encryptedOpenid);
-
+      if (userInfo && token && openid) {
         this.globalData = { 
           ...this.globalData,
           isLogin: true, 
@@ -161,7 +156,7 @@ App({
         };
         console.log('登录状态有效');
         return true;
-      } else if (encryptedOpenid) {
+      } else if (openid) {
         // 只有 openid，尝试静默登录
         console.log('只有 openid，尝试静默登录');
         this.silentLogin();
@@ -213,9 +208,9 @@ App({
       if (loginResult.result && loginResult.result.code === 0) {
         const { userInfo, token } = loginResult.result.data;
         
-        // 加密存储
-        wx.setStorageSync("userInfo", encodeURIComponent(JSON.stringify(userInfo)));
-        wx.setStorageSync("token", encodeURIComponent(token));
+        // 直接存储对象
+        wx.setStorageSync('userInfo', userInfo);
+        wx.setStorageSync('token', token);
         
         // 更新全局数据
         this.globalData = { 

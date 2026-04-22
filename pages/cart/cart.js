@@ -15,7 +15,6 @@ Page({
     hasSelectedItems: false, // 是否有选中商品
     loading: false, // 加载状态
     errorMessage: '', // 错误信息
-    discountPrice: 0, // 已优惠金额
     isManageMode: false, // 管理模式状态
     // 推荐商品相关
     recommendProducts: [], // 推荐商品列表
@@ -549,19 +548,16 @@ Page({
     // 计算选中的商品数量
     const selectedCount = cartItems.filter(item => item.checked && item.stock > 0).length;
     
-    // 计算总价和原价
+    // 计算总价
     let totalPrice = 0;
-    let originalTotal = 0;
     
     cartItems.forEach(item => {
       if (item.checked && item.stock > 0) {
         totalPrice += item.currentPrice * item.quantity;
-        originalTotal += (item.originalPrice || item.currentPrice) * item.quantity;
       }
     });
     
     totalPrice = Number(totalPrice.toFixed(2)); // 保留两位小数
-    const discountPrice = Number((originalTotal - totalPrice).toFixed(2)); // 计算优惠金额
     
     // 判断是否全选
     const isAllSelected = selectedCount > 0 && selectedCount === cartItems.filter(item => item.stock > 0).length;
@@ -569,7 +565,6 @@ Page({
     this.setData({
       selectedCount,
       totalPrice,
-      discountPrice,
       isAllSelected,
       hasSelectedItems: selectedCount > 0
     });
@@ -767,17 +762,6 @@ Page({
       console.error('加入购物车失败:', error);
       wx.showToast({ title: '加入购物车失败，请重试', icon: 'none' });
     }
-  },
-
-  /**
-   * 显示优惠明细
-   */
-  showDiscountDetail: function() {
-    wx.showModal({
-      title: '优惠明细',
-      content: `优惠券优惠：¥${this.data.discountPrice}`,
-      showCancel: false
-    });
   },
   
   /**

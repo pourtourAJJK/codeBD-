@@ -100,75 +100,63 @@ Page({
     });
   },
 
-  // 登录核心逻辑（必须在隐私授权后执行）
+  // 完整的登录按钮逻辑
   async doLogin() {
+    wx.showLoading({ title: '登录中...' })
     try {
-      // 检查协议勾选状态
-      if (!this.data.isAgree) {
-        wx.showToast({ title: '请先同意协议', icon: 'none' });
-        return;
+      // 1. 获取code
+      const loginRes = await wx.login()
+      const code = loginRes.code
+      console.log("[auth] 获取 code 成功:", code)
+
+      // 2. 调用云函数
+      const res = await wx.cloud.callFunction({
+        name: 'user-login-v2',
+        data: { code: code }
+      })
+      console.log("[auth] user-login-v2 返回:", res)
+
+      // 3. 判断云函数返回结果
+      if (res.result.code !== 0) {
+        wx.hideLoading()
+        wx.showToast({ title: res.result.message || '登录失败', icon: 'none' })
+        return
       }
+
+      // 4. 正常存储数据（标准写法，无报错）
+      const data = res.result.data
+      console.log("[auth] 登录成功，数据:", data);
+      console.log("[auth] userInfo:", data.userInfo);
+      console.log("[auth] phoneNumber:", data.userInfo && data.userInfo.phoneNumber);
       
-      wx.showLoading({ title: '登录中...' });
+      wx.setStorageSync('userInfo', data.userInfo)
+      wx.setStorageSync('token', data.token)
+      wx.setStorageSync('openid', data.openid)
+
+      wx.hideLoading()
       
-      // 1. 调用wx.login获取code（隐私接口，必须授权后调用）
-      const loginRes = await new Promise((resolve, reject) => {
-        wx.login({
-          success: resolve,
-          fail: reject
-        });
+      // 检查用户是否已绑定手机号
+      const userInfo = data.userInfo;
+      console.log("[auth] 检查手机号绑定状态:", {
+        hasUserInfo: !!userInfo,
+        hasPhoneNumber: userInfo && userInfo.phoneNumber,
+        phoneNumberTrimmed: userInfo && userInfo.phoneNumber && userInfo.phoneNumber.trim()
       });
       
-      if (!loginRes.code) {
-        throw new Error('获取登录凭证失败');
-      }
-      
-      console.log('[auth] 获取 code 成功:', loginRes.code);
-      
-      // 2. 直接调用 user-login-v2 完成登录/注册
-      const loginResult = await wx.cloud.callFunction({
-        name: "user-login-v2",
-        data: { 
-          code: loginRes.code
-        }
-      });
-      
-      console.log('[auth] user-login-v2 返回:', loginResult);
-      
-      if (loginResult.result && loginResult.result.code === 0) {
-        const { userInfo, token, openid, isNewUser } = loginResult.result.data;
-        
-        // 加密存储
-        wx.setStorageSync("userInfo", encodeURIComponent(JSON.stringify(userInfo)));
-        wx.setStorageSync("token", encodeURIComponent(token));
-        wx.setStorageSync("openid", encodeURIComponent(openid));
-        
-        console.log('[auth] 登录成功，isNewUser:', isNewUser);
-        console.log('[auth] 用户信息:', userInfo);
-        
-        // 检查用户是否已绑定手机号
-        const hasPhone = userInfo.phoneNumber && userInfo.phoneNumber.trim() !== '';
-        console.log('[auth] 是否已绑定手机号:', hasPhone);
-        
-        if (isNewUser || !hasPhone) {
-          // 新用户或未绑定手机号，跳转到手机号绑定页
-          wx.redirectTo({
-            url: `/pages/login/phone/phone?from=${encodeURIComponent(this.data.fromPage)}&isNewUser=${isNewUser}&hasPhone=${hasPhone}`,
-          });
-        } else {
-          // 老用户且已绑定手机号，跳转到首页
-          wx.switchTab({
-            url: '/pages/index/index',
-          });
-        }
+      if (userInfo && userInfo.phoneNumber && userInfo.phoneNumber.trim() !== '') {
+        // 已绑定手机号，直接跳转到首页（tabBar页面）
+        console.log("[auth] 已绑定手机号，跳转到首页");
+        wx.switchTab({ url: '/pages/index/index' });
       } else {
-        throw new Error(loginResult.result?.message || "登录失败");
+        // 未绑定手机号，跳转到绑定页面（非tabBar页面）
+        console.log("[auth] 未绑定手机号，跳转到绑定页面");
+        wx.redirectTo({ url: '/pages/login/phone/phone' });
       }
-    } catch (err) {
-      wx.showToast({ title: '登录失败，请重试', icon: 'none' });
-      console.error('登录异常', err);
-    } finally {
-      wx.hideLoading();
+
+    } catch (error) {
+      wx.hideLoading()
+      console.error("登录异常", error)
+      wx.showToast({ title: '登录失败，请重试', icon: 'none' })
     }
   },
 

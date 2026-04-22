@@ -500,52 +500,59 @@ Page({
       return;
     }
 
-    // 新增：打印调试日志，看函数是否触发、变量值是否正常
-    console.log('===== 点击立即购买，进入onBuyNow函数 =====');
-    console.log('当前商品信息：', this.data.product); // 看商品是否获取到
-    console.log('当前购买数量：', this.data.quantity); // 看数量是否合法
+    // 检查是否已经在弹窗内
+    if (this.data.showSpecModal) {
+      // 在弹窗内点击立即购买，执行实际购买逻辑
+      console.log('===== 弹窗内点击立即购买，执行购买逻辑 =====');
+      console.log('当前商品信息：', this.data.product);
+      console.log('当前购买数量：', this.data.quantity);
 
-    // 原有验证逻辑
-    if (!this.data.product) {
-      wx.showToast({ title: '商品信息异常', icon: 'none' });
-      console.error('❌ 商品信息为空，验证失败'); // 新增：标记错误
-      return;
-    }
-    if (this.data.quantity < 1) {
-      wx.showToast({ title: '请选择购买数量', icon: 'none' });
-      console.error('❌ 购买数量小于1，验证失败，当前数量：', this.data.quantity); // 新增
-      return;
-    }
-
-    // 原有构建订单商品信息逻辑
-    const orderProduct = {
-      id: this.data.product._id, // 订单确认页期望的是id字段
-      productId: this.data.product._id, // 同时保留productId字段，确保兼容性
-      name: this.data.product.name, // 订单确认页期望的是name字段
-      price: this.data.product.price, // 订单确认页期望的是price字段
-      coverImage: this.data.product['cover-image'],
-      spec: this.data.product.spec || '默认规格',
-      quantity: this.data.quantity,
-      originalPrice: this.data.product.originalPrice || this.data.product.price
-    };
-    console.log('✅ 商品信息验证通过，构建的订单商品信息：', orderProduct); // 新增
-
-    // 原有跳转逻辑
-    wx.navigateTo({
-      url: `/pages/order/confirm/confirm?source=detail`,
-      success: (res) => {
-        console.log('✅ 页面跳转请求发送成功，开始发送事件通道数据'); // 新增
-        res.eventChannel.emit('productInfo', {
-          product: orderProduct
-        });
-      },
-      fail: (err) => { // 新增：捕获跳转失败的错误
-        console.error('❌ 页面跳转失败：', err);
-        wx.showToast({ title: '页面跳转失败，请重试', icon: 'none' });
+      // 验证逻辑
+      if (!this.data.product) {
+        wx.showToast({ title: '商品信息异常', icon: 'none' });
+        console.error('❌ 商品信息为空，验证失败');
+        return;
       }
-    });
-    
-    this.closeSpecModal();
+      if (this.data.quantity < 1) {
+        wx.showToast({ title: '请选择购买数量', icon: 'none' });
+        console.error('❌ 购买数量小于1，验证失败，当前数量：', this.data.quantity);
+        return;
+      }
+
+      // 构建订单商品信息
+      const orderProduct = {
+        id: this.data.product._id,
+        productId: this.data.product._id,
+        name: this.data.product.name,
+        price: this.data.product.price,
+        coverImage: this.data.product['cover-image'],
+        spec: this.data.product.spec || '默认规格',
+        quantity: this.data.quantity,
+        originalPrice: this.data.product.originalPrice || this.data.product.price
+      };
+      console.log('✅ 商品信息验证通过，构建的订单商品信息：', orderProduct);
+
+      // 跳转逻辑
+      wx.navigateTo({
+        url: `/pages/order/confirm/confirm?source=detail`,
+        success: (res) => {
+          console.log('✅ 页面跳转请求发送成功，开始发送事件通道数据');
+          res.eventChannel.emit('productInfo', {
+            product: orderProduct
+          });
+        },
+        fail: (err) => {
+          console.error('❌ 页面跳转失败：', err);
+          wx.showToast({ title: '页面跳转失败，请重试', icon: 'none' });
+        }
+      });
+      
+      this.closeSpecModal();
+    } else {
+      // 不在弹窗内，显示规格选择器
+      console.log('===== 点击立即购买，显示规格选择器 =====');
+      this.showSpecSelector();
+    }
 },
   
   /**

@@ -94,11 +94,7 @@
             <text class="price-number">{{totalPrice}}</text>
           </text>
         </view>
-        <view class="discount-info">
-          <text class="discount-label">已优惠：</text>
-          <text class="discount-value">-¥{{discountPrice}}</text>
-          <text class="discount-detail" bindtap="showDiscountDetail">明细</text>
-        </view>
+
       </view>
 
       <view class="action-buttons">

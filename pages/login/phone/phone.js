@@ -72,67 +72,46 @@ Page({
     })
   },
 
-  // 【核心】微信手机号快捷登录回调
-  handleGetPhoneNumber(e) {
-    console.log("手机号授权回调", e.detail)
-
-    // 检查协议勾选状态
-    if (!this.data.isAgree) {
-      wx.showToast({ title: '请先同意协议', icon: 'none' });
+  // 手机号授权回调
+  getPhoneNumberHandler(e) {
+    console.log("手机号授权回调", e);
+    // 🔥 核心修复：新版接口取 code，不是 cloudID
+    const code = e.detail.code;
+    
+    if (!code) {
+      wx.showToast({ title: '授权失败', icon: 'none' });
       return;
     }
 
-    // 1. 用户取消授权
-    if (e.detail.errMsg === "getPhoneNumber:fail user deny") {
-      wx.showToast({ title: "您已取消手机号授权", icon: "none" })
-      return
-    }
-
-    // 2. 授权失败（隐私未生效/配置错误）
-    if (e.detail.errMsg !== "getPhoneNumber:ok") {
-      wx.showToast({ title: "授权失败，请重试", icon: "none" })
-      return
-    }
-
-    // 3. 检查 cloudID 是否存在
-    if (!e.detail.cloudID) {
-      wx.showToast({ title: "授权失败，请重试", icon: "none" })
-      return
-    }
-
-    // 4. 只传递 cloudID 给云函数
-    wx.showLoading({ title: "绑定中..." })
+    wx.showLoading({ title: '绑定中...' });
+    // 调用云函数，传 code
     wx.cloud.callFunction({
-      name: "user-decode-phone-v2",
-      data: {
-        cloudID: e.detail.cloudID
-      }
-    }).then(res => {
-      wx.hideLoading()
-      console.log("绑定结果：", res);
-      if (res.result.code === 200) {
-        // 解密成功：存储手机号
-        const phone = res.result.data.phoneNumber;
-
-        // 更新本地存储的用户信息
-        if (res.result.data.userInfo) {
-          wx.setStorageSync('userInfo', encodeURIComponent(JSON.stringify(res.result.data.userInfo)));
+      name: 'user-decode-phone-v2',
+      data: { code: code },
+      success: (res) => {
+        wx.hideLoading();
+        console.log("绑定结果：", res);
+        if (res.result.code === 200) {
+          wx.showToast({ title: '绑定成功' });
+          
+          // 检查用户是否为新用户
+          const isNewUser = res.result.data && res.result.data.isNewUser;
+          if (isNewUser) {
+            // 新用户，跳转到个人中心完善信息
+            wx.redirectTo({ url: '/pages/user/profile/profile' });
+          } else {
+            // 老用户，跳转到首页
+            wx.redirectTo({ url: '/pages/index/index' });
+          }
+        } else {
+          wx.showToast({ title: res.result.message, icon: 'none' });
         }
-        wx.setStorageSync('userPhone', phone)
-        console.log("登录页已存储手机号：", phone);
-        console.log("登录页已更新用户信息：", res.result.data.userInfo);
-
-        wx.showToast({ title: "绑定成功", icon: "success" })
-        // 登录后跳回来源页面（购物车/我的/首页）
-        setTimeout(() => this.goBackToPage(), 1500)
-      } else {
-        wx.showToast({ title: res.result.message || "绑定失败", icon: "none" })
+      },
+      fail: () => {
+        wx.hideLoading();
+        wx.showToast({ title: '绑定失败', icon: 'none' });
       }
-    }).catch(err => {
-      wx.hideLoading()
-      console.error("解密手机号失败", err)
-      wx.showToast({ title: "绑定失败，请重试", icon: "none" })
-    })
+    });
   },
 
   // 【优化】暂不绑定（加二次确认，避免用户误操作）

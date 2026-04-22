@@ -2,6 +2,7 @@
 const app = getApp();
 const auth = require('../../utils/auth');
 const orderUtil = require('../../utils/orderUtil');
+const { uploadUserLog } = require('../../utils/log.js');
 
 // 新增：自动取消计时器句柄
 let autoCancelTimer = null;
@@ -470,6 +471,14 @@ Page({
                 console.log('【支付页面日志15】唤起微信支付组件成功:', payRes);
                 this.clearAutoCancelTimer();
                 this.updateOrderStatus(orderId, 'paid', { autoCancelStatus: 'paid' });
+                // 支付成功后调用日志上传
+                uploadUserLog({
+                  operate_module: 'order', // 操作模块：订单
+                  operate_type: 'pay_order', // 操作类型：支付订单
+                  relation_id: orderId, // 订单数据标识
+                  operate_desc: `用户完成订单支付，金额：${this.data.order.totalPrice}元，操作结果：success`,
+                  fail_reason: ''
+                });
                 // 显示支付成功结果
                 this.showPaymentResult(true, '支付成功');
               },
